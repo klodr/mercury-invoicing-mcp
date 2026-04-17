@@ -84,6 +84,28 @@ Add to `~/.cursor/mcp.json`:
 }
 ```
 
+### OpenClaw
+
+[OpenClaw](https://docs.openclaw.ai) is an open-source self-hosted agent platform that supports MCP via `@modelcontextprotocol/sdk`. Add to `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "mcpServers": {
+    "mercury-invoicing": {
+      "command": "npx",
+      "args": ["-y", "mercury-invoicing-mcp"],
+      "env": {
+        "MERCURY_API_KEY": "secret-token:..."
+      }
+    }
+  }
+}
+```
+
+Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equivalent). The 22 tools become available to all your OpenClaw agents.
+
+> **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
+
 ## Tools
 
 ### Banking (read)
