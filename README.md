@@ -177,6 +177,53 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - Use **read-only or scoped tokens** when you don't need write access.
 - Be aware of **prompt injection** risks when exposing write tools to LLMs that read untrusted content. See [Anthropic's MCP security guidance](https://docs.anthropic.com/en/docs/agents-and-tools/mcp).
 
+### Built-in safeguards
+
+This MCP includes three middleware layers that activate automatically on write tools (read tools are unaffected):
+
+#### 1. Rate limiting
+
+Per-category daily limits prevent runaway agents from draining accounts or spamming the API.
+
+| Category | Tools | Default |
+|---|---|---|
+| `money` | send_money, request_send_money | 100/day |
+| `invoicing` | create/update/send/cancel invoice + create/update/delete customer | 300/day |
+| `banking` | add/update recipient, update transaction | 200/day |
+| `journal` | create/update/delete journal entry | 50/day |
+| `webhooks` | create/update/delete webhook | 5/day |
+| `coa` | create/update/delete COA template | 5/day |
+
+Override per category (units: `/hour`, `/day`, `/week`):
+
+```bash
+MERCURY_MCP_RATE_LIMIT_money=200/day      # bigger supplier batch
+MERCURY_MCP_RATE_LIMIT_invoicing=1000/day # large monthly billing run
+MERCURY_MCP_RATE_LIMIT_disabled=true      # disable all rate limiting (not recommended)
+```
+
+When exceeded, the tool returns an `isError: true` response with a clear message and retry hint — the agent learns to back off naturally.
+
+#### 2. Dry-run mode
+
+Inspect what an agent *would* do without actually calling Mercury. Useful for debugging suspected behaviour or staging:
+
+```bash
+MERCURY_MCP_DRY_RUN=true
+```
+
+Write tools then return a structured payload describing the intended action without hitting the Mercury API.
+
+#### 3. Audit log (opt-in)
+
+Enable structured JSON logging of every write call:
+
+```bash
+MERCURY_MCP_AUDIT_LOG=/var/log/mercury-mcp-audit.log
+```
+
+Each line is `{ts, tool, result, args}` (one JSON object per line). Result is `ok`, `dry-run`, or `error`.
+
 ## Development
 
 ```bash
