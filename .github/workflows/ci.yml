@@ -23,10 +23,10 @@ jobs:
         node: ["18", "20", "22"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
@@ -42,7 +42,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.node == '20'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
