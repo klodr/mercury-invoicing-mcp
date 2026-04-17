@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
 
 export interface ServerOptions {
