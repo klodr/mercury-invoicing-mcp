@@ -40,6 +40,7 @@
     "start": "node dist/index.js",
     "lint": "eslint src",
     "test": "jest --passWithNoTests",
+    "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
   "engines": {
