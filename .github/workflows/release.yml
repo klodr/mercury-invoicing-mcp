@@ -5,14 +5,44 @@ on:
     types: [published]
   workflow_dispatch:
 
+# Default workflow permissions: read-only. The publish job below escalates
+# only what it needs, only for release events.
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
-    name: Publish to npm
+  build:
+    name: Build & Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
+
+      - name: Setup Node 20
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.0.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test -- --coverage
+
+  publish:
+    name: Sign release artifacts + publish to npm
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # upload signed artifacts to the GitHub Release
+      id-token: write   # npm provenance + Sigstore keyless signing
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
@@ -27,11 +57,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build (production, sourcemaps stripped)
         run: npm run build
+        env:
+          NODE_ENV: production
 
-      - name: Test
-        run: npm test -- --coverage
+      # Sign + upload signed assets BEFORE the (non-idempotent) npm publish,
+      # so a transient failure on signing or asset upload doesn't leave us
+      # stuck with a published version we cannot re-run the workflow for.
+
+      - name: Install Sigstore CLI
+        run: npm install -g @sigstore/cli@1.0.0
+
+      - name: Sign dist/index.js with Sigstore (keyless OIDC, bundle format)
+        run: sigstore sign --bundle dist/index.js.sigstore dist/index.js
+
+      - name: Attach signed artifacts to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            dist/index.js \
+            dist/index.js.sigstore \
+            --repo "${{ github.repository }}" \
+            --clobber
 
       - name: Publish to npm
         run: npm publish --access public --provenance
