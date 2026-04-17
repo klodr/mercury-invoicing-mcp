@@ -183,8 +183,10 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > There is **no `send_invoice` endpoint** anywhere (API or dashboard).
 > An invoice email is only sent when the invoice is created with
-> `sendEmailOption: "SendNow"`. Once created, there is no way to re-send
-> it — workaround: `cancel_invoice` then `create_invoice` again.
+> `sendEmailOption: "SendNow"`. To send a copy later, download the
+> invoice PDF (Mercury UI button "Download PDF", or the
+> `getinvoicepdf` endpoint — not yet wrapped, see "Endpoints not yet
+> wrapped" above) and email it manually.
 
 > Tools available depend on your Mercury API token scope. The server
 > registers all 34 tools but Mercury will reject unauthorized operations
