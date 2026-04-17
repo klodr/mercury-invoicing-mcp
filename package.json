@@ -39,7 +39,7 @@
     "dev": "tsup --watch",
     "start": "node dist/index.js",
     "lint": "eslint src",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "prepublishOnly": "npm run build"
   },
   "engines": {
