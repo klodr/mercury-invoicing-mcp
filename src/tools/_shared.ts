@@ -1,11 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z, ZodRawShape } from "zod";
-import { wrapToolHandler } from "../middleware.js";
+import { wrapToolHandler, type ToolResult } from "../middleware.js";
 
-export type ToolResult = {
-  content: { type: "text"; text: string }[];
-  isError?: boolean;
-};
+export type { ToolResult };
 
 export function textResult(data: unknown): ToolResult {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
