@@ -14,7 +14,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const client = new MercuryClient({ apiKey });
+  const baseUrl = process.env.MERCURY_API_BASE_URL;
+  const client = new MercuryClient({ apiKey, baseUrl });
 
   const server = new McpServer({
     name: "mercury-invoicing-mcp",
