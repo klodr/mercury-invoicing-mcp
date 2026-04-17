@@ -80,7 +80,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     {
       transactionId: z.string().uuid().describe("The transaction ID"),
       note: z.string().nullable().optional().describe("Internal note (send null to clear, omit to keep current)"),
-      categoryId: z.string().nullable().optional().describe("Category ID (see mercury_list_categories). Send null to clear, omit to keep current."),
+      categoryId: z.string().uuid().nullable().optional().describe("Category ID (UUID, see mercury_list_categories). Send null to clear, omit to keep current."),
     },
     async ({ transactionId, ...body }) => {
       const data = await client.patch(`/transaction/${transactionId}`, body);
