@@ -229,7 +229,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
         destinationAccountId: "00000000-0000-0000-0000-000000000002",
         invoiceDate: "2026-04-17",
         dueDate: "2026-05-17",
-        lineItems: [{ description: "Test", quantity: 1, unitPrice: 10 }],
+        lineItems: [{ name: "Test", quantity: 1, unitPrice: 10 }],
       },
     });
     expect(calls[0].method).toBe("POST");
@@ -240,7 +240,47 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(body.creditCardEnabled).toBe(true);
   });
 
-  it("mercury_update_invoice → PATCH /ar/invoices/{id}", async () => {
+  it("mercury_update_invoice → GET then POST /ar/invoices/{id} with merged payload", async () => {
+    // Override the fetch spy with a sequence: GET returns current invoice, POST returns updated
+    let callNum = 0;
+    const localCalls: { url: string; method: string; body?: string }[] = [];
+    global.fetch = (async (input: URL | string, init?: RequestInit) => {
+      callNum += 1;
+      localCalls.push({
+        url: input.toString(),
+        method: init?.method ?? "GET",
+        body: init?.body as string | undefined,
+      });
+      const responseBody =
+        callNum === 1
+          ? {
+              id: "00000000-0000-0000-0000-000000000001",
+              invoiceDate: "2026-04-01",
+              dueDate: "2026-04-15",
+              invoiceNumber: "INV-99",
+              payerMemo: "old memo",
+              customerId: "cust-1",
+              destinationAccountId: "acct-1",
+              ccEmails: [],
+              status: "Unpaid",
+              amount: 100,
+              slug: "abc",
+              createdAt: "2026-04-01T00:00:00Z",
+              updatedAt: "2026-04-01T00:00:00Z",
+              achDebitEnabled: false,
+              creditCardEnabled: false,
+              useRealAccountNumber: false,
+              lineItems: [{ name: "Old", unitPrice: 100, quantity: 1 }],
+            }
+          : { ok: true };
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () => JSON.stringify(responseBody),
+      };
+    }) as unknown as typeof fetch;
+
     await client.callTool({
       name: "mercury_update_invoice",
       arguments: {
@@ -248,7 +288,19 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
         dueDate: "2026-06-01",
       },
     });
-    expect(calls[0].method).toBe("PATCH");
+
+    expect(localCalls).toHaveLength(2);
+    expect(localCalls[0].method).toBe("GET");
+    expect(localCalls[1].method).toBe("POST");
+    expect(localCalls[1].url).toContain("/ar/invoices/00000000-0000-0000-0000-000000000001");
+    const body = JSON.parse(localCalls[1].body!);
+    expect(body.dueDate).toBe("2026-06-01"); // changed
+    expect(body.invoiceNumber).toBe("INV-99"); // preserved
+    expect(body.payerMemo).toBe("old memo"); // preserved
+    expect(body.id).toBeUndefined(); // read-only stripped
+    expect(body.slug).toBeUndefined();
+    expect(body.status).toBeUndefined();
+    expect(body.amount).toBeUndefined();
   });
 
   it("mercury_send_invoice → POST /ar/invoices/{id}/send", async () => {

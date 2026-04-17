@@ -63,11 +63,7 @@ function getRateLimit(category: string): ParsedRate | null {
   return { count: defaultCount, windowMs: 86400_000 };
 }
 
-interface CallRecord {
-  ts: number;
-}
-
-const callHistory = new Map<string, CallRecord[]>();
+const callHistory = new Map<string, number[]>();
 
 /** Reset in-memory call history. Useful for tests. */
 export function resetRateLimitHistory(): void {
@@ -112,16 +108,15 @@ export function enforceRateLimit(toolName: string): void {
 
   const now = Date.now();
   const records = (callHistory.get(category) ?? []).filter(
-    (r) => now - r.ts < rl.windowMs
+    (ts) => now - ts < rl.windowMs
   );
 
   if (records.length >= rl.count) {
-    const oldest = records[0];
-    const retryAfterMs = rl.windowMs - (now - oldest.ts);
+    const retryAfterMs = rl.windowMs - (now - records[0]);
     throw new RateLimitError(toolName, category, rl.count, rl.windowMs, retryAfterMs);
   }
 
-  records.push({ ts: now });
+  records.push(now);
   callHistory.set(category, records);
 }
 
@@ -170,7 +165,7 @@ export function logAudit(toolName: string, args: unknown, result: "ok" | "dry-ru
   }
 }
 
-type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
+export type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
 
 /**
  * Wrap a tool handler with rate limit, dry-run, and audit middleware.

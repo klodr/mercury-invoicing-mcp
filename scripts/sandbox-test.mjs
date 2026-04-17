@@ -1,12 +1,9 @@
 // Sandbox test runner — exercises all Mercury MCP tools (excluding Plan Plus features)
 // against the real Mercury sandbox API.
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { MercuryClient } from "../src/client.ts";
-import { registerAllTools } from "../src/tools/index.ts";
-import { wrapToolHandler } from "../src/middleware.ts";
+import { createServer } from "../src/server.ts";
 
 const TOKEN = process.env.MERCURY_API_KEY;
 if (!TOKEN) {
@@ -14,21 +11,13 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-// Force sandbox base URL (skip auto-detect for clarity)
-const mercury = new MercuryClient({ apiKey: TOKEN, baseUrl: "https://api-sandbox.mercury.com/api/v1" });
-const server = new McpServer({ name: "test", version: "0.0.0" });
-
-// Apply same middleware patch
-const originalTool = server.tool.bind(server);
-server.tool = (...args) => {
-  const lastIdx = args.length - 1;
-  if (typeof args[lastIdx] === "function" && typeof args[0] === "string") {
-    args[lastIdx] = wrapToolHandler(args[0], args[lastIdx]);
-  }
-  return originalTool(...args);
-};
-
-registerAllTools(server, mercury);
+// createServer auto-detects sandbox tokens via the mercury_sandbox_ prefix; force it
+// here for clarity in case a non-sandbox token is supplied.
+const server = createServer({
+  apiKey: TOKEN,
+  baseUrl: "https://api-sandbox.mercury.com/api/v1",
+  log: () => {},
+});
 
 const [serverTransport, clientTransport] = InMemoryTransport.createLinkedPair();
 const client = new Client({ name: "tester", version: "0.0.0" });

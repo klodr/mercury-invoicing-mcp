@@ -6,6 +6,7 @@
 [![CodeQL](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/klodr/mercury-invoicing-mcp/security/code-scanning)
 [![codecov](https://codecov.io/gh/klodr/mercury-invoicing-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/klodr/mercury-invoicing-mcp)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/klodr/mercury-invoicing-mcp/badge)](https://scorecard.dev/viewer/?uri=github.com/klodr/mercury-invoicing-mcp)
+[![Socket Security](https://socket.dev/api/badge/npm/package/mercury-invoicing-mcp)](https://socket.dev/npm/package/mercury-invoicing-mcp)
 
 [![npm version](https://img.shields.io/npm/v/mercury-invoicing-mcp.svg)](https://www.npmjs.com/package/mercury-invoicing-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/mercury-invoicing-mcp.svg)](https://www.npmjs.com/package/mercury-invoicing-mcp)
