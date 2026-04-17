@@ -47,10 +47,22 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     }
   );
 
-  // Note: Mercury does not expose update_webhook via the API (PATCH and PUT
-  // both return 405). To change a webhook, delete + create instead.
+  defineTool(server,
+    "mercury_update_webhook",
+    "Update an existing webhook endpoint (URL, status, or events). Mercury endpoint is POST /webhooks/{id}. A webhook disabled after consecutive failures can be reactivated by setting status to 'active'.",
+    {
+      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
+      url: z.string().url().optional().describe("New HTTPS URL"),
+      status: z.enum(["active", "paused"]).optional().describe("Webhook status"),
+      eventTypes: z.array(z.string()).optional().describe(eventTypesDescription),
+    },
+    async ({ webhookId, ...body }) => {
+      const data = await client.post(`/webhooks/${webhookId}`, body);
+      return textResult(data);
+    }
+  );
 
-  defineTool(server, 
+  defineTool(server,
     "mercury_delete_webhook",
     "Delete a webhook endpoint.",
     {
