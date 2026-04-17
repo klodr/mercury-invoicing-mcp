@@ -37,12 +37,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm test --if-present
+      - name: Test with coverage
+        run: npm test -- --coverage
 
       - name: Upload coverage to Codecov
         if: matrix.node == '20'
         uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: false
+          slug: klodr/mercury-invoicing-mcp
           token: ${{ secrets.CODECOV_TOKEN }}
