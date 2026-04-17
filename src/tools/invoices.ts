@@ -4,7 +4,13 @@ import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 const lineItemSchema = z.object({
-  name: z.string().describe("Line item name (required by Mercury, shown on the invoice)"),
+  name: z
+    .string()
+    .min(1)
+    .max(200)
+    .describe(
+      "Line item name (required, ≤200 characters — Mercury rejects longer values on the edit endpoint with 'Item name: Must be 200 characters or fewer', leaving the invoice unmodifiable). Put long descriptions in the optional `description` field or in the attached invoice PDF.",
+    ),
   description: z.string().optional().describe("Optional longer description"),
   quantity: z.number().positive().describe("Quantity"),
   unitPrice: z.number().nonnegative().describe("Price per unit in USD"),
@@ -87,7 +93,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         .enum(["DontSend", "SendNow"])
         .optional()
         .describe("Whether to email the invoice immediately. Default: SendNow"),
-      invoiceNumber: z.string().optional().describe("Customer-facing invoice number"),
+      invoiceNumber: z.string().max(255).optional().describe("Customer-facing invoice number (≤255 chars; Mercury rejects 300+ characters on the edit endpoint)"),
       poNumber: z.string().optional().describe("Purchase order number"),
       payerMemo: z.string().optional().describe("Memo shown to payer"),
       internalNote: z.string().optional().describe("Note visible only to your org"),
