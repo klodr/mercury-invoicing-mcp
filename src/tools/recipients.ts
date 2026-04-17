@@ -16,6 +16,25 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
   );
 
   server.tool(
+    "mercury_update_recipient",
+    "Update an existing payment recipient (name, emails, payment methods, etc.).",
+    {
+      recipientId: z.string().describe("The recipient ID"),
+      name: z.string().optional(),
+      emails: z.array(z.string().email()).optional(),
+      defaultPaymentMethod: z
+        .enum(["domesticAch", "internationalWire", "domesticWire", "check"])
+        .optional(),
+    },
+    async ({ recipientId, ...body }) => {
+      const data = await client.patch(`/recipient/${recipientId}`, body);
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
     "mercury_add_recipient",
     "Add a new payment recipient. Requires read-write API token.",
     {

@@ -79,6 +79,38 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
   );
 
   server.tool(
+    "mercury_update_transaction",
+    "Update a transaction's note, memo, or category. Useful for bookkeeping.",
+    {
+      accountId: z.string().describe("The Mercury account ID"),
+      transactionId: z.string().describe("The transaction ID"),
+      note: z.string().optional().describe("Internal note"),
+      externalMemo: z.string().optional().describe("Memo visible to counterparty"),
+      categoryId: z.string().optional().describe("Category ID (see mercury_list_categories)"),
+    },
+    async ({ accountId, transactionId, ...body }) => {
+      const data = await client.patch(`/account/${accountId}/transaction/${transactionId}`, body);
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "mercury_list_send_money_requests",
+    "List pending 'request send money' requests awaiting admin approval.",
+    {
+      accountId: z.string().describe("The Mercury account ID"),
+    },
+    async ({ accountId }) => {
+      const data = await client.get(`/account/${accountId}/request-send-money`);
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
     "mercury_request_send_money",
     "Request to send money (requires admin approval before processing). Requires read-write API token.",
     {
