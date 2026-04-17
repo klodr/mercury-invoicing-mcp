@@ -122,36 +122,52 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
 
-## Tools
+## Tools (45 total)
 
-### Banking (read)
-- `mercury_list_accounts`
-- `mercury_get_account`
-- `mercury_list_transactions`
-- `mercury_get_transaction`
-- `mercury_list_recipients`
-- `mercury_get_treasury`
+### Banking — Accounts
+- `mercury_list_accounts`, `mercury_get_account`
+- `mercury_list_cards`
+- `mercury_get_organization`
+- `mercury_list_categories`
+
+### Banking — Transactions
+- `mercury_list_transactions`, `mercury_get_transaction`
+- `mercury_update_transaction` (note / memo / category)
+- `mercury_send_money`, `mercury_request_send_money`
+- `mercury_list_send_money_requests`
+
+### Banking — Recipients
+- `mercury_list_recipients`, `mercury_add_recipient`, `mercury_update_recipient`
+
+### Banking — Statements
 - `mercury_list_statements`
 
-### Banking (write)
-- `mercury_send_money`
-- `mercury_request_send_money`
-- `mercury_add_recipient`
+### Treasury
+- `mercury_get_treasury`
+- `mercury_list_treasury_transactions`
+- `mercury_list_treasury_statements`
 
-### Invoicing (read)
-- `mercury_list_invoices`
-- `mercury_get_invoice`
-- `mercury_list_customers`
-- `mercury_get_customer`
+### Invoicing (Accounts Receivable) — requires Mercury Plus
+- `mercury_list_invoices`, `mercury_get_invoice`
+- `mercury_create_invoice`, `mercury_update_invoice`
+- `mercury_send_invoice`, `mercury_cancel_invoice`
+- `mercury_list_invoice_attachments`
 
-### Invoicing (write)
-- `mercury_create_invoice`
-- `mercury_update_invoice`
-- `mercury_send_invoice`
-- `mercury_cancel_invoice`
-- `mercury_create_customer`
-- `mercury_update_customer`
-- `mercury_attach_invoice_pdf`
+### Customers (AR)
+- `mercury_list_customers`, `mercury_get_customer`
+- `mercury_create_customer`, `mercury_update_customer`, `mercury_delete_customer`
+
+### Webhooks
+- `mercury_list_webhooks`, `mercury_get_webhook`
+- `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
+
+### Accounting — Chart of Accounts
+- `mercury_list_coa_templates`, `mercury_get_coa_template`
+- `mercury_create_coa_template`, `mercury_update_coa_template`, `mercury_delete_coa_template`
+
+### Accounting — Journal Entries
+- `mercury_list_journal_entries`, `mercury_get_journal_entry`
+- `mercury_create_journal_entry`, `mercury_update_journal_entry`, `mercury_delete_journal_entry`
 
 > Tools available depend on your Mercury API token scope. The server registers all tools but Mercury will reject unauthorized operations at the API level.
 
