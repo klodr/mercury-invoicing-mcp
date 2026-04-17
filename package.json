@@ -60,6 +60,6 @@
     "typescript": "^5.7.2"
   },
   "overrides": {
-    "glob": "^13.0.0"
+    "test-exclude": "^8.0.0"
   }
 }
