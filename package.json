@@ -40,7 +40,7 @@
     "start": "node dist/index.js",
     "lint": "eslint src",
     "test": "jest --passWithNoTests",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "NODE_ENV=production npm run build"
   },
   "engines": {
     "node": ">=18"
