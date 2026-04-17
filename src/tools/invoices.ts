@@ -4,7 +4,8 @@ import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 const lineItemSchema = z.object({
-  description: z.string().describe("Description of the line item"),
+  name: z.string().describe("Line item name (required by Mercury, shown on the invoice)"),
+  description: z.string().optional().describe("Optional longer description"),
   quantity: z.number().positive().describe("Quantity"),
   unitPrice: z.number().nonnegative().describe("Price per unit in USD"),
 });
@@ -106,12 +107,13 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     }
   );
 
-  defineTool(server, 
+  defineTool(server,
     "mercury_update_invoice",
-    "Update an existing invoice (typically for draft invoices). Pass only the fields you want to change.",
+    "Update an existing invoice. Pass only the fields you want to change; the MCP fetches the current invoice and merges your changes before submitting (Mercury's update endpoint requires the full payload, even though the API documents it as PATCH-style).",
     {
       invoiceId: z.string().uuid().describe("Invoice ID"),
-      dueDate: z.string().optional().describe("New due date (YYYY-MM-DD)"),
+      invoiceDate: z.string().optional().describe("Invoice date (YYYY-MM-DD)"),
+      dueDate: z.string().optional().describe("Due date (YYYY-MM-DD)"),
       lineItems: z.array(lineItemSchema).optional(),
       ccEmails: z.array(z.string().email()).optional(),
       payerMemo: z.string().optional(),
@@ -119,8 +121,17 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       poNumber: z.string().optional(),
       invoiceNumber: z.string().optional(),
     },
-    async ({ invoiceId, ...body }) => {
-      const data = await client.patch(`/ar/invoices/${invoiceId}`, body);
+    async ({ invoiceId, ...changes }) => {
+      const current = await client.get<Record<string, unknown>>(
+        `/ar/invoices/${invoiceId}`,
+      );
+      // Strip read-only fields Mercury rejects in the update payload
+      const { id: _i, slug: _s, status: _st, amount: _a, createdAt: _c, updatedAt: _u, ...editable } = current;
+      const merged: Record<string, unknown> = { ...editable };
+      for (const [k, v] of Object.entries(changes)) {
+        if (v !== undefined) merged[k] = v;
+      }
+      const data = await client.post(`/ar/invoices/${invoiceId}`, merged);
       return textResult(data);
     }
   );
