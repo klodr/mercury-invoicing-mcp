@@ -92,11 +92,11 @@ describe("MercuryClient", () => {
     });
   });
 
-  it("handles empty response body", async () => {
+  it("coerces empty response body to { ok: true }", async () => {
     mockFetch({ ok: true, status: 204, body: "" });
     const client = new MercuryClient({ apiKey: "key" });
-    const result = await client.delete("/ar/customers/abc");
-    expect(result).toBeUndefined();
+    const result = await client.delete<{ ok: boolean }>("/ar/customers/abc");
+    expect(result).toEqual({ ok: true });
   });
 });
 

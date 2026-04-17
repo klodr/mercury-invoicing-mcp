@@ -85,9 +85,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 45 tools", async () => {
+  it("tools/list returns all 32 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(45);
+    expect(res.tools.length).toBe(32);
   });
 
   // --- Banking accounts ---
@@ -185,14 +185,6 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].url).toContain("/account/acc_1/transaction/tx_1");
   });
 
-  it("mercury_list_send_money_requests → GET", async () => {
-    await client.callTool({
-      name: "mercury_list_send_money_requests",
-      arguments: { accountId: "acc_1" },
-    });
-    expect(calls[0].url).toContain("/account/acc_1/request-send-money");
-  });
-
   // --- Recipients ---
 
   it("mercury_list_recipients → GET /recipients", async () => {
@@ -207,15 +199,6 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     });
     expect(calls[0].method).toBe("POST");
     expect(calls[0].url).toContain("/recipients");
-  });
-
-  it("mercury_update_recipient → PATCH /recipient/{id}", async () => {
-    await client.callTool({
-      name: "mercury_update_recipient",
-      arguments: { recipientId: "rec_1", name: "Updated" },
-    });
-    expect(calls[0].method).toBe("PATCH");
-    expect(calls[0].url).toContain("/recipient/rec_1");
   });
 
   // --- Statements / Treasury ---
@@ -378,15 +361,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       name: "mercury_get_webhook",
       arguments: { webhookId: "wh_1" },
     });
-    expect(calls[0].url).toContain("/webhook/wh_1");
-  });
-
-  it("mercury_update_webhook → PATCH /webhook/{id}", async () => {
-    await client.callTool({
-      name: "mercury_update_webhook",
-      arguments: { webhookId: "wh_1", url: "https://new.example.com" },
-    });
-    expect(calls[0].method).toBe("PATCH");
+    expect(calls[0].url).toContain("/webhooks/wh_1");
   });
 
   it("mercury_delete_webhook → DELETE /webhook/{id}", async () => {
@@ -397,89 +372,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].method).toBe("DELETE");
   });
 
-  // --- COA Templates ---
-
-  it("mercury_list_coa_templates → GET /coa-templates", async () => {
-    await client.callTool({ name: "mercury_list_coa_templates", arguments: {} });
-    expect(calls[0].url).toContain("/coa-templates");
-  });
-
-  it("mercury_get_coa_template → GET /coa-template/{id}", async () => {
-    await client.callTool({
-      name: "mercury_get_coa_template",
-      arguments: { templateId: "tpl_1" },
-    });
-    expect(calls[0].url).toContain("/coa-template/tpl_1");
-  });
-
-  it("mercury_create_coa_template → POST /coa-templates", async () => {
-    await client.callTool({
-      name: "mercury_create_coa_template",
-      arguments: { name: "Standard", accounts: [{ code: "1000", name: "Cash", type: "asset" }] },
-    });
-    expect(calls[0].method).toBe("POST");
-  });
-
-  it("mercury_update_coa_template → PATCH /coa-template/{id}", async () => {
-    await client.callTool({
-      name: "mercury_update_coa_template",
-      arguments: { templateId: "tpl_1", name: "Updated" },
-    });
-    expect(calls[0].method).toBe("PATCH");
-  });
-
-  it("mercury_delete_coa_template → DELETE /coa-template/{id}", async () => {
-    await client.callTool({
-      name: "mercury_delete_coa_template",
-      arguments: { templateId: "tpl_1" },
-    });
-    expect(calls[0].method).toBe("DELETE");
-  });
-
-  // --- Journal Entries ---
-
-  it("mercury_list_journal_entries → GET /journal-entries", async () => {
-    await client.callTool({ name: "mercury_list_journal_entries", arguments: {} });
-    expect(calls[0].url).toContain("/journal-entries");
-  });
-
-  it("mercury_get_journal_entry → GET /journal-entry/{id}", async () => {
-    await client.callTool({
-      name: "mercury_get_journal_entry",
-      arguments: { entryId: "je_1" },
-    });
-    expect(calls[0].url).toContain("/journal-entry/je_1");
-  });
-
-  it("mercury_create_journal_entry → POST /journal-entries", async () => {
-    await client.callTool({
-      name: "mercury_create_journal_entry",
-      arguments: {
-        date: "2026-04-17",
-        lines: [
-          { accountCode: "1000", debit: 100 },
-          { accountCode: "4000", credit: 100 },
-        ],
-      },
-    });
-    expect(calls[0].method).toBe("POST");
-  });
-
-  it("mercury_update_journal_entry → PATCH /journal-entry/{id}", async () => {
-    await client.callTool({
-      name: "mercury_update_journal_entry",
-      arguments: { entryId: "je_1", memo: "Updated" },
-    });
-    expect(calls[0].method).toBe("PATCH");
-  });
-
-  it("mercury_delete_journal_entry → DELETE /journal-entry/{id}", async () => {
-    await client.callTool({
-      name: "mercury_delete_journal_entry",
-      arguments: { entryId: "je_1" },
-    });
-    expect(calls[0].method).toBe("DELETE");
-  });
+  // Note: COA Templates + Journal Entries removed (Mercury does not expose them in the public API)
 
   // --- Auth headers ---
 

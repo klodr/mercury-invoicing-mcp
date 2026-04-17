@@ -15,24 +15,9 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
     }
   );
 
-  server.tool(
-    "mercury_update_recipient",
-    "Update an existing payment recipient (name, emails, payment methods, etc.).",
-    {
-      recipientId: z.string().describe("The recipient ID"),
-      name: z.string().optional(),
-      emails: z.array(z.string().email()).optional(),
-      defaultPaymentMethod: z
-        .enum(["domesticAch", "internationalWire", "domesticWire", "check"])
-        .optional(),
-    },
-    async ({ recipientId, ...body }) => {
-      const data = await client.patch(`/recipient/${recipientId}`, body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
-    }
-  );
+  // Note: Mercury does NOT expose update_recipient via the public API
+  // (PATCH /recipients/{id} returns 404, PUT returns 405). Use the Mercury
+  // dashboard for recipient updates.
 
   server.tool(
     "mercury_add_recipient",
