@@ -10,7 +10,7 @@ const TOOL_CATEGORIES: Record<string, string> = {
   // Money movements
   mercury_send_money: "money",
   mercury_request_send_money: "money",
-  mercury_create_internal_transfer: "money",
+  mercury_create_internal_transfer: "internal_transfer",
   // AR (invoicing + customers)
   mercury_create_invoice: "invoicing",
   mercury_update_invoice: "invoicing",
@@ -30,6 +30,7 @@ const TOOL_CATEGORIES: Record<string, string> = {
 
 const DEFAULT_LIMITS_PER_DAY: Record<string, number> = {
   money: 100,
+  internal_transfer: 5,
   invoicing: 300,
   banking: 200,
   webhooks: 5,
