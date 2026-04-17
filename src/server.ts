@@ -1,7 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
-import { wrapToolHandler } from "./middleware.js";
 
 export const VERSION = "0.1.0";
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
@@ -43,24 +42,6 @@ export function createServer(opts: ServerOptions): McpServer {
     name: "mercury-invoicing-mcp",
     version: VERSION,
   });
-
-  // Monkey-patch server.tool to wrap every handler with rate limit / dry-run / audit middleware.
-  // Read tools pass through unchanged (no category → no rate limit, no dry-run interference).
-  const originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
-  (server as unknown as { tool: (...args: unknown[]) => unknown }).tool = (
-    ...args: unknown[]
-  ) => {
-    const lastIdx = args.length - 1;
-    if (typeof args[lastIdx] === "function" && typeof args[0] === "string") {
-      const toolName = args[0];
-      const handler = args[lastIdx] as (a: unknown) => Promise<{
-        content: { type: "text"; text: string }[];
-        isError?: boolean;
-      }>;
-      args[lastIdx] = wrapToolHandler(toolName, handler);
-    }
-    return originalTool(...args);
-  };
 
   registerAllTools(server, client);
 

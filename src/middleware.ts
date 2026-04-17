@@ -2,6 +2,10 @@
  * MCP middleware: dry-run, rate limiting, audit log.
  */
 
+import { appendFileSync } from "node:fs";
+import { isAbsolute } from "node:path";
+import { MercuryError } from "./client.js";
+
 const TOOL_CATEGORIES: Record<string, string> = {
   // Money movements
   mercury_send_money: "money",
@@ -16,29 +20,17 @@ const TOOL_CATEGORIES: Record<string, string> = {
   mercury_delete_customer: "invoicing",
   // Banking writes
   mercury_add_recipient: "banking",
-  mercury_update_recipient: "banking",
   mercury_update_transaction: "banking",
   // Webhooks (config)
   mercury_create_webhook: "webhooks",
-  mercury_update_webhook: "webhooks",
   mercury_delete_webhook: "webhooks",
-  // COA Templates (config)
-  mercury_create_coa_template: "coa",
-  mercury_update_coa_template: "coa",
-  mercury_delete_coa_template: "coa",
-  // Journal Entries
-  mercury_create_journal_entry: "journal",
-  mercury_update_journal_entry: "journal",
-  mercury_delete_journal_entry: "journal",
 };
 
 const DEFAULT_LIMITS_PER_DAY: Record<string, number> = {
   money: 100,
   invoicing: 300,
   banking: 200,
-  journal: 50,
   webhooks: 5,
-  coa: 5,
 };
 
 interface ParsedRate {
@@ -110,7 +102,7 @@ export class RateLimitError extends Error {
  * Mutates internal call history if allowed.
  */
 export function enforceRateLimit(toolName: string): void {
-  if (process.env.MERCURY_MCP_RATE_LIMIT_disabled === "true") return;
+  if (process.env.MERCURY_MCP_RATE_LIMIT_DISABLE === "true") return;
 
   const category = TOOL_CATEGORIES[toolName];
   if (!category) return; // read tools or untracked → no limit
@@ -137,21 +129,45 @@ export function isDryRun(): boolean {
   return process.env.MERCURY_MCP_DRY_RUN === "true";
 }
 
+const SENSITIVE_KEYS = new Set([
+  "accountnumber",
+  "routingnumber",
+  "apikey",
+  "authorization",
+  "password",
+  "token",
+  "secret",
+  "ssn",
+]);
+
+function redactSensitive(value: unknown): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(redactSensitive);
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    out[k] = SENSITIVE_KEYS.has(k.toLowerCase()) ? "[REDACTED]" : redactSensitive(v);
+  }
+  return out;
+}
+
 export function logAudit(toolName: string, args: unknown, result: "ok" | "dry-run" | "error"): void {
   const path = process.env.MERCURY_MCP_AUDIT_LOG;
   if (!path) return;
+  if (!isAbsolute(path)) {
+    console.error(`[audit] MERCURY_MCP_AUDIT_LOG must be an absolute path; got: ${path}`);
+    return;
+  }
   const entry = JSON.stringify({
     ts: new Date().toISOString(),
     tool: toolName,
     result,
-    args,
+    args: redactSensitive(args),
   });
-  // Best-effort append; ignore errors so audit failures never break the MCP
-  import("node:fs").then((fs) => {
-    fs.appendFile(path, entry + "\n", (err) => {
-      if (err) console.error(`[audit] failed to write to ${path}:`, err.message);
-    });
-  });
+  try {
+    appendFileSync(path, entry + "\n", { mode: 0o600 });
+  } catch (err) {
+    console.error(`[audit] failed to write to ${path}:`, (err as Error).message);
+  }
 }
 
 type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -194,8 +210,8 @@ export function wrapToolHandler<TArgs>(
               {
                 dryRun: true,
                 tool: toolName,
-                wouldCallWith: args,
-                note: "MERCURY_MCP_DRY_RUN=true; no actual Mercury API call was made.",
+                wouldCallWith: redactSensitive(args),
+                note: "MERCURY_MCP_DRY_RUN=true; no actual Mercury API call was made. Sensitive fields are redacted.",
               },
               null,
               2
@@ -211,6 +227,22 @@ export function wrapToolHandler<TArgs>(
       return result;
     } catch (err) {
       logAudit(toolName, args, "error");
+      if (err instanceof MercuryError) {
+        const isAR = toolName.includes("invoice") || toolName.includes("customer");
+        const planHint =
+          err.status === 403 && isAR
+            ? " (Mercury's Invoicing/Customers API requires the Plus plan or higher.)"
+            : "";
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Mercury API error ${err.status}: ${err.message}${planHint}`,
+            },
+          ],
+          isError: true,
+        };
+      }
       throw err;
     }
   };

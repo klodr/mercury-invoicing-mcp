@@ -12,7 +12,7 @@ If you only want the assistant to read your account state (no transfers, no invo
 
 ### Restricting tools to a subset (advanced)
 
-The MCP currently registers all 22 tools. If you want to restrict the surface (e.g. for an agent reading untrusted content), you can either:
+The MCP currently registers all tools. If you want to restrict the surface (e.g. for an agent reading untrusted content), you can either:
 
 1. Use a read-only Mercury token (recommended)
 2. Fork this repo and remove the write tools from `src/tools/index.ts`

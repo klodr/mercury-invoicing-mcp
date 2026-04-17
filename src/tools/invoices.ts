@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
@@ -9,7 +10,7 @@ const lineItemSchema = z.object({
 });
 
 export function registerInvoiceTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_list_invoices",
     "List invoices in your Mercury workspace, with cursor-based pagination.",
     {
@@ -40,13 +41,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         end_before: args.endBefore,
       };
       const data = await client.get("/ar/invoices", query);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_get_invoice",
     "Retrieve a specific invoice by ID.",
     {
@@ -54,13 +53,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     async ({ invoiceId }) => {
       const data = await client.get(`/ar/invoices/${invoiceId}`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_create_invoice",
     "Create a new invoice (one-shot or to be sent recurrently). Requires AR write scope.",
     {
@@ -105,13 +102,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         ccEmails: args.ccEmails ?? [],
       };
       const data = await client.post("/ar/invoices", body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_update_invoice",
     "Update an existing invoice (typically for draft invoices). Pass only the fields you want to change.",
     {
@@ -126,13 +121,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     async ({ invoiceId, ...body }) => {
       const data = await client.patch(`/ar/invoices/${invoiceId}`, body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_send_invoice",
     "Send an invoice email to the customer. Useful when an invoice was created with sendEmailOption='DontSend'.",
     {
@@ -140,13 +133,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     async ({ invoiceId }) => {
       const data = await client.post(`/ar/invoices/${invoiceId}/send`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_cancel_invoice",
     "Cancel an outstanding invoice.",
     {
@@ -154,13 +145,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     async ({ invoiceId }) => {
       const data = await client.post(`/ar/invoices/${invoiceId}/cancel`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_list_invoice_attachments",
     "List attachments associated with an invoice.",
     {
@@ -168,9 +157,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     async ({ invoiceId }) => {
       const data = await client.get(`/ar/invoices/${invoiceId}/attachments`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }
