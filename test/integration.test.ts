@@ -1,9 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { MercuryClient } from "../src/client.js";
-import { registerAllTools } from "../src/tools/index.js";
-import { wrapToolHandler, resetRateLimitHistory } from "../src/middleware.js";
+import { createServer } from "../src/server.js";
+import { resetRateLimitHistory } from "../src/middleware.js";
 
 interface FetchCall {
   url: string;
@@ -34,34 +32,10 @@ function setupFetchSpy(response: { ok: boolean; status: number; body: unknown })
 }
 
 async function setupServerAndClient() {
-  const mercury = new MercuryClient({ apiKey: "test-key" });
-  const server = new McpServer({ name: "test", version: "0.0.0" });
-
-  // Apply same middleware patch as in src/index.ts
-  const originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
-  (server as unknown as { tool: (...args: unknown[]) => unknown }).tool = (
-    ...args: unknown[]
-  ) => {
-    const lastIdx = args.length - 1;
-    if (typeof args[lastIdx] === "function" && typeof args[0] === "string") {
-      args[lastIdx] = wrapToolHandler(
-        args[0],
-        args[lastIdx] as (a: unknown) => Promise<{
-          content: { type: "text"; text: string }[];
-          isError?: boolean;
-        }>
-      );
-    }
-    return originalTool(...args);
-  };
-
-  registerAllTools(server, mercury);
-
+  const server = createServer({ apiKey: "test-key", log: () => {} });
   const [serverTransport, clientTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test-client", version: "0.0.0" });
-
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
-
   return { server, client };
 }
 
