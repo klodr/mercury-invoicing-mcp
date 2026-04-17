@@ -33,15 +33,16 @@ jobs:
       - name: Test
         run: npm test -- --coverage
 
-      - name: Publish to npm
-        run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Sign + upload signed assets BEFORE the (non-idempotent) npm publish, so
+      # a transient failure on signing or asset upload doesn't leave us stuck
+      # with a published version we cannot re-build the workflow for.
 
       - name: Install Sigstore CLI
+        if: github.event_name == 'release'
         run: npm install -g @sigstore/cli@1.0.0
 
       - name: Sign dist/index.js with Sigstore (keyless OIDC, bundle format)
+        if: github.event_name == 'release'
         run: sigstore sign --bundle dist/index.js.sigstore dist/index.js
 
       - name: Attach signed artifacts to the GitHub Release
@@ -54,3 +55,9 @@ jobs:
             dist/index.js.sigstore \
             --repo "${{ github.repository }}" \
             --clobber
+
+      - name: Publish to npm
+        if: github.event_name == 'release'
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
