@@ -44,7 +44,15 @@ export class MercuryClient {
     path: string,
     init: { body?: unknown; query?: Record<string, string | number | undefined> } = {}
   ): Promise<T> {
-    const url = new URL(this.baseUrl + path);
+    // Encode each path segment so user-supplied IDs cannot smuggle additional
+    // path components or query strings into the Mercury URL (defense-in-depth
+    // even though every ID-bearing tool input also requires .uuid() at the
+    // schema level).
+    const encodedPath = path
+      .split("/")
+      .map((seg, i) => (i === 0 || seg.length === 0 ? seg : encodeURIComponent(seg)))
+      .join("/");
+    const url = new URL(this.baseUrl + encodedPath);
     if (init.query) {
       for (const [k, v] of Object.entries(init.query)) {
         if (v !== undefined) url.searchParams.set(k, String(v));

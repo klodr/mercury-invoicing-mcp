@@ -19,7 +19,9 @@ export interface ServerOptions {
  */
 export function resolveBaseUrl(apiKey: string, explicitBaseUrl?: string): string | undefined {
   if (explicitBaseUrl) return explicitBaseUrl;
-  if (apiKey.includes("mercury_sandbox_")) return SANDBOX_BASE_URL;
+  // Strict prefix match so a token like "mercury_production_with_word_sandbox_in_it"
+  // is not accidentally routed to sandbox.
+  if (apiKey.startsWith("secret-token:mercury_sandbox_")) return SANDBOX_BASE_URL;
   return undefined;
 }
 

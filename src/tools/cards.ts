@@ -8,7 +8,7 @@ export function registerCardTools(server: McpServer, client: MercuryClient): voi
     "mercury_list_cards",
     "List credit/debit cards attached to a Mercury account.",
     {
-      accountId: z.string().describe("The Mercury account ID"),
+      accountId: z.string().uuid().describe("The Mercury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/account/${accountId}/cards`);

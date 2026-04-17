@@ -26,7 +26,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     "mercury_get_webhook",
     "Retrieve a specific webhook endpoint by ID.",
     {
-      webhookId: z.string().describe("The webhook endpoint ID"),
+      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
       const data = await client.get(`/webhooks/${webhookId}`);
@@ -54,7 +54,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     "mercury_delete_webhook",
     "Delete a webhook endpoint.",
     {
-      webhookId: z.string().describe("The webhook endpoint ID"),
+      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
       const data = await client.delete(`/webhooks/${webhookId}`);
