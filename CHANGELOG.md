@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - README: Snyk Known Vulnerabilities badge.
 - `release.yml`: Sigstore (keyless OIDC) signing of `dist/index.js`. The signed artifact + `.sigstore` bundle are uploaded to the GitHub Release. This satisfies Scorecard's `Signed-Releases` check (npm provenance alone doesn't, because Scorecard inspects GitHub Release assets, not the npm tarball).
 

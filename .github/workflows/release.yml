@@ -39,10 +39,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install Sigstore CLI
-        run: npm install -g @sigstore/cli@^1.0.0
+        run: npm install -g @sigstore/cli@1.0.0
 
-      - name: Sign dist/index.js with Sigstore (keyless, OIDC)
-        run: sigstore sign --output-signature dist/index.js.sigstore dist/index.js
+      - name: Sign dist/index.js with Sigstore (keyless OIDC, bundle format)
+        run: sigstore sign --bundle dist/index.js.sigstore dist/index.js
 
       - name: Attach signed artifacts to the GitHub Release
         if: github.event_name == 'release'
