@@ -270,3 +270,13 @@ MIT — see [LICENSE](./LICENSE).
 ## Contributing
 
 Issues and PRs welcome. Please open an issue first for substantial changes.
+
+Before submitting a PR:
+
+1. `npm install` then `npm test` (must stay at 82/82 with ≥98% statement coverage)
+2. `npm run build` (must succeed; the published tarball is only `dist/index.js` + `package.json` + `README.md` + `LICENSE`)
+3. Update `CHANGELOG.md` under `[Unreleased]`
+4. If you add or rename a tool, update the `Tools` section in this README and the `defineTool(server, ...)` call in `src/tools/`
+5. New write tools must be registered in `TOOL_CATEGORIES` (`src/middleware.ts`) so they are rate-limited
+
+For releases, do not edit `version` by hand — run `npm version patch|minor|major`; the lifecycle hook calls `scripts/sync-version.mjs` to propagate the bump into `server.json` and `src/server.ts`.
