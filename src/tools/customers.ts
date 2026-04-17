@@ -4,6 +4,7 @@ import { MercuryClient } from "../client.js";
 
 const addressSchema = z
   .object({
+    name: z.string().describe("Recipient name on the address (e.g. customer name or contact)"),
     address1: z.string(),
     address2: z.string().optional(),
     city: z.string(),
@@ -11,7 +12,7 @@ const addressSchema = z
     postalCode: z.string(),
     country: z.string().describe("ISO 3166-1 alpha-2 country code (e.g. 'US')"),
   })
-  .describe("Customer billing address");
+  .describe("Customer billing address (Mercury requires `name` in the address)");
 
 export function registerCustomerTools(server: McpServer, client: MercuryClient): void {
   server.tool(
