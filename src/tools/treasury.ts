@@ -18,7 +18,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
     "mercury_list_treasury_transactions",
     "List transactions for a Mercury Treasury account.",
     {
-      accountId: z.string().describe("Treasury account ID"),
+      accountId: z.string().uuid().describe("Treasury account ID"),
       limit: z.number().int().min(1).max(500).optional(),
       offset: z.number().int().min(0).optional(),
       start: z.string().optional().describe("Filter after this date (YYYY-MM-DD)"),
@@ -34,7 +34,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
     "mercury_list_treasury_statements",
     "List statements for a Mercury Treasury account.",
     {
-      accountId: z.string().describe("Treasury account ID"),
+      accountId: z.string().uuid().describe("Treasury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/treasury/${accountId}/statements`);

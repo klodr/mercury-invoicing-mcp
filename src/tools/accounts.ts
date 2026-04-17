@@ -18,7 +18,7 @@ export function registerAccountTools(server: McpServer, client: MercuryClient): 
     "mercury_get_account",
     "Retrieve details for a specific Mercury bank account by ID.",
     {
-      accountId: z.string().describe("The Mercury account ID"),
+      accountId: z.string().uuid().describe("The Mercury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/account/${accountId}`);

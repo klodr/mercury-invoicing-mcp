@@ -75,18 +75,18 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_account → GET /account/{id}", async () => {
     await client.callTool({
       name: "mercury_get_account",
-      arguments: { accountId: "acc_123" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111" },
     });
     expect(calls[0].method).toBe("GET");
-    expect(calls[0].url).toContain("/account/acc_123");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111");
   });
 
   it("mercury_list_cards → GET /account/{id}/cards", async () => {
     await client.callTool({
       name: "mercury_list_cards",
-      arguments: { accountId: "acc_123" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111" },
     });
-    expect(calls[0].url).toContain("/account/acc_123/cards");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/cards");
   });
 
   it("mercury_list_categories → GET /categories", async () => {
@@ -104,9 +104,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_list_transactions → GET with query params", async () => {
     await client.callTool({
       name: "mercury_list_transactions",
-      arguments: { accountId: "acc_1", limit: 10, status: "sent" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111", limit: 10, status: "sent" },
     });
-    expect(calls[0].url).toContain("/account/acc_1/transactions");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transactions");
     expect(calls[0].url).toContain("limit=10");
     expect(calls[0].url).toContain("status=sent");
   });
@@ -114,25 +114,25 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_transaction → GET single tx", async () => {
     await client.callTool({
       name: "mercury_get_transaction",
-      arguments: { accountId: "acc_1", transactionId: "tx_1" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111", transactionId: "22222222-2222-4222-8222-222222222222" },
     });
-    expect(calls[0].url).toContain("/account/acc_1/transaction/tx_1");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222");
   });
 
   it("mercury_send_money → POST with idempotency key", async () => {
     await client.callTool({
       name: "mercury_send_money",
       arguments: {
-        accountId: "acc_1",
-        recipientId: "rec_1",
+        accountId: "11111111-1111-4111-8111-111111111111",
+        recipientId: "33333333-3333-4333-8333-333333333333",
         amount: 100,
         paymentMethod: "ach",
       },
     });
     expect(calls[0].method).toBe("POST");
-    expect(calls[0].url).toContain("/account/acc_1/transactions");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transactions");
     const body = JSON.parse(calls[0].body!);
-    expect(body.recipientId).toBe("rec_1");
+    expect(body.recipientId).toBe("33333333-3333-4333-8333-333333333333");
     expect(body.amount).toBe(100);
     expect(body.idempotencyKey).toBeDefined();
   });
@@ -141,22 +141,22 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     await client.callTool({
       name: "mercury_request_send_money",
       arguments: {
-        accountId: "acc_1",
-        recipientId: "rec_1",
+        accountId: "11111111-1111-4111-8111-111111111111",
+        recipientId: "33333333-3333-4333-8333-333333333333",
         amount: 50,
         paymentMethod: "ach",
       },
     });
-    expect(calls[0].url).toContain("/account/acc_1/request-send-money");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/request-send-money");
   });
 
   it("mercury_update_transaction → PATCH", async () => {
     await client.callTool({
       name: "mercury_update_transaction",
-      arguments: { accountId: "acc_1", transactionId: "tx_1", note: "test" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111", transactionId: "22222222-2222-4222-8222-222222222222", note: "test" },
     });
     expect(calls[0].method).toBe("PATCH");
-    expect(calls[0].url).toContain("/account/acc_1/transaction/tx_1");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222");
   });
 
   // --- Recipients ---
@@ -180,9 +180,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_list_statements → GET /account/{id}/statements", async () => {
     await client.callTool({
       name: "mercury_list_statements",
-      arguments: { accountId: "acc_1" },
+      arguments: { accountId: "11111111-1111-4111-8111-111111111111" },
     });
-    expect(calls[0].url).toContain("/account/acc_1/statements");
+    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/statements");
   });
 
   it("mercury_get_treasury → GET /treasury", async () => {
@@ -193,17 +193,17 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_list_treasury_transactions → GET /treasury/{id}/transactions", async () => {
     await client.callTool({
       name: "mercury_list_treasury_transactions",
-      arguments: { accountId: "tr_1" },
+      arguments: { accountId: "55555555-5555-4555-8555-555555555555" },
     });
-    expect(calls[0].url).toContain("/treasury/tr_1/transactions");
+    expect(calls[0].url).toContain("/treasury/55555555-5555-4555-8555-555555555555/transactions");
   });
 
   it("mercury_list_treasury_statements → GET /treasury/{id}/statements", async () => {
     await client.callTool({
       name: "mercury_list_treasury_statements",
-      arguments: { accountId: "tr_1" },
+      arguments: { accountId: "55555555-5555-4555-8555-555555555555" },
     });
-    expect(calls[0].url).toContain("/treasury/tr_1/statements");
+    expect(calls[0].url).toContain("/treasury/55555555-5555-4555-8555-555555555555/statements");
   });
 
   // --- Invoices ---
@@ -333,15 +333,15 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_webhook → GET /webhook/{id}", async () => {
     await client.callTool({
       name: "mercury_get_webhook",
-      arguments: { webhookId: "wh_1" },
+      arguments: { webhookId: "44444444-4444-4444-8444-444444444444" },
     });
-    expect(calls[0].url).toContain("/webhooks/wh_1");
+    expect(calls[0].url).toContain("/webhooks/44444444-4444-4444-8444-444444444444");
   });
 
   it("mercury_delete_webhook → DELETE /webhook/{id}", async () => {
     await client.callTool({
       name: "mercury_delete_webhook",
-      arguments: { webhookId: "wh_1" },
+      arguments: { webhookId: "44444444-4444-4444-8444-444444444444" },
     });
     expect(calls[0].method).toBe("DELETE");
   });
