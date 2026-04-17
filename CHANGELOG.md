@@ -12,11 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial project structure (TypeScript + tsup + jest)
 - Mercury API client wrapper (fetch-based, Bearer auth)
-- **22 tools** covering the full Mercury API:
-  - Banking read: `list_accounts`, `get_account`, `list_transactions`, `get_transaction`, `list_recipients`, `list_statements`, `get_treasury`
-  - Banking write: `send_money`, `request_send_money`, `add_recipient`
-  - AR Invoicing read: `list_invoices`, `get_invoice`, `list_customers`, `get_customer`, `list_invoice_attachments`
-  - AR Invoicing write: `create_invoice`, `update_invoice`, `send_invoice`, `cancel_invoice`, `create_customer`, `update_customer`, `delete_customer`
+- **45 tools** covering virtually the entire Mercury API surface:
+  - Banking accounts (5): list, get, cards, organization, categories
+  - Banking transactions (5): list, get, update, send_money, list_send_money_requests, request_send_money
+  - Recipients (3): list, add, update
+  - Statements (1)
+  - Treasury (3): get, list_transactions, list_statements
+  - Invoicing AR (7): list, get, create, update, send, cancel, list_attachments
+  - Customers AR (5): list, get, create, update, delete
+  - Webhooks (5): list, get, create, update, delete
+  - Chart of Accounts (5): list, get, create, update, delete
+  - Journal Entries (5): list, get, create, update, delete
+- Auto-detection of sandbox tokens (`mercury_sandbox_*` → api-sandbox URL)
 - CI matrix on Node 18/20/22 with Codecov upload
 - OpenSSF Scorecard, CodeQL, Dependabot, Secret scanning
 - SECURITY.md, issue/PR templates, CODEOWNERS
