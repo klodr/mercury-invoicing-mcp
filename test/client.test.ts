@@ -108,4 +108,26 @@ describe("MercuryError", () => {
     expect(err.body).toEqual({ message: "unauthorized" });
     expect(err.name).toBe("MercuryError");
   });
+
+  it("toString does not leak the response body", () => {
+    const err = new MercuryError("boom", 403, { secret: "abc123" });
+    const str = err.toString();
+    expect(str).toContain("MercuryError");
+    expect(str).toContain("boom");
+    expect(str).toContain("403");
+    expect(str).not.toContain("abc123");
+    expect(str).not.toContain("secret");
+  });
+
+  it("toJSON does not leak the response body", () => {
+    const err = new MercuryError("boom", 500, { sensitive: "leak-me" });
+    const json = err.toJSON() as Record<string, unknown>;
+    expect(json).toEqual({ name: "MercuryError", message: "boom", status: 500 });
+    expect(JSON.stringify(json)).not.toContain("leak-me");
+  });
+
+  it("body remains accessible on the property for callers that need it", () => {
+    const err = new MercuryError("boom", 400, { field: "amount", reason: "missing" });
+    expect(err.body).toEqual({ field: "amount", reason: "missing" });
+  });
 });
