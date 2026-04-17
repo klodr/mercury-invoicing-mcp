@@ -1,0 +1,93 @@
+/**
+ * Mercury API client
+ * Docs: https://docs.mercury.com/reference/getting-started-with-your-api
+ */
+
+const BASE_URL = "https://api.mercury.com/api/v1";
+
+export interface MercuryClientOptions {
+  apiKey: string;
+  baseUrl?: string;
+}
+
+export class MercuryError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public body?: unknown
+  ) {
+    super(message);
+    this.name = "MercuryError";
+  }
+}
+
+export class MercuryClient {
+  private apiKey: string;
+  private baseUrl: string;
+
+  constructor(opts: MercuryClientOptions) {
+    this.apiKey = opts.apiKey;
+    this.baseUrl = opts.baseUrl ?? BASE_URL;
+  }
+
+  async request<T = unknown>(
+    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    path: string,
+    init: { body?: unknown; query?: Record<string, string | number | undefined> } = {}
+  ): Promise<T> {
+    const url = new URL(this.baseUrl + path);
+    if (init.query) {
+      for (const [k, v] of Object.entries(init.query)) {
+        if (v !== undefined) url.searchParams.set(k, String(v));
+      }
+    }
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.apiKey}`,
+      Accept: "application/json",
+    };
+    if (init.body !== undefined) headers["Content-Type"] = "application/json";
+
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    });
+
+    const text = await res.text();
+    let json: unknown = undefined;
+    try {
+      json = text ? JSON.parse(text) : undefined;
+    } catch {
+      // non-JSON response, leave as text
+      json = text;
+    }
+
+    if (!res.ok) {
+      throw new MercuryError(
+        `Mercury API ${method} ${path} failed: ${res.status} ${res.statusText}`,
+        res.status,
+        json
+      );
+    }
+
+    return json as T;
+  }
+
+  // Convenience helpers
+  get<T = unknown>(path: string, query?: Record<string, string | number | undefined>) {
+    return this.request<T>("GET", path, { query });
+  }
+  post<T = unknown>(path: string, body?: unknown) {
+    return this.request<T>("POST", path, { body });
+  }
+  patch<T = unknown>(path: string, body?: unknown) {
+    return this.request<T>("PATCH", path, { body });
+  }
+  put<T = unknown>(path: string, body?: unknown) {
+    return this.request<T>("PUT", path, { body });
+  }
+  delete<T = unknown>(path: string) {
+    return this.request<T>("DELETE", path);
+  }
+}
