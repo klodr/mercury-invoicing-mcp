@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.klodr/mercury-invoicing-mcp",
+  "description": "Mercury Banking MCP server with full Invoicing API support — accounts, transactions, recipients, customers, invoices (one-shot + recurring).",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/klodr/mercury-invoicing-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mercury-invoicing-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MERCURY_API_KEY",
+          "description": "Mercury API token. Get one at https://app.mercury.com/settings/tokens",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
