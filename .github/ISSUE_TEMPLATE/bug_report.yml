@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a bug in mercury-invoicing-mcp
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the bug
+      placeholder: |
+        1. Configure MCP server with ...
+        2. Call tool `mercury_...`
+        3. Observe error
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: mercury-invoicing-mcp version (`npm ls mercury-invoicing-mcp`)
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      placeholder: "20.10.0"
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      description: Claude Code, Claude Desktop, Cursor, Continue, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant logs (redact secrets!)
+      render: shell
