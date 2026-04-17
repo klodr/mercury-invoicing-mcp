@@ -157,8 +157,6 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
 
-> Email delivery is triggered by `sendEmailOption: "SendNow"` at `mercury_create_invoice` time — Mercury does **not** expose a separate "send invoice" endpoint.
-
 ### Customers (AR) — also requires Mercury Plus
 - `mercury_list_customers`, `mercury_get_customer`
 - `mercury_create_customer`, `mercury_update_customer`, `mercury_delete_customer`
@@ -179,9 +177,14 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 > (`getsaferequest(s)`, `getsaferequestdocument`), and OAuth flow
 > (`obtainaccesstoken`, `startoauth2flow`).
 
-> Mercury does **not** expose `list_send_money_requests`, COA Templates,
-> Journal Entries, or `send_invoice` via the public API at all — those
-> features are dashboard-only.
+> Mercury does **not** expose `list_send_money_requests`, COA Templates
+> or Journal Entries via the public API at all — those features are
+> dashboard-only.
+
+> There is **no `send_invoice` endpoint** anywhere (API or dashboard).
+> An invoice email is only sent when the invoice is created with
+> `sendEmailOption: "SendNow"`. Once created, there is no way to re-send
+> it — workaround: `cancel_invoice` then `create_invoice` again.
 
 > Tools available depend on your Mercury API token scope. The server
 > registers all 34 tools but Mercury will reject unauthorized operations
