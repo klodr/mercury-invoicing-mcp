@@ -2,6 +2,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
 
+// Kept in sync with package.json by scripts/sync-version.mjs (called by the
+// `npm version` lifecycle hook). Do not edit manually — bump via
+// `npm version patch|minor|major`.
 export const VERSION = "0.2.0";
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
 
