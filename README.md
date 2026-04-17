@@ -123,7 +123,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
 
-## Tools (32 total)
+## Tools (34 total)
 
 ### Banking — Accounts
 - `mercury_list_accounts`, `mercury_get_account`
@@ -133,11 +133,12 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 ### Banking — Transactions
 - `mercury_list_transactions`, `mercury_get_transaction`
-- `mercury_update_transaction` (note / memo / category)
+- `mercury_update_transaction` (note, category)
 - `mercury_send_money`, `mercury_request_send_money`
+- `mercury_create_internal_transfer` (between your own Mercury accounts)
 
 ### Banking — Recipients
-- `mercury_list_recipients`, `mercury_add_recipient`
+- `mercury_list_recipients`, `mercury_add_recipient`, `mercury_update_recipient`
 
 ### Banking — Statements
 - `mercury_list_statements`
@@ -153,8 +154,10 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 - `mercury_list_invoices`, `mercury_get_invoice`
 - `mercury_create_invoice`, `mercury_update_invoice`
-- `mercury_send_invoice`, `mercury_cancel_invoice`
+- `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
+
+> Email delivery is triggered by `sendEmailOption: "SendNow"` at `mercury_create_invoice` time — Mercury does **not** expose a separate "send invoice" endpoint.
 
 ### Customers (AR) — also requires Mercury Plus
 - `mercury_list_customers`, `mercury_get_customer`
@@ -162,11 +165,10 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 ### Webhooks
 - `mercury_list_webhooks`, `mercury_get_webhook`
-- `mercury_create_webhook`, `mercury_delete_webhook`
+- `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
-> Mercury does not expose `update_webhook`, `update_recipient`,
-> `list_send_money_requests`, COA Templates or Journal Entries via the public
-> API. Those features are dashboard-only.
+> Mercury does not expose `list_send_money_requests`, COA Templates, or
+> Journal Entries via the public API. Those features are dashboard-only.
 
 > Tools available depend on your Mercury API token scope. The server registers all tools but Mercury will reject unauthorized operations at the API level.
 
@@ -186,10 +188,10 @@ Per-category daily limits prevent runaway agents from draining accounts or spamm
 
 | Category | Tools | Default |
 |---|---|---|
-| `money` | send_money, request_send_money | 100/day |
-| `invoicing` | create/update/send/cancel invoice + create/update/delete customer | 300/day |
-| `banking` | add_recipient, update_transaction | 200/day |
-| `webhooks` | create/delete webhook | 5/day |
+| `money` | send_money, request_send_money, create_internal_transfer | 100/day |
+| `invoicing` | create/update/cancel invoice + create/update/delete customer | 300/day |
+| `banking` | add_recipient, update_recipient, update_transaction | 200/day |
+| `webhooks` | create/update/delete webhook | 5/day |
 
 Override per category (units: `/hour`, `/day`, `/week`):
 

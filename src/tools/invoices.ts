@@ -136,19 +136,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     }
   );
 
-  defineTool(server, 
-    "mercury_send_invoice",
-    "Send an invoice email to the customer. Useful when an invoice was created with sendEmailOption='DontSend'.",
-    {
-      invoiceId: z.string().uuid().describe("Invoice ID"),
-    },
-    async ({ invoiceId }) => {
-      const data = await client.post(`/ar/invoices/${invoiceId}/send`);
-      return textResult(data);
-    }
-  );
+  // Note: Mercury does not expose POST /ar/invoices/{id}/send via the public
+  // API (404 confirmed). The only way to email an invoice is via
+  // sendEmailOption: "SendNow" at creation time (mercury_create_invoice).
 
-  defineTool(server, 
+  defineTool(server,
     "mercury_cancel_invoice",
     "Cancel an outstanding invoice.",
     {
