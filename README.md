@@ -208,7 +208,8 @@ Per-category daily limits prevent runaway agents from draining accounts or spamm
 
 | Category | Tools | Default |
 |---|---|---|
-| `money` | send_money, request_send_money, create_internal_transfer | 100/day |
+| `money` | send_money, request_send_money | 100/day |
+| `internal_transfer` | create_internal_transfer (between your own Mercury accounts) | 5/day |
 | `invoicing` | create/update/cancel invoice + create/update/delete customer | 300/day |
 | `banking` | add_recipient, update_recipient, update_transaction | 200/day |
 | `webhooks` | create/update/delete webhook | 5/day |
