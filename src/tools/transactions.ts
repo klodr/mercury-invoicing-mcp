@@ -96,19 +96,9 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     }
   );
 
-  server.tool(
-    "mercury_list_send_money_requests",
-    "List pending 'request send money' requests awaiting admin approval.",
-    {
-      accountId: z.string().describe("The Mercury account ID"),
-    },
-    async ({ accountId }) => {
-      const data = await client.get(`/account/${accountId}/request-send-money`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
-    }
-  );
+  // Note: Mercury does not expose listing pending request_send_money calls
+  // via the API (GET /account/{id}/request-send-money returns 405).
+  // The endpoint is POST-only for creating new requests.
 
   server.tool(
     "mercury_request_send_money",

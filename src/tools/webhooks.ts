@@ -30,7 +30,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       webhookId: z.string().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
-      const data = await client.get(`/webhook/${webhookId}`);
+      const data = await client.get(`/webhooks/${webhookId}`);
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
       };
@@ -52,21 +52,8 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     }
   );
 
-  server.tool(
-    "mercury_update_webhook",
-    "Update a webhook endpoint (URL or subscribed events).",
-    {
-      webhookId: z.string().describe("The webhook endpoint ID"),
-      url: z.string().url().optional(),
-      events: z.array(z.string()).optional(),
-    },
-    async ({ webhookId, ...body }) => {
-      const data = await client.patch(`/webhook/${webhookId}`, body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
-    }
-  );
+  // Note: Mercury does not expose update_webhook via the API (PATCH and PUT
+  // both return 405). To change a webhook, delete + create instead.
 
   server.tool(
     "mercury_delete_webhook",
@@ -75,7 +62,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       webhookId: z.string().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
-      const data = await client.delete(`/webhook/${webhookId}`);
+      const data = await client.delete(`/webhooks/${webhookId}`);
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
       };

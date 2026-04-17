@@ -71,6 +71,10 @@ export class MercuryClient {
       );
     }
 
+    // Some endpoints (DELETE, idempotent updates) return empty 204 — coerce to a
+    // marker object so handlers always have something to JSON.stringify.
+    if (json === undefined) return { ok: true } as T;
+
     return json as T;
   }
 
