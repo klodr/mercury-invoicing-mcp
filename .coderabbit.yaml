@@ -1,0 +1,42 @@
+# CodeRabbit configuration
+# Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+early_access: false
+
+reviews:
+  profile: assertive          # stricter feedback (vs "chill")
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false                 # no decorative poetry
+  review_status: true
+  collapse_walkthrough: false
+  abort_on_close: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    base_branches:
+      - main
+
+  path_instructions:
+    - path: "src/tools/**"
+      instructions: |
+        These are MCP tool registrations. Verify:
+        - The HTTP method matches Mercury's API documentation
+        - Zod schemas are strict (no .passthrough() unless justified)
+        - Input descriptions are useful for LLMs (not just type info)
+    - path: "src/middleware.ts"
+      instructions: |
+        Security-sensitive code (rate limiting, dry-run, audit log).
+        Flag any change that could weaken these safeguards.
+    - path: "test/**"
+      instructions: |
+        Tests should mock fetch via the global; never hit Mercury directly
+        in unit tests. Integration tests use InMemoryTransport.
+
+chat:
+  auto_reply: true
