@@ -29,9 +29,9 @@ const TOOL_CATEGORIES: Record<string, string> = {
 };
 
 const DEFAULT_LIMITS_PER_DAY: Record<string, number> = {
-  money: 100,
+  money: 50,
   internal_transfer: 5,
-  invoicing: 300,
+  invoicing: 100,
   banking: 200,
   webhooks: 5,
 };
