@@ -54,10 +54,14 @@ describe("Middleware", () => {
       }
     });
 
-    it("invalid rate limit format falls back to default", () => {
+    it("invalid rate limit format logs a warning and falls back to default", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_invoicing = "not-a-rate";
-      // Should silently fall back to default (300/day) — first call OK
       expect(() => enforceRateLimit("mercury_create_invoice")).not.toThrow();
+      expect(errSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoicing"),
+      );
+      errSpy.mockRestore();
     });
   });
 
