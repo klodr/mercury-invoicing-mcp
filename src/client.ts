@@ -69,6 +69,7 @@ export class MercuryClient {
       method,
       headers,
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      signal: AbortSignal.timeout(30_000),
     });
 
     const text = await res.text();
