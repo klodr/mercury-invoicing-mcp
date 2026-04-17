@@ -50,14 +50,19 @@ The server reads `MERCURY_API_KEY` from the environment. Get your API key at [Me
 
 ### Sandbox mode
 
-To test against Mercury's [sandbox environment](https://docs.mercury.com/reference/using-the-mercury-sandbox-for-api-testing) (no real money, pre-populated dummy data), set:
+To test against Mercury's [sandbox environment](https://docs.mercury.com/docs/using-mercury-sandbox) (no real money, pre-populated dummy data), just use a sandbox token:
 
 ```bash
-MERCURY_API_BASE_URL=https://api-sandbox.mercury.com/api/v1
-MERCURY_API_KEY=<your sandbox token>
+MERCURY_API_KEY=secret-token:mercury_sandbox_xxxxxxxxxxxxxxxx
 ```
 
-Get a sandbox token from the sandbox dashboard after signing up. Useful for development and CI.
+The MCP **auto-detects sandbox tokens** (those starting with `mercury_sandbox_`) and points to `https://api-sandbox.mercury.com/api/v1` automatically.
+
+To override the base URL explicitly (e.g. for a self-hosted proxy):
+
+```bash
+MERCURY_API_BASE_URL=https://your-proxy.example.com/api/v1
+```
 
 ### Claude Desktop / Claude Code
 

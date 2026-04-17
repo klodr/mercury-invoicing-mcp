@@ -14,7 +14,17 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const baseUrl = process.env.MERCURY_API_BASE_URL;
+  // Auto-detect sandbox tokens (format: secret-token:mercury_sandbox_*)
+  // unless MERCURY_API_BASE_URL is explicitly set.
+  const isSandboxToken = apiKey.includes("mercury_sandbox_");
+  const baseUrl =
+    process.env.MERCURY_API_BASE_URL ??
+    (isSandboxToken ? "https://api-sandbox.mercury.com/api/v1" : undefined);
+
+  if (isSandboxToken && !process.env.MERCURY_API_BASE_URL) {
+    console.error("Detected sandbox token → using https://api-sandbox.mercury.com/api/v1");
+  }
+
   const client = new MercuryClient({ apiKey, baseUrl });
 
   const server = new McpServer({
