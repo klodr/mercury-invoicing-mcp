@@ -1,0 +1,18 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - mercuryApiKey
+    properties:
+      mercuryApiKey:
+        type: string
+        description: Mercury API token (get one at https://app.mercury.com/settings/tokens)
+  commandFunction: |
+    (config) => ({
+      command: "npx",
+      args: ["-y", "mercury-invoicing-mcp"],
+      env: {
+        MERCURY_API_KEY: config.mercuryApiKey
+      }
+    })

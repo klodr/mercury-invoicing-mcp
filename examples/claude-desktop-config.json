@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mercury-invoicing": {
+      "command": "npx",
+      "args": ["-y", "mercury-invoicing-mcp"],
+      "env": {
+        "MERCURY_API_KEY": "secret-token:mercury_production_REPLACE_ME"
+      }
+    }
+  }
+}
