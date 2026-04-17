@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
@@ -53,7 +54,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       idempotencyKey: z.string().optional().describe("Unique key to prevent duplicates"),
     },
     async ({ idempotencyKey, ...body }) => {
-      const idem = idempotencyKey ?? crypto.randomUUID();
+      const idem = idempotencyKey ?? randomUUID();
       const data = await client.post("/recipients", { ...body, idempotencyKey: idem });
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }],

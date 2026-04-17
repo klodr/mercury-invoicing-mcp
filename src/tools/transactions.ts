@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
@@ -67,7 +68,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
         ),
     },
     async ({ accountId, idempotencyKey, ...body }) => {
-      const idem = idempotencyKey ?? crypto.randomUUID();
+      const idem = idempotencyKey ?? randomUUID();
       const data = await client.post(`/account/${accountId}/transactions`, {
         ...body,
         idempotencyKey: idem,
@@ -113,7 +114,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       idempotencyKey: z.string().optional(),
     },
     async ({ accountId, idempotencyKey, ...body }) => {
-      const idem = idempotencyKey ?? crypto.randomUUID();
+      const idem = idempotencyKey ?? randomUUID();
       const data = await client.post(`/account/${accountId}/request-send-money`, {
         ...body,
         idempotencyKey: idem,
