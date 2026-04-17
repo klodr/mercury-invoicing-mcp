@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- README: Snyk Known Vulnerabilities badge.
+- `release.yml`: Sigstore (keyless OIDC) signing of `dist/index.js`. The signed artifact + `.sigstore` bundle are uploaded to the GitHub Release. This satisfies Scorecard's `Signed-Releases` check (npm provenance alone doesn't, because Scorecard inspects GitHub Release assets, not the npm tarball).
+
 ### Changed
 - `lineItemSchema.name` now enforces `.min(1).max(200)` at the Zod level. Mercury silently accepts longer names on `POST /ar/invoices` (create) but rejects them on the edit endpoint with `"Item name: Must be 200 characters or fewer"`, leaving the invoice in an unmodifiable state. The MCP now refuses upfront with a clean validation error.
 - `invoiceNumber` now enforces `.max(255)`. Mercury accepts up to ~280 characters and rejects 300+, so 255 is a safe ceiling that also matches typical varchar(255) database conventions.
