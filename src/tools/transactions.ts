@@ -1,10 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerTransactionTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_list_transactions",
     "List transactions for a Mercury account, with optional filters (date range, status, search).",
     {
@@ -27,13 +28,11 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     },
     async ({ accountId, ...query }) => {
       const data = await client.get(`/account/${accountId}/transactions`, query);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_get_transaction",
     "Retrieve a specific transaction by ID for a Mercury account.",
     {
@@ -42,13 +41,11 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     },
     async ({ accountId, transactionId }) => {
       const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_send_money",
     "Send money from a Mercury account via ACH or wire. Requires read-write API token.",
     {
@@ -73,13 +70,11 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
         ...body,
         idempotencyKey: idem,
       });
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_update_transaction",
     "Update a transaction's note, memo, or category. Useful for bookkeeping.",
     {
@@ -91,9 +86,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     },
     async ({ accountId, transactionId, ...body }) => {
       const data = await client.patch(`/account/${accountId}/transaction/${transactionId}`, body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
@@ -101,7 +94,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
   // via the API (GET /account/{id}/request-send-money returns 405).
   // The endpoint is POST-only for creating new requests.
 
-  server.tool(
+  defineTool(server, 
     "mercury_request_send_money",
     "Request to send money (requires admin approval before processing). Requires read-write API token.",
     {
@@ -119,9 +112,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
         ...body,
         idempotencyKey: idem,
       });
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }

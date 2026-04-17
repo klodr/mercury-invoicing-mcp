@@ -3,11 +3,11 @@ import { enforceRateLimit, RateLimitError, isDryRun, wrapToolHandler, resetRateL
 describe("Middleware", () => {
   beforeEach(() => {
     delete process.env.MERCURY_MCP_DRY_RUN;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_disabled;
+    delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
     delete process.env.MERCURY_MCP_RATE_LIMIT_webhooks;
     delete process.env.MERCURY_MCP_RATE_LIMIT_money;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_coa;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_journal;
+    delete process.env.MERCURY_MCP_RATE_LIMIT_invoicing;
+    delete process.env.MERCURY_MCP_RATE_LIMIT_banking;
     resetRateLimitHistory();
   });
 
@@ -18,8 +18,8 @@ describe("Middleware", () => {
       for (let i = 0; i < 100; i++) enforceRateLimit("mercury_list_accounts");
     });
 
-    it("respects MERCURY_MCP_RATE_LIMIT_disabled=true", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_disabled = "true";
+    it("respects MERCURY_MCP_RATE_LIMIT_DISABLE=true", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_DISABLE = "true";
       // Webhook default is 5/day, but disabled → unlimited
       for (let i = 0; i < 10; i++) {
         expect(() => enforceRateLimit("mercury_create_webhook")).not.toThrow();
@@ -51,9 +51,9 @@ describe("Middleware", () => {
     });
 
     it("invalid rate limit format falls back to default", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_journal = "not-a-rate";
-      // Should silently fall back to default (50/day) — first call OK
-      expect(() => enforceRateLimit("mercury_create_journal_entry")).not.toThrow();
+      process.env.MERCURY_MCP_RATE_LIMIT_invoicing = "not-a-rate";
+      // Should silently fall back to default (300/day) — first call OK
+      expect(() => enforceRateLimit("mercury_create_invoice")).not.toThrow();
     });
   });
 
@@ -92,11 +92,11 @@ describe("Middleware", () => {
     });
 
     it("returns isError when rate limit is exceeded", async () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_coa = "1/day";
+      process.env.MERCURY_MCP_RATE_LIMIT_webhooks = "1/day";
       const handler = jest.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
-      const wrapped = wrapToolHandler("mercury_create_coa_template", handler);
+      const wrapped = wrapToolHandler("mercury_create_webhook", handler);
       await wrapped({});
       const result2 = await wrapped({});
       expect(result2.isError).toBe(true);

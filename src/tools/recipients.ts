@@ -1,18 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerRecipientTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_list_recipients",
     "List all payment recipients in your Mercury workspace.",
     {},
     async () => {
       const data = await client.get("/recipients");
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
@@ -20,7 +19,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
   // (PATCH /recipients/{id} returns 404, PUT returns 405). Use the Mercury
   // dashboard for recipient updates.
 
-  server.tool(
+  defineTool(server, 
     "mercury_add_recipient",
     "Add a new payment recipient. Requires read-write API token.",
     {
@@ -56,9 +55,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
     async ({ idempotencyKey, ...body }) => {
       const idem = idempotencyKey ?? randomUUID();
       const data = await client.post("/recipients", { ...body, idempotencyKey: idem });
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }

@@ -48,7 +48,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   beforeEach(async () => {
     resetRateLimitHistory();
     delete process.env.MERCURY_MCP_DRY_RUN;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_disabled;
+    delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
     calls = setupFetchSpy({ ok: true, status: 200, body: { ok: true } });
     const setup = await setupServerAndClient();
     client = setup.client;

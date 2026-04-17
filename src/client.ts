@@ -19,6 +19,15 @@ export class MercuryError extends Error {
     super(message);
     this.name = "MercuryError";
   }
+
+  // Override default toString/JSON to keep the body out of accidental
+  // string interpolation (it may contain sensitive Mercury responses).
+  toString(): string {
+    return `MercuryError: ${this.message} (status: ${this.status})`;
+  }
+  toJSON(): unknown {
+    return { name: this.name, message: this.message, status: this.status };
+  }
 }
 
 export class MercuryClient {
@@ -31,7 +40,7 @@ export class MercuryClient {
   }
 
   async request<T = unknown>(
-    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    method: "GET" | "POST" | "PATCH" | "DELETE",
     path: string,
     init: { body?: unknown; query?: Record<string, string | number | undefined> } = {}
   ): Promise<T> {
@@ -87,9 +96,6 @@ export class MercuryClient {
   }
   patch<T = unknown>(path: string, body?: unknown) {
     return this.request<T>("PATCH", path, { body });
-  }
-  put<T = unknown>(path: string, body?: unknown) {
-    return this.request<T>("PUT", path, { body });
   }
   delete<T = unknown>(path: string) {
     return this.request<T>("DELETE", path);

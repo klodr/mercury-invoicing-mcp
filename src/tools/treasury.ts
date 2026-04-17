@@ -1,21 +1,20 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerTreasuryTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_get_treasury",
     "Retrieve Mercury Treasury account information (balance, interest rate, etc.).",
     {},
     async () => {
       const data = await client.get("/treasury");
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_list_treasury_transactions",
     "List transactions for a Mercury Treasury account.",
     {
@@ -27,13 +26,11 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
     },
     async ({ accountId, ...query }) => {
       const data = await client.get(`/treasury/${accountId}/transactions`, query);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_list_treasury_statements",
     "List statements for a Mercury Treasury account.",
     {
@@ -41,9 +38,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
     },
     async ({ accountId }) => {
       const data = await client.get(`/treasury/${accountId}/statements`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }
