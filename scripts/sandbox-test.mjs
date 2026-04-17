@@ -77,10 +77,16 @@ const newRec = await run("mercury_add_recipient (TEST)", "mercury_add_recipient"
   paymentMethod: "domesticAch",
 });
 const recId = newRec?.id;
-// Note: update_recipient + list_send_money_requests removed (Mercury doesn't expose them in API)
+if (recId) {
+  await run("mercury_update_recipient (nickname)", "mercury_update_recipient", {
+    recipientId: recId,
+    nickname: "test-updated",
+  });
+}
+// Note: Mercury does not expose list_send_money_requests via the public API.
 
 console.log("\n=== WEBHOOKS ===");
-const whList = await run("mercury_list_webhooks", "mercury_list_webhooks");
+await run("mercury_list_webhooks", "mercury_list_webhooks");
 const newWh = await run("mercury_create_webhook (TEST)", "mercury_create_webhook", {
   url: "https://example.com/webhook-test-" + Date.now(),
   events: ["transaction.created"],
@@ -88,7 +94,10 @@ const newWh = await run("mercury_create_webhook (TEST)", "mercury_create_webhook
 const whId = newWh?.id;
 if (whId) {
   await run("mercury_get_webhook", "mercury_get_webhook", { webhookId: whId });
-  // Note: update_webhook removed (Mercury 405 on PATCH and PUT)
+  await run("mercury_update_webhook (pause)", "mercury_update_webhook", {
+    webhookId: whId,
+    status: "paused",
+  });
   await run("mercury_delete_webhook", "mercury_delete_webhook", { webhookId: whId });
 }
 

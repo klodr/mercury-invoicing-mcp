@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`mercury_create_internal_transfer`** — move money between two of your own Mercury accounts (e.g. Checking → Savings). `POST /transfer`, with auto-generated `idempotencyKey`.
 - **`mercury_update_recipient`** — fix a recipient's nickname / contact email / payment method without recreating it. `POST /recipient/{id}` (singular).
 - **`mercury_update_webhook`** — change a webhook's URL, status (active/paused) or event types. Useful to reactivate a webhook that was disabled after consecutive delivery failures. `POST /webhooks/{id}`.
+- `defineTool` and `textResult` helpers in `src/tools/_shared.ts` (eliminates the per-handler `JSON.stringify` boilerplate across all 34 tools).
+- `scripts/sync-version.mjs` — single-source the package version: `package.json` is authoritative, the script propagates it into `server.json` and `src/server.ts`. Wired to the `npm version` lifecycle hook.
 
 ### Changed
 - **Breaking** — `mercury_update_transaction` no longer takes `accountId`. Mercury's real endpoint is `PATCH /transaction/{id}` (no account in the path). Fields are now `note` (nullable) and `categoryId` (nullable); `externalMemo` was never accepted by the endpoint and has been removed.
@@ -27,9 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All path-injected IDs (`accountId`, `transactionId`, `recipientId`, `webhookId`) now require `.uuid()` validation, and `MercuryClient.request` URL-encodes each path segment (defense-in-depth against prompt injection).
 - Sandbox auto-detection now uses a strict prefix match (`apiKey.startsWith("secret-token:mercury_sandbox_")`) instead of a substring check.
 - `fetch` requests now have a 30s `AbortSignal.timeout` so a hung Mercury endpoint cannot block the MCP indefinitely.
-
-### Added
-- `defineTool` and `textResult` helpers in `src/tools/_shared.ts` (eliminates the 32× `JSON.stringify` boilerplate in tool handlers).
 
 ### Removed
 - **`mercury_send_invoice`** — Mercury does NOT expose `POST /ar/invoices/{id}/send` (404 confirmed in production). Email delivery is only triggered by `sendEmailOption: "SendNow"` at invoice creation time. Documented in `mercury_create_invoice`.
