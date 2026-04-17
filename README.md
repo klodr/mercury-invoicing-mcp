@@ -167,10 +167,25 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_webhooks`, `mercury_get_webhook`
 - `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
-> Mercury does not expose `list_send_money_requests`, COA Templates, or
-> Journal Entries via the public API. Those features are dashboard-only.
+> **Endpoints not yet wrapped** — Mercury exposes ~25 additional endpoints
+> that this MCP does not yet cover. They will land in upcoming releases.
+> Tracked: PDF download (`getinvoicepdf`, `getstatementpdf`), attachments
+> (`uploadtransactionattachment`, `uploadrecipientattachment`,
+> `getattachment`, `listrecipientsattachments`), webhook signature
+> verification (`verifywebhook`), webhook events (`getevent`, `getevents`),
+> send-money approvals (`listsendmoneyapprovalrequests`,
+> `getsendmoneyapprovalrequest`), credit lines (`listcredit`),
+> users (`getuser`, `getusers`), Mercury Raise SAFE
+> (`getsaferequest(s)`, `getsaferequestdocument`), and OAuth flow
+> (`obtainaccesstoken`, `startoauth2flow`).
 
-> Tools available depend on your Mercury API token scope. The server registers all tools but Mercury will reject unauthorized operations at the API level.
+> Mercury does **not** expose `list_send_money_requests`, COA Templates,
+> Journal Entries, or `send_invoice` via the public API at all — those
+> features are dashboard-only.
+
+> Tools available depend on your Mercury API token scope. The server
+> registers all 34 tools but Mercury will reject unauthorized operations
+> at the API level.
 
 ## Security
 
