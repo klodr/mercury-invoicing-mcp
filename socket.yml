@@ -1,0 +1,36 @@
+# Socket.dev configuration for mercury-invoicing-mcp
+# https://docs.socket.dev/docs/socket-yml-reference
+#
+# Each rule below is intentionally configured. The "true" entries flag
+# legitimate behaviour we accept and document; the "false" entries silence
+# alerts that fire on transitive deps we do not control.
+
+version: 2
+
+projectIgnorePaths:
+  - "test/**"
+  - "scripts/**"
+  - "examples/**"
+  - "dist/**"
+
+githubApp:
+  enabled: true
+  pullRequestAlertsEnabled: true
+  secretAlertsEnabled: true
+
+issueRules:
+  # Legitimate behaviour for a Mercury Banking client — accepted, not a finding.
+  # Each is documented in README.md (see Configuration / Security sections).
+  envVars: true
+  filesystemAccess: true
+  networkAccess: true
+  urlStrings: true
+  hasIPProxy: true
+
+  # Transitive deps from @modelcontextprotocol/sdk → express. Not actionable
+  # from this package. Tracked upstream:
+  #   https://github.com/modelcontextprotocol/typescript-sdk/issues/1924
+  gptDidYouMean: false
+  unstableOwnership: false
+  unmaintained: false
+  manifestConfusion: false
