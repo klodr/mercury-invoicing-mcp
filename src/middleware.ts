@@ -140,7 +140,7 @@ const SENSITIVE_KEYS = new Set([
   "ssn",
 ]);
 
-function redactSensitive(value: unknown): unknown {
+export function redactSensitive(value: unknown): unknown {
   if (value === null || typeof value !== "object") return value;
   if (Array.isArray(value)) return value.map(redactSensitive);
   const out: Record<string, unknown> = {};
