@@ -11,7 +11,6 @@ import { registerTreasuryTools } from "./treasury.js";
 import { registerInvoiceTools } from "./invoices.js";
 import { registerCustomerTools } from "./customers.js";
 import { registerWebhookTools } from "./webhooks.js";
-import { registerAccountingTools } from "./accounting.js";
 
 /**
  * Register all Mercury MCP tools on the server.
@@ -34,7 +33,4 @@ export function registerAllTools(server: McpServer, client: MercuryClient): void
 
   // Webhooks
   registerWebhookTools(server, client);
-
-  // Accounting (COA + Journal Entries)
-  registerAccountingTools(server, client);
 }

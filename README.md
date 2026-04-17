@@ -122,7 +122,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
 
-## Tools (45 total)
+## Tools (32 total)
 
 ### Banking — Accounts
 - `mercury_list_accounts`, `mercury_get_account`
@@ -134,10 +134,9 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_transactions`, `mercury_get_transaction`
 - `mercury_update_transaction` (note / memo / category)
 - `mercury_send_money`, `mercury_request_send_money`
-- `mercury_list_send_money_requests`
 
 ### Banking — Recipients
-- `mercury_list_recipients`, `mercury_add_recipient`, `mercury_update_recipient`
+- `mercury_list_recipients`, `mercury_add_recipient`
 
 ### Banking — Statements
 - `mercury_list_statements`
@@ -159,15 +158,11 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 ### Webhooks
 - `mercury_list_webhooks`, `mercury_get_webhook`
-- `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
+- `mercury_create_webhook`, `mercury_delete_webhook`
 
-### Accounting — Chart of Accounts
-- `mercury_list_coa_templates`, `mercury_get_coa_template`
-- `mercury_create_coa_template`, `mercury_update_coa_template`, `mercury_delete_coa_template`
-
-### Accounting — Journal Entries
-- `mercury_list_journal_entries`, `mercury_get_journal_entry`
-- `mercury_create_journal_entry`, `mercury_update_journal_entry`, `mercury_delete_journal_entry`
+> Mercury does not expose `update_webhook`, `update_recipient`,
+> `list_send_money_requests`, COA Templates or Journal Entries via the public
+> API. Those features are dashboard-only.
 
 > Tools available depend on your Mercury API token scope. The server registers all tools but Mercury will reject unauthorized operations at the API level.
 
