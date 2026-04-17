@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
@@ -15,7 +16,7 @@ const addressSchema = z
   .describe("Customer billing address (Mercury requires `name` in the address)");
 
 export function registerCustomerTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_list_customers",
     "List AR customers, with cursor-based pagination.",
     {
@@ -32,13 +33,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
         end_before: args.endBefore,
       };
       const data = await client.get("/ar/customers", query);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_get_customer",
     "Retrieve a specific AR customer by ID.",
     {
@@ -46,13 +45,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     },
     async ({ customerId }) => {
       const data = await client.get(`/ar/customers/${customerId}`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_create_customer",
     "Create a new AR customer that you can later invoice.",
     {
@@ -62,13 +59,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     },
     async (args) => {
       const data = await client.post("/ar/customers", args);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_update_customer",
     "Update an existing AR customer. Pass only the fields you want to change.",
     {
@@ -79,13 +74,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     },
     async ({ customerId, ...body }) => {
       const data = await client.patch(`/ar/customers/${customerId}`, body);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 
-  server.tool(
+  defineTool(server, 
     "mercury_delete_customer",
     "Permanently delete an AR customer.",
     {
@@ -93,9 +86,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     },
     async ({ customerId }) => {
       const data = await client.delete(`/ar/customers/${customerId}`);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }

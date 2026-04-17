@@ -118,7 +118,7 @@ Add to `~/.cursor/mcp.json`:
 }
 ```
 
-Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equivalent). The 22 tools become available to all your OpenClaw agents.
+Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equivalent). All tools become available to all your OpenClaw agents.
 
 > **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
 
@@ -146,13 +146,16 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_treasury_transactions`
 - `mercury_list_treasury_statements`
 
-### Invoicing (Accounts Receivable) — requires Mercury Plus
+### Invoicing (Accounts Receivable)
+
+> ⚠️ **Mercury Plus plan required.** The Invoicing & Customers (AR) APIs are only available on Mercury's [Plus plan](https://mercury.com/pricing) (or higher). Calls to these tools return `403 Forbidden` on Free or Standard plans. The other tools (banking, treasury, webhooks) work on every plan.
+
 - `mercury_list_invoices`, `mercury_get_invoice`
 - `mercury_create_invoice`, `mercury_update_invoice`
 - `mercury_send_invoice`, `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
 
-### Customers (AR)
+### Customers (AR) — also requires Mercury Plus
 - `mercury_list_customers`, `mercury_get_customer`
 - `mercury_create_customer`, `mercury_update_customer`, `mercury_delete_customer`
 
@@ -184,17 +187,15 @@ Per-category daily limits prevent runaway agents from draining accounts or spamm
 |---|---|---|
 | `money` | send_money, request_send_money | 100/day |
 | `invoicing` | create/update/send/cancel invoice + create/update/delete customer | 300/day |
-| `banking` | add/update recipient, update transaction | 200/day |
-| `journal` | create/update/delete journal entry | 50/day |
-| `webhooks` | create/update/delete webhook | 5/day |
-| `coa` | create/update/delete COA template | 5/day |
+| `banking` | add_recipient, update_transaction | 200/day |
+| `webhooks` | create/delete webhook | 5/day |
 
 Override per category (units: `/hour`, `/day`, `/week`):
 
 ```bash
 MERCURY_MCP_RATE_LIMIT_money=200/day      # bigger supplier batch
 MERCURY_MCP_RATE_LIMIT_invoicing=1000/day # large monthly billing run
-MERCURY_MCP_RATE_LIMIT_disabled=true      # disable all rate limiting (not recommended)
+MERCURY_MCP_RATE_LIMIT_DISABLE=true       # disable all rate limiting (not recommended)
 ```
 
 When exceeded, the tool returns an `isError: true` response with a clear message and retry hint — the agent learns to back off naturally.
@@ -217,7 +218,7 @@ Enable structured JSON logging of every write call:
 MERCURY_MCP_AUDIT_LOG=/var/log/mercury-mcp-audit.log
 ```
 
-Each line is `{ts, tool, result, args}` (one JSON object per line). Result is `ok`, `dry-run`, or `error`.
+Each line is `{ts, tool, result, args}` (one JSON object per line). Result is `ok`, `dry-run`, or `error`. The path must be **absolute**; sensitive fields in `args` (`accountNumber`, `routingNumber`, `apiKey`, `authorization`, `password`, `token`, `secret`, `ssn`) are automatically redacted. The file is created with mode `0600` (owner read/write only).
 
 ## Development
 

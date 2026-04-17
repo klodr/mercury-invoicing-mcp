@@ -1,9 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerStatementTools(server: McpServer, client: MercuryClient): void {
-  server.tool(
+  defineTool(server, 
     "mercury_list_statements",
     "List monthly statements for a Mercury account. Each statement has a downloadable PDF URL.",
     {
@@ -13,9 +14,7 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
     },
     async ({ accountId, ...query }) => {
       const data = await client.get(`/account/${accountId}/statements`, query);
-      return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      };
+      return textResult(data);
     }
   );
 }
