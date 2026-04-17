@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  id-token: write
+  contents: write   # needed to upload signed artifacts to the GitHub Release
+  id-token: write   # needed for npm provenance + Sigstore keyless signing
 
 jobs:
   publish:
-    name: Publish to npm
+    name: Publish to npm + sign release artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,3 +37,20 @@ jobs:
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install Sigstore CLI
+        run: npm install -g @sigstore/cli@^1.0.0
+
+      - name: Sign dist/index.js with Sigstore (keyless, OIDC)
+        run: sigstore sign --output-signature dist/index.js.sigstore dist/index.js
+
+      - name: Attach signed artifacts to the GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            dist/index.js \
+            dist/index.js.sigstore \
+            --repo "${{ github.repository }}" \
+            --clobber
