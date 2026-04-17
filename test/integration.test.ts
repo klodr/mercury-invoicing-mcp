@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 32 tools", async () => {
+  it("tools/list returns all 34 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(32);
+    expect(res.tools.length).toBe(34);
   });
 
   // --- Banking accounts ---
@@ -150,13 +150,31 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/request-send-money");
   });
 
-  it("mercury_update_transaction → PATCH", async () => {
+  it("mercury_update_transaction → PATCH /transaction/{id} (no accountId)", async () => {
     await client.callTool({
       name: "mercury_update_transaction",
-      arguments: { accountId: "11111111-1111-4111-8111-111111111111", transactionId: "22222222-2222-4222-8222-222222222222", note: "test" },
+      arguments: { transactionId: "22222222-2222-4222-8222-222222222222", note: "test" },
     });
     expect(calls[0].method).toBe("PATCH");
-    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222");
+    expect(calls[0].url).toContain("/transaction/22222222-2222-4222-8222-222222222222");
+    expect(calls[0].url).not.toContain("/account/");
+  });
+
+  it("mercury_create_internal_transfer → POST /transfer with idempotency key", async () => {
+    await client.callTool({
+      name: "mercury_create_internal_transfer",
+      arguments: {
+        sourceAccountId: "11111111-1111-4111-8111-111111111111",
+        destinationAccountId: "55555555-5555-4555-8555-555555555555",
+        amount: 100,
+        note: "Move savings",
+      },
+    });
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].url).toContain("/transfer");
+    const body = JSON.parse(calls[0].body!);
+    expect(body.amount).toBe(100);
+    expect(body.idempotencyKey).toBeDefined();
   });
 
   // --- Recipients ---
@@ -173,6 +191,18 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     });
     expect(calls[0].method).toBe("POST");
     expect(calls[0].url).toContain("/recipients");
+  });
+
+  it("mercury_update_recipient → POST /recipient/{id} (singular)", async () => {
+    await client.callTool({
+      name: "mercury_update_recipient",
+      arguments: {
+        recipientId: "33333333-3333-4333-8333-333333333333",
+        nickname: "Updated nickname",
+      },
+    });
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].url).toContain("/recipient/33333333-3333-4333-8333-333333333333");
   });
 
   // --- Statements / Treasury ---
@@ -303,14 +333,6 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(body.amount).toBeUndefined();
   });
 
-  it("mercury_send_invoice → POST /ar/invoices/{id}/send", async () => {
-    await client.callTool({
-      name: "mercury_send_invoice",
-      arguments: { invoiceId: "00000000-0000-0000-0000-000000000001" },
-    });
-    expect(calls[0].url).toContain("/send");
-  });
-
   it("mercury_cancel_invoice → POST /ar/invoices/{id}/cancel", async () => {
     await client.callTool({
       name: "mercury_cancel_invoice",
@@ -388,6 +410,20 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       arguments: { webhookId: "44444444-4444-4444-8444-444444444444" },
     });
     expect(calls[0].url).toContain("/webhooks/44444444-4444-4444-8444-444444444444");
+  });
+
+  it("mercury_update_webhook → POST /webhooks/{id}", async () => {
+    await client.callTool({
+      name: "mercury_update_webhook",
+      arguments: {
+        webhookId: "44444444-4444-4444-8444-444444444444",
+        status: "paused",
+      },
+    });
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].url).toContain("/webhooks/44444444-4444-4444-8444-444444444444");
+    const body = JSON.parse(calls[0].body!);
+    expect(body.status).toBe("paused");
   });
 
   it("mercury_delete_webhook → DELETE /webhook/{id}", async () => {

@@ -10,19 +10,21 @@ const TOOL_CATEGORIES: Record<string, string> = {
   // Money movements
   mercury_send_money: "money",
   mercury_request_send_money: "money",
+  mercury_create_internal_transfer: "money",
   // AR (invoicing + customers)
   mercury_create_invoice: "invoicing",
   mercury_update_invoice: "invoicing",
-  mercury_send_invoice: "invoicing",
   mercury_cancel_invoice: "invoicing",
   mercury_create_customer: "invoicing",
   mercury_update_customer: "invoicing",
   mercury_delete_customer: "invoicing",
   // Banking writes
   mercury_add_recipient: "banking",
+  mercury_update_recipient: "banking",
   mercury_update_transaction: "banking",
   // Webhooks (config)
   mercury_create_webhook: "webhooks",
+  mercury_update_webhook: "webhooks",
   mercury_delete_webhook: "webhooks",
 };
 

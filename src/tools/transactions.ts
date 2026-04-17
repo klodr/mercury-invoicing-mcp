@@ -74,25 +74,36 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     }
   );
 
-  defineTool(server, 
+  defineTool(server,
     "mercury_update_transaction",
-    "Update a transaction's note, memo, or category. Useful for bookkeeping.",
+    "Update a transaction's note or category. Mercury endpoint is PATCH /transaction/{id} (no accountId in the path).",
     {
-      accountId: z.string().uuid().describe("The Mercury account ID"),
       transactionId: z.string().uuid().describe("The transaction ID"),
-      note: z.string().optional().describe("Internal note"),
-      externalMemo: z.string().optional().describe("Memo visible to counterparty"),
-      categoryId: z.string().optional().describe("Category ID (see mercury_list_categories)"),
+      note: z.string().nullable().optional().describe("Internal note (send null to clear, omit to keep current)"),
+      categoryId: z.string().nullable().optional().describe("Category ID (see mercury_list_categories). Send null to clear, omit to keep current."),
     },
-    async ({ accountId, transactionId, ...body }) => {
-      const data = await client.patch(`/account/${accountId}/transaction/${transactionId}`, body);
+    async ({ transactionId, ...body }) => {
+      const data = await client.patch(`/transaction/${transactionId}`, body);
       return textResult(data);
     }
   );
 
-  // Note: Mercury does not expose listing pending request_send_money calls
-  // via the API (GET /account/{id}/request-send-money returns 405).
-  // The endpoint is POST-only for creating new requests.
+  defineTool(server,
+    "mercury_create_internal_transfer",
+    "Move money between two of your own Mercury accounts (e.g. Checking → Savings). Requires read-write API token.",
+    {
+      sourceAccountId: z.string().uuid().describe("Source Mercury account ID"),
+      destinationAccountId: z.string().uuid().describe("Destination Mercury account ID"),
+      amount: z.number().min(0.01).describe("Amount in USD (>= 0.01)"),
+      note: z.string().optional().describe("Optional note attached to the transfer"),
+      idempotencyKey: z.string().optional().describe("Unique key to prevent duplicate transfers. Auto-generated if omitted."),
+    },
+    async ({ idempotencyKey, ...body }) => {
+      const idem = idempotencyKey ?? randomUUID();
+      const data = await client.post(`/transfer`, { ...body, idempotencyKey: idem });
+      return textResult(data);
+    }
+  );
 
   defineTool(server, 
     "mercury_request_send_money",

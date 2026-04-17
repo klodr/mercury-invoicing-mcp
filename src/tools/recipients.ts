@@ -15,11 +15,26 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
     }
   );
 
-  // Note: Mercury does NOT expose update_recipient via the public API
-  // (PATCH /recipients/{id} returns 404, PUT returns 405). Use the Mercury
-  // dashboard for recipient updates.
+  defineTool(server,
+    "mercury_update_recipient",
+    "Update an existing recipient. Mercury endpoint is POST /recipient/{id} (singular). All body fields are optional.",
+    {
+      recipientId: z.string().uuid().describe("The recipient ID"),
+      name: z.string().optional().describe("Recipient legal name"),
+      nickname: z.string().optional().describe("Internal nickname"),
+      contactEmail: z.string().email().optional().describe("Primary contact email"),
+      emails: z.array(z.string().email()).optional().describe("List of email addresses"),
+      defaultPaymentMethod: z
+        .enum(["domesticAch", "internationalWire", "domesticWire", "check"])
+        .optional(),
+    },
+    async ({ recipientId, ...body }) => {
+      const data = await client.post(`/recipient/${recipientId}`, body);
+      return textResult(data);
+    }
+  );
 
-  defineTool(server, 
+  defineTool(server,
     "mercury_add_recipient",
     "Add a new payment recipient. Requires read-write API token.",
     {
