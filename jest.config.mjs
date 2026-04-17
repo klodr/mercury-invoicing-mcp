@@ -11,7 +11,12 @@ export default {
       "ts-jest",
       {
         useESM: true,
-        tsconfig: { module: "ESNext", target: "ES2022" },
+        tsconfig: {
+          module: "ESNext",
+          target: "ES2022",
+          types: ["node", "jest"],
+          esModuleInterop: true,
+        },
       },
     ],
   },
