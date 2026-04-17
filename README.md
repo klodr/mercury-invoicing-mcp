@@ -19,17 +19,28 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 
 ## Why this MCP?
 
-| | Official Mercury MCP | dragonkhoi/mercury-mcp | **mercury-invoicing-mcp** |
+| Capability | Official Mercury MCP | dragonkhoi/mercury-mcp | **mercury-invoicing-mcp** |
 |---|:---:|:---:|:---:|
-| Banking read (accounts, transactions, statements) | ✅ | ✅ | ✅ |
-| Banking write (send money, recipients) | ❌ | ✅ | ✅ |
-| **Invoicing API (create, send, list invoices)** | ❌ | ❌ | ✅ |
-| **Customers AR (create, manage)** | ❌ | ❌ | ✅ |
+| Banking read (accounts, transactions, statements, cards, organization) | ✅ | ✅ | ✅ |
+| Banking write (send_money, request_send_money) | ❌ | ✅ | ✅ |
+| **Internal transfers between your own Mercury accounts** | ❌ | ❌ | ✅ |
+| Recipients full CRUD (`add` + `update`) | ❌ | partial | ✅ |
+| Treasury (read) | ❌ | ✅ | ✅ |
+| Webhooks full CRUD (create, **update**, delete) | ❌ | ❌ | ✅ |
+| **Invoicing API (create, update, cancel, list, get attachments)** | ❌ | ❌ | ✅ |
+| **Customers AR (create, update, delete, list)** | ❌ | ❌ | ✅ |
 | **Recurring invoices** | ❌ | ❌ | ✅ |
+| Update transaction (note, category) | ❌ | ❌ | ✅ |
 | Hosted (no token to manage) | ✅ | ❌ | ❌ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
+| Total tools exposed | ~10 | ~11 | **34** |
+| Per-category daily rate limit (anti-runaway) | ❌ | ❌ | ✅ |
+| Dry-run mode (`MERCURY_MCP_DRY_RUN=true`) | ❌ | ❌ | ✅ |
+| Audit log with redacted args + `0o600` perms | ❌ | ❌ | ✅ |
+| `MercuryError` mapping with Plus-plan hint on 403 | ❌ | ❌ | ✅ |
+| GitHub Actions pinned by SHA + provenance attestation | n/a | ❌ | ✅ |
 
-For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing**.
+For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely** (the rate limit / dry-run / audit log layers are designed for that).
 
 ## Installation
 
