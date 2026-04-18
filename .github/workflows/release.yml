@@ -131,10 +131,16 @@ jobs:
         run: |
           test -n "${BUNDLE_PATH:-}" || { echo "Missing attestation bundle-path output"; exit 1; }
           test -f "$BUNDLE_PATH" || { echo "Bundle file not found: $BUNDLE_PATH"; exit 1; }
+          # The Sigstore bundle (.sigstore) satisfies Scorecard's "signed" check (8/10).
           cp "$BUNDLE_PATH" dist/index.js.sigstore
+          # The DSSE envelope inside the bundle IS the SLSA in-toto attestation.
+          # Extracting it to .intoto.jsonl satisfies Scorecard's "provenance"
+          # check (10/10) — Scorecard recognises *.intoto.jsonl specifically.
+          jq -c '.dsseEnvelope' "$BUNDLE_PATH" > dist/index.js.intoto.jsonl
           gh release upload "$TAG" \
             dist/index.js \
             dist/index.js.sigstore \
+            dist/index.js.intoto.jsonl \
             --repo "${{ github.repository }}" \
             --clobber
 
