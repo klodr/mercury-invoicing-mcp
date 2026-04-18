@@ -73,24 +73,43 @@ jobs:
 
       - name: Path 1 — npm provenance via npm CLI
         # Scorecard's Pinned-Dependencies wants every npm install to be
-        # pinned by hash. We achieve that by downloading the tarball
-        # explicitly, verifying its SHA-1 against the registry-published
-        # shasum, then installing the local file. Equivalent install,
-        # but every byte that hits node_modules is hash-verified.
+        # pinned by hash. We download the tarball explicitly, verify both
+        # SHA-1 (.dist.shasum, legacy) AND SHA-512 SRI (.dist.integrity,
+        # current npm standard), then install the local file.
         run: |
           VERSION="${TAG#v}"
           META=$(npm view "${PKG}@${VERSION}" --json)
           ATT=$(echo "$META" | jq -er '.dist.attestations.url')
           TARBALL_URL=$(echo "$META" | jq -er '.dist.tarball')
           EXPECTED_SHA=$(echo "$META" | jq -er '.dist.shasum')
+          EXPECTED_INTEGRITY=$(echo "$META" | jq -er '.dist.integrity')
+          ALGO="${EXPECTED_INTEGRITY%%-*}"
+          EXPECTED_B64="${EXPECTED_INTEGRITY#*-}"
           echo "Attestation URL: $ATT"
-          echo "Tarball: $TARBALL_URL (expected sha1=$EXPECTED_SHA)"
+          echo "Tarball: $TARBALL_URL"
+          echo "Expected sha1=$EXPECTED_SHA"
+          echo "Expected $ALGO=$EXPECTED_B64"
           mkdir verify-tmp && cd verify-tmp
-          curl -sLO "$TARBALL_URL"
+          curl --fail --show-error --silent --location \
+               --retry 3 --retry-all-errors \
+               --connect-timeout 10 --max-time 120 \
+               -O "$TARBALL_URL"
           TARBALL=$(basename "$TARBALL_URL")
           ACTUAL_SHA=$(sha1sum "$TARBALL" | awk '{print $1}')
           if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
             echo "ERROR: tarball SHA-1 mismatch (expected $EXPECTED_SHA, got $ACTUAL_SHA)" >&2
+            exit 1
+          fi
+          case "$ALGO" in
+            sha512) ACTUAL_B64=$(sha512sum "$TARBALL" | awk '{print $1}' | xxd -r -p | base64 -w0) ;;
+            sha384) ACTUAL_B64=$(sha384sum "$TARBALL" | awk '{print $1}' | xxd -r -p | base64 -w0) ;;
+            sha256) ACTUAL_B64=$(sha256sum "$TARBALL" | awk '{print $1}' | xxd -r -p | base64 -w0) ;;
+            *) echo "ERROR: unsupported integrity algorithm: $ALGO" >&2; exit 1 ;;
+          esac
+          if [ "$ACTUAL_B64" != "$EXPECTED_B64" ]; then
+            echo "ERROR: tarball $ALGO integrity mismatch" >&2
+            echo "  expected: $EXPECTED_B64" >&2
+            echo "  actual:   $ACTUAL_B64" >&2
             exit 1
           fi
           npm init -y >/dev/null
