@@ -16,7 +16,8 @@ const addressSchema = z
   .describe("Customer billing address (Mercury requires `name` in the address)");
 
 export function registerCustomerTools(server: McpServer, client: MercuryClient): void {
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_list_customers",
     "List AR customers, with cursor-based pagination.",
     {
@@ -34,10 +35,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       };
       const data = await client.get("/ar/customers", query);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_get_customer",
     "Retrieve a specific AR customer by ID.",
     {
@@ -46,10 +48,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     async ({ customerId }) => {
       const data = await client.get(`/ar/customers/${customerId}`);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_create_customer",
     "Create a new AR customer that you can later invoice.",
     {
@@ -60,10 +63,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     async (args) => {
       const data = await client.post("/ar/customers", args);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_update_customer",
     "Update an existing AR customer. Pass only the fields you want to change.",
     {
@@ -75,10 +79,11 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     async ({ customerId, ...body }) => {
       const data = await client.patch(`/ar/customers/${customerId}`, body);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_delete_customer",
     "Permanently delete an AR customer.",
     {
@@ -87,6 +92,6 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     async ({ customerId }) => {
       const data = await client.delete(`/ar/customers/${customerId}`);
       return textResult(data);
-    }
+    },
   );
 }

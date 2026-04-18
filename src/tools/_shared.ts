@@ -13,7 +13,7 @@ export function defineTool<S extends ZodRawShape>(
   name: string,
   description: string,
   inputSchema: S,
-  handler: (args: z.infer<z.ZodObject<S>>) => Promise<ToolResult>
+  handler: (args: z.infer<z.ZodObject<S>>) => Promise<ToolResult>,
 ): void {
   const wrapped = wrapToolHandler(name, handler);
   server.registerTool(name, { description, inputSchema }, wrapped as never);

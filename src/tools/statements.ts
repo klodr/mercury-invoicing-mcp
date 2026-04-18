@@ -4,7 +4,8 @@ import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerStatementTools(server: McpServer, client: MercuryClient): void {
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_list_statements",
     "List monthly statements for a Mercury account. Each statement has a downloadable PDF URL.",
     {
@@ -15,6 +16,6 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
     async ({ accountId, ...query }) => {
       const data = await client.get(`/account/${accountId}/statements`, query);
       return textResult(data);
-    }
+    },
   );
 }

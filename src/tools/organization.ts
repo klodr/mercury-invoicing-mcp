@@ -3,13 +3,14 @@ import { defineTool, textResult } from "./_shared.js";
 import { MercuryClient } from "../client.js";
 
 export function registerOrganizationTools(server: McpServer, client: MercuryClient): void {
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_get_organization",
     "Retrieve information about your Mercury organization (company name, legal info, etc.).",
     {},
     async () => {
       const data = await client.get("/organization");
       return textResult(data);
-    }
+    },
   );
 }
