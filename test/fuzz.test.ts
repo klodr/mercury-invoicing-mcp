@@ -15,12 +15,21 @@ import { MercuryError } from "../src/client.js";
 // SENSITIVE_KEYS is imported from src/middleware.ts so the property tests
 // stay in sync with the canonical list — no risk of drift.
 
+// Mixed-case variants exercise the `.toLowerCase()` path inside
+// redactSensitive. If a future refactor drops case-folding, the property
+// will fail on any of the variants below.
+const mixedCaseKeys = SENSITIVE_KEYS.flatMap((k) => [
+  k.toUpperCase(),
+  k.charAt(0).toUpperCase() + k.slice(1),                                    // PascalCase
+  [...k].map((c, i) => (i % 2 === 0 ? c.toUpperCase() : c)).join(""),        // alternating
+]);
+
 describe("Fuzz: redactSensitive", () => {
   it("never leaks any value stored under a sensitive key, at any depth", () => {
     fc.assert(
       fc.property(
         // Build an arbitrary value: primitives, arrays, or objects with a mix
-        // of sensitive and non-sensitive keys.
+        // of sensitive and non-sensitive keys (including mixed-case variants).
         fc.letrec((tie) => ({
           value: fc.oneof(
             { maxDepth: 4 },
@@ -31,7 +40,7 @@ describe("Fuzz: redactSensitive", () => {
             fc.array(tie("value"), { maxLength: 5 }),
             fc.dictionary(
               fc.oneof(
-                fc.constantFrom(...SENSITIVE_KEYS),
+                fc.constantFrom(...SENSITIVE_KEYS, ...mixedCaseKeys),
                 fc.string({ minLength: 1, maxLength: 8 }),
               ),
               tie("value"),
