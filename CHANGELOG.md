@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-04-18
+
+### Added
+
+- **Post-release verification workflow** (`.github/workflows/verify-release.yml`):
+  re-exercises the three SECURITY.md verification paths (`npm audit signatures`,
+  `gh attestation verify`, `cosign verify-blob-attestation`) on every published
+  release. Runs on `workflow_run: completed` of `Release & npm publish` and
+  fails fast if provenance, the Sigstore bundle, or the attached release assets
+  drift. cosign installed via `sigstore/cosign-installer@v4.1.1` (SHA-pinned).
+
+### Documentation
+
+- `SECURITY.md`: extended the "single-process semantics" entry with an
+  explicit "persistent unreadable state" paragraph. On chronic `EACCES`/`EIO`
+  on the state file the middleware preserves the prior counter (does not
+  overwrite) and falls back to an in-memory cap valid for the current
+  process only — i.e. the cross-restart guarantee degrades to "cross-call
+  within one session". Mercury's server-side limits remain the load-bearing
+  control under that condition.
+
 ## [0.7.4] - 2026-04-18
 
 ### Fixed
