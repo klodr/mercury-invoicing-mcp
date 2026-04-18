@@ -178,7 +178,11 @@ jobs:
           if [ -n "$NON_ALLOWED" ]; then
             echo "ERROR: npm audit signatures had unrecognised lines (rc=$AUDIT_RC):" >&2
             echo "$NON_ALLOWED" >&2
-            exit "${AUDIT_RC:-1}"
+            # Force non-zero exit even if npm itself returned 0 — the
+            # presence of any non-allowed line is itself a failure.
+            rc="${AUDIT_RC:-0}"
+            [ "$rc" -eq 0 ] && rc=1
+            exit "$rc"
           fi
           if [ "$AUDIT_RC" -ne 0 ] && [ -z "$(echo "$AUDIT_OUT" | tr -d '[:space:]')" ]; then
             echo "ERROR: npm audit signatures returned rc=$AUDIT_RC with empty output" >&2
