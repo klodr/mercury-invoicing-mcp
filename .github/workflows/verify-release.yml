@@ -54,7 +54,7 @@ jobs:
           echo "Attestation URL: $ATT"
           mkdir verify-tmp && cd verify-tmp
           npm init -y >/dev/null
-          npm install --foreground-scripts --ignore-scripts "${PKG}@${VERSION}"
+          npm install --ignore-scripts "${PKG}@${VERSION}"
           npm audit signatures
 
       - name: Download signed assets from the GitHub Release
