@@ -33,6 +33,20 @@ If the maintainer is confirmed unable to continue, anyone can:
    flow — this typically takes minutes once `NPM_TOKEN` is set.
 4. Update downstream MCP client configs to point at the fork's package.
 
+### Takeover checklist for the first release
+
+Before announcing the fork as the active continuation, the new
+maintainer should:
+
+- [ ] Run the full test suite locally: `npm ci && npm test` — must pass on Node 18, 20, 22
+- [ ] Run `npm run build` and confirm the build succeeds with no warnings
+- [ ] Bump the version (`npm version patch`) and add a `## [Unreleased]` → `## [X.Y.Z]` entry to `CHANGELOG.md`
+- [ ] Tag with a signed tag: `git tag -s vX.Y.Z -m "..." && git push origin vX.Y.Z`
+- [ ] Confirm the `Release & npm publish` workflow ran green and uploaded **all three** assets to the GitHub Release: `dist/index.js`, `dist/index.js.sigstore`, `dist/index.js.intoto.jsonl`
+- [ ] Verify npm provenance: `npm view <fork-package>@<version> dist.attestations` returns a non-empty array
+- [ ] Verify the Sigstore signature using the procedure in [SECURITY.md → Verifying releases](./SECURITY.md#verifying-releases)
+- [ ] Update the README badges and `CONTINUITY.md` references to point at the fork's GitHub repository and npm package
+
 There is no organisational lock-in: every secret and every external
 service can be re-provisioned by the new maintainer, typically within
 hours, depending on third-party account approval and token issuance times.
