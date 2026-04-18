@@ -56,6 +56,51 @@ maintainer commits to, and limits that callers must account for.
   uses `crypto.randomUUID()` from Node's standard library for idempotency
   keys; everything else relies on TLS and Sigstore.
 
+## Verifying releases
+
+Every published release of `mercury-invoicing-mcp` is cryptographically
+signed. There is **no private signing key** to manage: signing is keyless
+via [Sigstore](https://www.sigstore.dev/) using GitHub's OIDC identity
+through the [`actions/attest-build-provenance`](https://github.com/actions/attest-build-provenance)
+workflow. The trust chain is: GitHub OIDC → Fulcio (short-lived cert) →
+Rekor (transparency log).
+
+Three independent ways to verify:
+
+### 1. npm package — npm CLI
+
+```bash
+# Verify the published tarball matches the GitHub release that built it
+npm view mercury-invoicing-mcp@<version> --json | jq .dist.attestations
+npm install --foreground-scripts --ignore-scripts mercury-invoicing-mcp@<version>
+# or, for the strict provenance check:
+npm audit signatures
+```
+
+### 2. GitHub Release artifacts — `gh attestation`
+
+```bash
+# Verify the dist/index.js artifact attached to the release
+gh release download v<version> --repo klodr/mercury-invoicing-mcp --pattern 'index.js*'
+gh attestation verify index.js --repo klodr/mercury-invoicing-mcp
+```
+
+### 3. SLSA in-toto attestation — `cosign`
+
+The `.intoto.jsonl` file in each release is a SLSA build provenance
+statement signed via Sigstore. Verify with [cosign](https://docs.sigstore.dev/cosign/installation/):
+
+```bash
+cosign verify-blob \
+  --bundle index.js.sigstore \
+  --certificate-identity-regexp '^https://github\.com/klodr/mercury-invoicing-mcp/' \
+  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+  index.js
+```
+
+Any verification failure means the artifact was not built by the
+official release pipeline — do not install it.
+
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability in `mercury-invoicing-mcp`, please report it **privately** so we can address it before any disclosure.
