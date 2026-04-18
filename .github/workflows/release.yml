@@ -41,8 +41,9 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # upload signed artifacts to the GitHub Release
-      id-token: write   # npm provenance + Sigstore keyless signing
+      contents: write       # upload signed artifacts to the GitHub Release
+      id-token: write       # npm provenance + Sigstore keyless signing
+      attestations: write   # actions/attest-build-provenance writes to the attestation API
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
@@ -66,16 +67,20 @@ jobs:
       # so a transient failure on signing or asset upload doesn't leave us
       # stuck with a published version we cannot re-run the workflow for.
 
-      - name: Install Sigstore CLI
-        run: npm install -g @sigstore/cli@1.0.0
-
-      - name: Sign dist/index.js with Sigstore (keyless OIDC, bundle format)
-        run: sigstore sign --bundle dist/index.js.sigstore dist/index.js
+      - name: Generate Sigstore attestation for dist/index.js
+        id: attest
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: dist/index.js
 
       - name: Attach signed artifacts to the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
         run: |
+          test -n "${BUNDLE_PATH:-}" || { echo "Missing attestation bundle-path output"; exit 1; }
+          test -f "$BUNDLE_PATH" || { echo "Bundle file not found: $BUNDLE_PATH"; exit 1; }
+          cp "$BUNDLE_PATH" dist/index.js.sigstore
           gh release upload "${{ github.event.release.tag_name }}" \
             dist/index.js \
             dist/index.js.sigstore \
