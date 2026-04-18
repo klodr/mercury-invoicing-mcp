@@ -80,16 +80,23 @@ jobs:
           done
 
       - name: Path 2 — gh attestation verify
+        # Pin the signer workflow path AND the source ref so that an
+        # attestation produced by any other workflow in the repo (or by
+        # release.yml on a different ref) is rejected.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh attestation verify verify-assets/index.js \
-            --repo "${{ github.repository }}"
+            --repo "${{ github.repository }}" \
+            --signer-workflow "${{ github.repository }}/.github/workflows/release.yml" \
+            --source-ref "refs/tags/${TAG}"
 
       - name: Path 3 — cosign verify-blob-attestation
+        # Same hardening: replace the open identity-regexp with the exact
+        # Fulcio SAN that release.yml at this tag would have produced.
         run: |
           cosign verify-blob-attestation \
             --bundle verify-assets/index.js.sigstore \
-            --certificate-identity-regexp '^https://github\.com/${{ github.repository }}/' \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${TAG}" \
             --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
             verify-assets/index.js
