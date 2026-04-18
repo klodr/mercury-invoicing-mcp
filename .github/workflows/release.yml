@@ -84,7 +84,7 @@ jobs:
             echo "notes<<CHANGELOG_EOF"
             echo "$NOTES"
             echo ""
-            echo "**Full changelog:** https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md"
+            echo "**Full changelog:** https://github.com/${{ github.repository }}/blob/${TAG}/CHANGELOG.md"
             echo "**npm:** https://www.npmjs.com/package/mercury-invoicing-mcp/v/${VERSION}"
             echo "CHANGELOG_EOF"
           } >> "$GITHUB_OUTPUT"
