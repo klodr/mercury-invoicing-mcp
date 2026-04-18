@@ -106,7 +106,7 @@ Three independent ways to verify:
 ```bash
 # Verify the published tarball matches the GitHub release that built it
 npm view mercury-invoicing-mcp@<version> --json | jq .dist.attestations
-npm install --foreground-scripts --ignore-scripts mercury-invoicing-mcp@<version>
+npm install --ignore-scripts mercury-invoicing-mcp@<version>
 # or, for the strict provenance check:
 npm audit signatures
 ```
