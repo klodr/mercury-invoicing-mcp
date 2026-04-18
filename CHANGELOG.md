@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-04-18
+
+### Changed
+
+- `.github/workflows/verify-release.yml` — Path 1 `npm install` now downloads
+  the tarball explicitly, verifies its SHA-1 against the registry-published
+  `dist.shasum`, and installs the local file (instead of `npm install
+  <pkg>@<version>`). Fixes Scorecard `Pinned-Dependencies` finding.
+  Functionally equivalent install (still `--ignore-scripts`), but every byte
+  that hits `node_modules` is hash-verified against registry metadata.
+  Symmetric to klodr/faxdrop-mcp v0.1.6.
+
 ## [0.7.6] - 2026-04-18
 
 ### Changed
