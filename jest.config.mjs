@@ -21,6 +21,10 @@ export default {
     ],
   },
   testMatch: ["**/test/**/*.test.ts"],
+  // Auto-restore any jest.spyOn/jest.fn between tests, even if an
+  // assertion throws — prevents spies from leaking and silencing
+  // console output in subsequent tests.
+  restoreMocks: true,
   collectCoverageFrom: [
     "src/**/*.ts",
     "!src/**/*.d.ts",
