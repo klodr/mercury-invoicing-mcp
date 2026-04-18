@@ -65,7 +65,7 @@ weaknesses have been countered.
 
 ## 2. Trust boundaries
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                    User's machine                       │
 │  ┌──────────┐   stdio    ┌────────────────┐            │
