@@ -123,7 +123,13 @@ jobs:
           KEYS_JSON=$(curl --fail --show-error --silent --max-time 30 \
                        --retry 3 --retry-all-errors \
                        https://registry.npmjs.org/-/npm/v1/keys)
-          PUBKEY_B64=$(echo "$KEYS_JSON" | jq -er ".keys[] | select(.keyid == \"$KEYID\") | .key")
+          PUBKEY_B64=$(echo "$KEYS_JSON" | jq -r ".keys[] | select(.keyid == \"$KEYID\") | .key")
+          if [ -z "$PUBKEY_B64" ]; then
+            echo "ERROR: public key for keyid '$KEYID' not found in npm registry keys" >&2
+            echo "Available keyids in /-/npm/v1/keys:" >&2
+            echo "$KEYS_JSON" | jq -r '.keys[].keyid' >&2
+            exit 1
+          fi
           {
             echo "-----BEGIN PUBLIC KEY-----"
             echo "$PUBKEY_B64" | fold -w 64
