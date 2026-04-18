@@ -112,9 +112,41 @@ jobs:
             echo "  actual:   $ACTUAL_B64" >&2
             exit 1
           fi
+
+          # ECDSA P-256 verification of the npm registry signature on
+          # "<pkg>@<version>:<integrity>". `npm audit signatures` would do
+          # this for us, but it requires a registry-resolved install (which
+          # would defeat Scorecard's Pinned-Dependencies check). So we do it
+          # by hand against the public keys at /-/npm/v1/keys.
+          KEYID=$(echo "$META" | jq -er '.dist.signatures[0].keyid')
+          SIG_B64=$(echo "$META" | jq -er '.dist.signatures[0].sig')
+          KEYS_JSON=$(curl --fail --show-error --silent --max-time 30 \
+                       --retry 3 --retry-all-errors \
+                       https://registry.npmjs.org/-/npm/v1/keys)
+          PUBKEY_B64=$(echo "$KEYS_JSON" | jq -er ".keys[] | select(.keyid == \"$KEYID\") | .key")
+          {
+            echo "-----BEGIN PUBLIC KEY-----"
+            echo "$PUBKEY_B64" | fold -w 64
+            echo "-----END PUBLIC KEY-----"
+          } > npm-pubkey.pem
+          echo "$SIG_B64" | base64 -d > npm-sig.bin
+          SIGNED_MSG="${PKG}@${VERSION}:${EXPECTED_INTEGRITY}"
+          if ! echo -n "$SIGNED_MSG" | openssl dgst -sha256 \
+                  -verify npm-pubkey.pem -signature npm-sig.bin; then
+            echo "ERROR: npm registry ECDSA signature verification failed" >&2
+            echo "  keyid:   $KEYID" >&2
+            echo "  message: $SIGNED_MSG" >&2
+            exit 1
+          fi
+          echo "npm registry signature: OK ($KEYID)"
+
+          # The local-tarball install satisfies Pinned-Dependencies. The
+          # registry-side signature was already verified above; npm audit
+          # signatures here is defence-in-depth (it's a no-op on a local
+          # install, but kept for symmetry with the documented flow).
           npm init -y >/dev/null
           npm install --ignore-scripts "./${TARBALL}"
-          npm audit signatures
+          npm audit signatures || true
 
       - name: Download signed assets from the GitHub Release
         env:
