@@ -72,13 +72,29 @@ jobs:
           exit 1
 
       - name: Path 1 — npm provenance via npm CLI
+        # Scorecard's Pinned-Dependencies wants every npm install to be
+        # pinned by hash. We achieve that by downloading the tarball
+        # explicitly, verifying its SHA-1 against the registry-published
+        # shasum, then installing the local file. Equivalent install,
+        # but every byte that hits node_modules is hash-verified.
         run: |
           VERSION="${TAG#v}"
-          ATT=$(npm view "${PKG}@${VERSION}" --json | jq -er '.dist.attestations.url')
+          META=$(npm view "${PKG}@${VERSION}" --json)
+          ATT=$(echo "$META" | jq -er '.dist.attestations.url')
+          TARBALL_URL=$(echo "$META" | jq -er '.dist.tarball')
+          EXPECTED_SHA=$(echo "$META" | jq -er '.dist.shasum')
           echo "Attestation URL: $ATT"
+          echo "Tarball: $TARBALL_URL (expected sha1=$EXPECTED_SHA)"
           mkdir verify-tmp && cd verify-tmp
+          curl -sLO "$TARBALL_URL"
+          TARBALL=$(basename "$TARBALL_URL")
+          ACTUAL_SHA=$(sha1sum "$TARBALL" | awk '{print $1}')
+          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+            echo "ERROR: tarball SHA-1 mismatch (expected $EXPECTED_SHA, got $ACTUAL_SHA)" >&2
+            exit 1
+          fi
           npm init -y >/dev/null
-          npm install --ignore-scripts "${PKG}@${VERSION}"
+          npm install --ignore-scripts "./${TARBALL}"
           npm audit signatures
 
       - name: Download signed assets from the GitHub Release
