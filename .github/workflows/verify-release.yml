@@ -160,8 +160,16 @@ jobs:
           set -e
           echo "$AUDIT_OUT"
           if [ "$AUDIT_RC" -ne 0 ]; then
-            # Local-tarball / no-registry-source case: npm reports nothing to audit
-            if echo "$AUDIT_OUT" | grep -qiE "no signatures|nothing to audit|0 packages|no packages with signatures|did not find any registry"; then
+            # Tolerate ONLY the exact phrases npm emits when the install
+            # has no registry-sourced packages to audit (which is the
+            # legitimate state after `npm install ./tarball.tgz`):
+            #   - "audited 0 packages in …"          (npm 10+)
+            #   - "verified registry signatures of 0 packages"
+            #   - "no packages with provenance to verify"
+            # Anything else (bad signature on a transitive registry dep,
+            # network error, etc.) propagates and fails the job.
+            if echo "$AUDIT_OUT" | grep -qiE \
+              '(^|[^[:alnum:]])audited 0 packages|verified registry signatures of 0 packages|no packages with provenance to verify'; then
               echo "npm audit signatures: nothing to verify on a local install — OK"
             else
               echo "ERROR: npm audit signatures failed (rc=$AUDIT_RC) with unrecognised output" >&2
