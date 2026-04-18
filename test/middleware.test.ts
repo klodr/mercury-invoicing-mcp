@@ -8,11 +8,24 @@ import {
   logAudit,
 } from "../src/middleware.js";
 import { MercuryError } from "../src/client.js";
-import { mkdtempSync, readFileSync, statSync, rmSync } from "node:fs";
+import {
+  chmodSync,
+  closeSync,
+  fstatSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 describe("Middleware", () => {
+  let stateDir: string;
+
   beforeEach(() => {
     delete process.env.MERCURY_MCP_DRY_RUN;
     delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
@@ -20,7 +33,14 @@ describe("Middleware", () => {
     delete process.env.MERCURY_MCP_RATE_LIMIT_money;
     delete process.env.MERCURY_MCP_RATE_LIMIT_invoicing;
     delete process.env.MERCURY_MCP_RATE_LIMIT_banking;
+    stateDir = mkdtempSync(join(tmpdir(), "mercury-state-"));
+    process.env.MERCURY_MCP_STATE_DIR = stateDir;
     resetRateLimitHistory();
+  });
+
+  afterEach(() => {
+    delete process.env.MERCURY_MCP_STATE_DIR;
+    rmSync(stateDir, { recursive: true, force: true });
   });
 
   describe("enforceRateLimit", () => {
@@ -69,6 +89,90 @@ describe("Middleware", () => {
       expect(errSpy).toHaveBeenCalledWith(
         expect.stringContaining("Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoicing"),
       );
+      errSpy.mockRestore();
+    });
+
+    it("persists call history across simulated process restarts", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "2/day";
+      enforceRateLimit("mercury_send_money");
+
+      // Open the persisted state once and use fstat + read on the same fd
+      // (avoids the path-based TOCTOU pattern that CodeQL flags).
+      const stateFile = join(stateDir, "ratelimit.json");
+      const fd = openSync(stateFile, "r");
+      try {
+        const stat = fstatSync(fd);
+        expect(stat.mode & 0o777).toBe(0o600);
+        const persisted = JSON.parse(readFileSync(fd, "utf8")) as Record<string, number[]>;
+        expect(persisted.money).toHaveLength(1);
+      } finally {
+        closeSync(fd);
+      }
+
+      // Simulate restart: clear in-memory only, state file remains
+      resetRateLimitHistory();
+      enforceRateLimit("mercury_send_money"); // 2nd
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+    });
+
+    it("starts fresh when state file is corrupted", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      writeFileSync(join(stateDir, "ratelimit.json"), "{not valid json");
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("corrupted state"));
+      errSpy.mockRestore();
+    });
+
+    it("logs (and does not throw) when the state file cannot be read", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      // Existing state file with mode 0 → readFileSync raises EACCES (not ENOENT).
+      mkdirSync(stateDir, { recursive: true });
+      const stateFile = join(stateDir, "ratelimit.json");
+      writeFileSync(stateFile, "{}");
+      chmodSync(stateFile, 0o000);
+      try {
+        expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+      } finally {
+        chmodSync(stateFile, 0o600);
+      }
+      expect(errSpy).toHaveBeenCalledWith(expect.stringMatching(/failed to read state from/));
+      errSpy.mockRestore();
+    });
+
+    it("does NOT clobber an unreadable state file when persisting", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      // Pre-existing state file with prior counter, made unreadable mid-session.
+      mkdirSync(stateDir, { recursive: true });
+      const stateFile = join(stateDir, "ratelimit.json");
+      const originalContent = '{"money":[1,2,3]}';
+      writeFileSync(stateFile, originalContent);
+      chmodSync(stateFile, 0o000);
+      try {
+        enforceRateLimit("mercury_send_money");
+      } finally {
+        chmodSync(stateFile, 0o600);
+      }
+      // The file must still hold the original counter — fail-closed on persist.
+      expect(readFileSync(stateFile, "utf8")).toBe(originalContent);
+      errSpy.mockRestore();
+    });
+
+    it("logs (and does not throw) when the state file cannot be persisted", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      // Pre-create the state dir read-only so writeFileSync(tmp) raises EACCES.
+      mkdirSync(stateDir, { recursive: true });
+      chmodSync(stateDir, 0o500);
+      try {
+        expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+      } finally {
+        chmodSync(stateDir, 0o700);
+      }
+      expect(errSpy).toHaveBeenCalledWith(expect.stringMatching(/failed to persist state to/));
       errSpy.mockRestore();
     });
   });

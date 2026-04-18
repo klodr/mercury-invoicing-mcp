@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-04-18
+
+### Fixed
+
+- **Rate-limit state now survives process restarts.** MCP hosts that respawn the
+  server per session (Claude Desktop, Claude Code, Cursor with stdio transport)
+  used to silently reset the in-memory `callHistory`, defeating the daily caps.
+  State is now persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`,
+  atomic write via `rename`). Override the location with the new
+  `MERCURY_MCP_STATE_DIR` env var. Corrupted state files are detected and the
+  middleware starts fresh with a logged warning. Tests added: cross-restart
+  enforcement, mode `0o600` verification, corrupted-file recovery.
+
+### Documentation
+
+- `SECURITY.md`: new entry under "What this MCP does NOT protect against"
+  describing prompt injection through Mercury response data — counterparty-
+  controlled fields (`customer.name`, `recipient.note`, invoice memos,
+  transaction descriptions) are forwarded verbatim to the LLM. Reminder that
+  read-then-write chains require explicit user confirmation.
+- `SECURITY.md` + `README.md`: documented `MERCURY_MCP_STATE_DIR` and the
+  cross-restart guarantee.
+
 ## [0.7.3] - 2026-04-18
 
 ### Fixed
