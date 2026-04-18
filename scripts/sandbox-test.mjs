@@ -66,9 +66,9 @@ if (accId) {
 }
 await run("mercury_list_categories", "mercury_list_categories");
 await run("mercury_get_organization", "mercury_get_organization");
-const recipients = await run("mercury_list_recipients", "mercury_list_recipients");
+await run("mercury_list_recipients", "mercury_list_recipients");
 await run("mercury_get_treasury", "mercury_get_treasury");
-const trAccs = await run("mercury_list_treasury_transactions (existing tr ID)", "mercury_list_treasury_transactions", { accountId: "00000000-0000-0000-0000-000000000000" });
+await run("mercury_list_treasury_transactions (existing tr ID)", "mercury_list_treasury_transactions", { accountId: "00000000-0000-0000-0000-000000000000" });
 
 console.log("\n=== WRITES — BANKING ===");
 const newRec = await run("mercury_add_recipient (TEST)", "mercury_add_recipient", {

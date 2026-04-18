@@ -144,6 +144,6 @@ This policy covers vulnerabilities in this repository's code (the MCP server its
 - **Never** commit your `MERCURY_API_KEY` to version control. Use environment variables or your MCP client's secret management.
 - Use **scoped tokens** with the minimum permissions you need.
 - Be aware that exposing write tools (send_money, create_invoice, etc.) to an LLM that processes untrusted content opens a prompt injection vector. Use read-only tokens or human-in-the-loop confirmation for write operations.
-- Keep this package updated; vulnerable versions will trigger Dependabot alerts on your projects.
+- Keep this package updated; vulnerable versions may trigger Dependabot alerts on projects that depend on it, provided Dependabot security updates are enabled for the consuming repository.
 
 Thanks for helping keep `mercury-invoicing-mcp` and its users safe.
