@@ -144,7 +144,7 @@ jobs:
           } > npm-pubkey.pem
           echo "$SIG_B64" | base64 -d > npm-sig.bin
           SIGNED_MSG="${PKG}@${VERSION}:${EXPECTED_INTEGRITY}"
-          if ! echo -n "$SIGNED_MSG" | openssl dgst -sha256 \
+          if ! printf '%s' "$SIGNED_MSG" | openssl dgst -sha256 \
                   -verify npm-pubkey.pem -signature npm-sig.bin; then
             echo "ERROR: npm registry ECDSA signature verification failed" >&2
             echo "  keyid:   $KEYID" >&2
