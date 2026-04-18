@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-04-18
+
+### Changed
+
+- `SECURITY.md`: switched the `cosign verify-blob-attestation` example to `--bundle index.js.sigstore` (the actual Sigstore bundle file with the Fulcio cert chain + Rekor inclusion proof). The previous `--signature index.js.intoto.jsonl` form could not complete keyless verification on its own. The companion `index.js.intoto.jsonl` asset is documented as the SLSA-format file consumed by tools that scan release assets by extension (Scorecard `Signed-Releases`).
+- `SECURITY.md`: softened the "vulnerable versions will trigger Dependabot alerts" line to a conditional "may trigger ... provided Dependabot security updates are enabled" — alerts depend on the consuming repository's configuration.
+
+### Fixed
+
+- `scripts/sandbox-test.mjs`: removed two unused `const` assignments (`recipients`, `trAccs`) flagged by CodeQL alerts #20 / #21. The `await run(...)` calls remain for their smoke-test side effect.
+
 ## [0.7.0] - 2026-04-18
 
 ### Added
