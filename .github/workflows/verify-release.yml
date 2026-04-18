@@ -15,7 +15,13 @@ permissions:
 jobs:
   verify:
     name: Re-run the three SECURITY.md verify paths
-    if: github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')
+    # Only fire when the upstream workflow was triggered by a tag push
+    # (event == 'push'), succeeded, and the ref looks like a version tag.
+    # We re-validate the exact tag format in the first step below.
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-latest
     permissions:
       contents: read         # gh release download
@@ -24,6 +30,18 @@ jobs:
       PKG: mercury-invoicing-mcp
       TAG: ${{ github.event.workflow_run.head_branch }}
     steps:
+      - name: Validate TAG format (semver, no shell metacharacters)
+        # head_branch is whatever ref triggered the upstream workflow. We
+        # already filtered on event=push and startsWith(v) at the job level,
+        # but TAG ends up in `cosign --certificate-identity ...@refs/tags/${TAG}`
+        # and in shell strings, so re-validate the bytes before they reach
+        # any subprocess. Reject anything that isn't strict semver.
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "ERROR: refusing to verify with TAG='$TAG' — not a semver tag" >&2
+            exit 1
+          fi
+
       - name: Setup Node 20
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.0.0
         with:
@@ -33,18 +51,24 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
 
-      - name: Wait for npm to propagate the new version
+      - name: Wait for npm to propagate the new version AND its attestations
+        # npm publishes in steps: version metadata → tarball → provenance
+        # attestations. Polling on .version alone races against
+        # .dist.attestations.url being still null when Path 1 runs.
         run: |
           VERSION="${TAG#v}"
           for i in 1 2 3 4 5 6 7 8 9 10; do
-            if [ "$(npm view "${PKG}@${VERSION}" version 2>/dev/null)" = "$VERSION" ]; then
-              echo "npm OK: ${PKG}@${VERSION}"
+            META=$(npm view "${PKG}@${VERSION}" --json 2>/dev/null || echo '{}')
+            VER_OK=$(printf '%s' "$META" | jq -r '.version // ""')
+            ATT_OK=$(printf '%s' "$META" | jq -r '.dist.attestations.url // ""')
+            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ]; then
+              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK)"
               exit 0
             fi
-            echo "Waiting for npm propagation... ($i/10)"
+            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}) — $i/10"
             sleep 10
           done
-          echo "Timeout waiting for npm to publish ${PKG}@${VERSION}" >&2
+          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations)" >&2
           exit 1
 
       - name: Path 1 — npm provenance via npm CLI
