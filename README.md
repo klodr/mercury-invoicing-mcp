@@ -72,13 +72,17 @@ Common scope recipes for this MCP:
 | Outbound send-money requests | + Write on `send_money` (creates the request — see safety note below) |
 | Webhooks-only ops | Write on `webhooks` only |
 
-### Important: Mercury never auto-executes outbound payments
+### Important: outbound payments depend on YOUR Mercury approval policy
 
-Every **external** money movement created by this MCP — `send_money`, `request_send_money` — is queued as a **pending request inside Mercury** and **must be approved by a human in the Mercury web app or mobile app** before any funds leave the account. The token scope authorises the MCP to *create* the request; it cannot bypass Mercury's approval workflow.
+Whether an outbound payment created via this MCP executes immediately or waits for human approval is **not controlled by the MCP** — it is enforced by your Mercury workspace's approval policy (Settings → Approvals on app.mercury.com). The MCP can only ever *create* the API call; what Mercury does with it is up to your workspace configuration.
 
-The only money operations that complete without explicit human re-approval are **internal transfers between accounts you own** (`create_internal_transfer`) — funds stay inside your Mercury organisation.
+The three money tools behave differently:
 
-So even if a prompt-injected agent calls `send_money` with attacker-chosen recipient and amount, you (or whoever holds approval rights in your Mercury workspace) still see the pending request in the Mercury UI and can reject it before money moves. This is a **structural safety boundary on Mercury's side**, not just a feature of the MCP.
+- **`mercury_request_send_money`** — always creates a **pending approval request** in Mercury, regardless of workspace policy. Designed for the "submit, then wait for an approver" workflow.
+- **`mercury_send_money`** — submits a payment. It executes immediately *or* gets queued for approval, **depending on your workspace's approval rules** (amount thresholds, account-specific rules, required approvers). On a workspace configured with a $0 approval threshold, every outbound payment waits for human sign-off in the Mercury web/mobile app. On a more permissive workspace, smaller payments may settle without re-prompting.
+- **`mercury_create_internal_transfer`** — moves money between two accounts **you already own** inside the same Mercury organisation. No external recipient, no approval workflow.
+
+→ **Set a strict approval policy in Mercury** (e.g. require approval for any outbound payment, regardless of amount) if you intend to expose write tools to an agent. The MCP's per-call rate limits and dry-run mode are useful belt-and-braces, but the authoritative gate is Mercury's approval policy. If a prompt-injected agent calls `send_money`, the safety of that call depends entirely on what Mercury would have done if the same payload arrived from any other API caller.
 
 ### Sandbox mode
 
