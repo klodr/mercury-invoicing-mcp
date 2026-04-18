@@ -9,21 +9,11 @@
  */
 
 import * as fc from "fast-check";
-import { redactSensitive } from "../src/middleware.js";
+import { redactSensitive, SENSITIVE_KEYS } from "../src/middleware.js";
 import { MercuryError } from "../src/client.js";
 
-// Keep redactSensitive's source-of-truth list in sync with this set.
-// If a future PR widens it, the property below will catch missed cases.
-const SENSITIVE_KEYS = [
-  "accountnumber",
-  "routingnumber",
-  "apikey",
-  "authorization",
-  "password",
-  "token",
-  "secret",
-  "ssn",
-] as const;
+// SENSITIVE_KEYS is imported from src/middleware.ts so the property tests
+// stay in sync with the canonical list — no risk of drift.
 
 describe("Fuzz: redactSensitive", () => {
   it("never leaks any value stored under a sensitive key, at any depth", () => {
