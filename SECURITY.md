@@ -34,10 +34,19 @@ maintainer commits to, and limits that callers must account for.
   an append-only JSON Lines record (file mode `0o600`, sensitive fields
   redacted) of every write call.
 - **Persistent rate-limit state**: the rate-limit window survives MCP process
-  restarts. State is written to `~/.mercury-mcp/ratelimit.json` (mode `0o600`)
-  by default; override with `MERCURY_MCP_STATE_DIR=/abs/path`. Without
-  persistence, an MCP host that respawns the server per session would reset
-  the counter and silently bypass the limit.
+  restarts. State is written to `~/.mercury-mcp/ratelimit.json` (mode `0o600`,
+  atomic `rename` of a per-write tmp file with PID+UUID suffix) by default;
+  override with `MERCURY_MCP_STATE_DIR=/abs/path`. Without persistence, an MCP
+  host that respawns the server per session would reset the counter and
+  silently bypass the limit. **Single-process semantics**: this MCP assumes
+  one process per `MERCURY_MCP_STATE_DIR` at a time. If you run two MCP hosts
+  concurrently against the same state directory (e.g. Claude Desktop and
+  Cursor on the same user account), the read-modify-write cycle is not
+  inter-process locked — the last writer wins and an in-flight call recorded
+  by the other process can be dropped, slightly under-counting against the
+  per-day limit. Mercury's own server-side limits remain authoritative; for
+  this MCP's local cap, treat the local rate-limit as best-effort under
+  concurrent-host conditions.
 
 ### What this MCP does NOT protect against
 

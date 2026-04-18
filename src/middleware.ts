@@ -3,6 +3,7 @@
  */
 
 import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
 import { MercuryError } from "./client.js";
@@ -106,11 +107,16 @@ function loadCallHistory(): void {
 
 function persistCallHistory(): void {
   const path = getStateFile();
+  // Per-write unique tmp filename so two MCP processes that both call
+  // persistCallHistory at the same instant cannot clobber each other's
+  // tmp file before either rename completes. The rename itself is atomic.
+  // Caveat: this still does not give us inter-process serialization of the
+  // read-modify-write cycle — see SECURITY.md "single-process state" entry.
+  const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
     mkdirSync(join(path, ".."), { recursive: true, mode: 0o700 });
     const obj: Record<string, number[]> = {};
     for (const [k, v] of callHistory) obj[k] = v;
-    const tmp = `${path}.tmp`;
     writeFileSync(tmp, JSON.stringify(obj), { mode: 0o600 });
     renameSync(tmp, path);
   } catch (err) {
