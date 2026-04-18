@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-04-18
+
+### Fixed
+- `release.yml`: replaced the incorrect `@sigstore/cli@1.0.0` install (no such version, no `sign` subcommand) with `actions/attest-build-provenance@v4.1.0`. The v0.6.0 release run failed at the install step, so 0.6.0 was never published to npm — 0.6.1 ships the same code as 0.6.0 plus a working signing pipeline.
+- `release.yml`: added a `BUNDLE_PATH` guard before `cp` so a missing attestation output produces a self-explanatory error instead of a generic `cp` failure.
+
 ## [0.6.0] - 2026-04-18
 
 ### Added
