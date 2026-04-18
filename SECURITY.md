@@ -91,8 +91,8 @@ The `.intoto.jsonl` file in each release is a SLSA build provenance
 statement signed via Sigstore. Verify with [cosign](https://docs.sigstore.dev/cosign/installation/):
 
 ```bash
-cosign verify-blob \
-  --bundle index.js.sigstore \
+cosign verify-blob-attestation \
+  --signature index.js.intoto.jsonl \
   --certificate-identity-regexp '^https://github\.com/klodr/mercury-invoicing-mcp/' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   index.js
