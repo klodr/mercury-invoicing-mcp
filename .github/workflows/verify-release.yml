@@ -147,12 +147,27 @@ jobs:
           echo "npm registry signature: OK ($KEYID)"
 
           # The local-tarball install satisfies Pinned-Dependencies. The
-          # registry-side signature was already verified above; npm audit
-          # signatures here is defence-in-depth (it's a no-op on a local
-          # install, but kept for symmetry with the documented flow).
+          # registry-side signature was already verified above. We still
+          # invoke `npm audit signatures` for defence-in-depth, but a local
+          # install legitimately has nothing to audit registry-side; only
+          # tolerate exit codes that say exactly that, propagate everything
+          # else.
           npm init -y >/dev/null
           npm install --ignore-scripts "./${TARBALL}"
-          npm audit signatures || true
+          set +e
+          AUDIT_OUT=$(npm audit signatures 2>&1)
+          AUDIT_RC=$?
+          set -e
+          echo "$AUDIT_OUT"
+          if [ "$AUDIT_RC" -ne 0 ]; then
+            # Local-tarball / no-registry-source case: npm reports nothing to audit
+            if echo "$AUDIT_OUT" | grep -qiE "no signatures|nothing to audit|0 packages|no packages with signatures|did not find any registry"; then
+              echo "npm audit signatures: nothing to verify on a local install — OK"
+            else
+              echo "ERROR: npm audit signatures failed (rc=$AUDIT_RC) with unrecognised output" >&2
+              exit "$AUDIT_RC"
+            fi
+          fi
 
       - name: Download signed assets from the GitHub Release
         env:
