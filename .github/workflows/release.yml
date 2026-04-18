@@ -89,16 +89,24 @@ jobs:
             echo "CHANGELOG_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release for ${{ github.ref_name }}
+      # Idempotent so a re-run after a later-step failure does not block here.
+      - name: Create or update GitHub Release for ${{ github.ref_name }}
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           NOTES: ${{ steps.changelog.outputs.notes }}
         run: |
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes "$NOTES" \
-            --repo "${{ github.repository }}"
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release edit "$TAG" \
+              --title "$TAG" \
+              --notes "$NOTES" \
+              --repo "${{ github.repository }}"
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "$NOTES" \
+              --repo "${{ github.repository }}"
+          fi
 
       # Sign + upload signed assets BEFORE the (non-idempotent) npm publish,
       # so a transient failure on signing or asset upload doesn't leave us
