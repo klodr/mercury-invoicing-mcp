@@ -1,4 +1,12 @@
-import { enforceRateLimit, RateLimitError, isDryRun, wrapToolHandler, resetRateLimitHistory, redactSensitive, logAudit } from "../src/middleware.js";
+import {
+  enforceRateLimit,
+  RateLimitError,
+  isDryRun,
+  wrapToolHandler,
+  resetRateLimitHistory,
+  redactSensitive,
+  logAudit,
+} from "../src/middleware.js";
 import { MercuryError } from "../src/client.js";
 import { mkdtempSync, readFileSync, statSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -119,7 +127,9 @@ describe("Middleware", () => {
       const result = await wrapped({ foo: "bar" });
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("Mercury API error 403");
-      expect(result.content[0].text).toContain("Mercury's Invoicing/Customers API requires the Plus plan");
+      expect(result.content[0].text).toContain(
+        "Mercury's Invoicing/Customers API requires the Plus plan",
+      );
     });
 
     it("converts MercuryError 403 on non-AR tool to isError without Plus-plan hint", async () => {
@@ -183,7 +193,9 @@ describe("Middleware", () => {
 
     it("recursively redacts nested objects", () => {
       const input = { wrapper: { creds: { password: "p@ss", username: "alice" } } };
-      const out = redactSensitive(input) as { wrapper: { creds: { password: string; username: string } } };
+      const out = redactSensitive(input) as {
+        wrapper: { creds: { password: string; username: string } };
+      };
       expect(out.wrapper.creds.password).toBe("[REDACTED]");
       expect(out.wrapper.creds.username).toBe("alice");
     });
@@ -204,7 +216,9 @@ describe("Middleware", () => {
     });
 
     it("redacts ssn, secret, token at any depth", () => {
-      const out = redactSensitive({ a: { b: { ssn: "123-45-6789", secret: "s", token: "t" } } }) as {
+      const out = redactSensitive({
+        a: { b: { ssn: "123-45-6789", secret: "s", token: "t" } },
+      }) as {
         a: { b: { ssn: string; secret: string; token: string } };
       };
       expect(out.a.b.ssn).toBe("[REDACTED]");
@@ -246,9 +260,7 @@ describe("Middleware", () => {
       const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_AUDIT_LOG = "relative/audit.log";
       logAudit("mercury_send_money", { amount: 1 }, "ok");
-      expect(errSpy).toHaveBeenCalledWith(
-        expect.stringContaining("must be an absolute path"),
-      );
+      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("must be an absolute path"));
       errSpy.mockRestore();
     });
 

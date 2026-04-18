@@ -5,17 +5,19 @@ import { z } from "zod";
 import { MercuryClient } from "../client.js";
 
 export function registerRecipientTools(server: McpServer, client: MercuryClient): void {
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_list_recipients",
     "List all payment recipients in your Mercury workspace.",
     {},
     async () => {
       const data = await client.get("/recipients");
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server,
+  defineTool(
+    server,
     "mercury_update_recipient",
     "Update an existing recipient. Mercury endpoint is POST /recipient/{id} (singular). All body fields are optional.",
     {
@@ -31,10 +33,11 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
     async ({ recipientId, ...body }) => {
       const data = await client.post(`/recipient/${recipientId}`, body);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server,
+  defineTool(
+    server,
     "mercury_add_recipient",
     "Add a new payment recipient. Requires read-write API token.",
     {
@@ -51,7 +54,12 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
         .object({
           accountNumber: z.string(),
           routingNumber: z.string(),
-          electronicAccountType: z.enum(["businessChecking", "businessSavings", "personalChecking", "personalSavings"]),
+          electronicAccountType: z.enum([
+            "businessChecking",
+            "businessSavings",
+            "personalChecking",
+            "personalSavings",
+          ]),
           address: z
             .object({
               address1: z.string(),
@@ -71,6 +79,6 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       const idem = idempotencyKey ?? randomUUID();
       const data = await client.post("/recipients", { ...body, idempotencyKey: idem });
       return textResult(data);
-    }
+    },
   );
 }

@@ -20,8 +20,8 @@ import { MercuryError } from "../src/client.js";
 // will fail on any of the variants below.
 const mixedCaseKeys = SENSITIVE_KEYS.flatMap((k) => [
   k.toUpperCase(),
-  k.charAt(0).toUpperCase() + k.slice(1),                                    // PascalCase
-  [...k].map((c, i) => (i % 2 === 0 ? c.toUpperCase() : c)).join(""),        // alternating
+  k.charAt(0).toUpperCase() + k.slice(1), // PascalCase
+  [...k].map((c, i) => (i % 2 === 0 ? c.toUpperCase() : c)).join(""), // alternating
 ]);
 
 describe("Fuzz: redactSensitive", () => {
@@ -83,9 +83,11 @@ describe("Fuzz: redactSensitive", () => {
       fc.property(
         fc.dictionary(
           // Only non-sensitive keys
-          fc.string({ minLength: 1, maxLength: 8 }).filter(
-            (k) => !SENSITIVE_KEYS.includes(k.toLowerCase() as (typeof SENSITIVE_KEYS)[number]),
-          ),
+          fc
+            .string({ minLength: 1, maxLength: 8 })
+            .filter(
+              (k) => !SENSITIVE_KEYS.includes(k.toLowerCase() as (typeof SENSITIVE_KEYS)[number]),
+            ),
           fc.oneof(fc.string(), fc.integer(), fc.boolean(), fc.constant(null)),
           { maxKeys: 8 },
         ),
@@ -123,7 +125,9 @@ describe("Fuzz: MercuryError serialisation", () => {
   // produce, AND filter `message` to make sure it never collides — otherwise
   // a chance match in `message` would falsely fail the property.
   const SENTINEL = "__LEAK_SENTINEL_4f9c2b__";
-  const safeMessage = fc.string({ minLength: 1, maxLength: 50 }).filter((m) => !m.includes(SENTINEL));
+  const safeMessage = fc
+    .string({ minLength: 1, maxLength: 50 })
+    .filter((m) => !m.includes(SENTINEL));
 
   it("toString never leaks the response body", () => {
     fc.assert(

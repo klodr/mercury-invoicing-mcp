@@ -39,7 +39,9 @@
     "dev": "tsup --watch",
     "start": "node dist/index.js",
     "lint": "eslint src",
-    "test": "jest --passWithNoTests",
+    "format": "prettier --write src test",
+    "format:check": "prettier --check src test",
+    "test": "jest",
     "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
@@ -51,14 +53,18 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.0",
-    "eslint": "^9.16.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
     "fast-check": "^4.7.0",
     "jest": "^30.3.0",
+    "prettier": "^3.8.3",
     "ts-jest": "^29.2.5",
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.58.2"
   },
   "overrides": {
     "test-exclude": "^8.0.0"

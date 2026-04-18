@@ -14,7 +14,7 @@ export class MercuryError extends Error {
   constructor(
     message: string,
     public status: number,
-    public body?: unknown
+    public body?: unknown,
   ) {
     super(message);
     this.name = "MercuryError";
@@ -42,7 +42,7 @@ export class MercuryClient {
   async request<T = unknown>(
     method: "GET" | "POST" | "PATCH" | "DELETE",
     path: string,
-    init: { body?: unknown; query?: Record<string, string | number | undefined> } = {}
+    init: { body?: unknown; query?: Record<string, string | number | undefined> } = {},
   ): Promise<T> {
     // Encode each path segment so user-supplied IDs cannot smuggle additional
     // path components or query strings into the Mercury URL (defense-in-depth
@@ -85,7 +85,7 @@ export class MercuryClient {
       throw new MercuryError(
         `Mercury API ${method} ${path} failed: ${res.status} ${res.statusText}`,
         res.status,
-        json
+        json,
       );
     }
 

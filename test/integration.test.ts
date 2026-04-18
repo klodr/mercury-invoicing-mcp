@@ -114,9 +114,14 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_transaction → GET single tx", async () => {
     await client.callTool({
       name: "mercury_get_transaction",
-      arguments: { accountId: "11111111-1111-4111-8111-111111111111", transactionId: "22222222-2222-4222-8222-222222222222" },
+      arguments: {
+        accountId: "11111111-1111-4111-8111-111111111111",
+        transactionId: "22222222-2222-4222-8222-222222222222",
+      },
     });
-    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222");
+    expect(calls[0].url).toContain(
+      "/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222",
+    );
   });
 
   it("mercury_send_money → POST with idempotency key", async () => {
@@ -147,7 +152,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
         paymentMethod: "ach",
       },
     });
-    expect(calls[0].url).toContain("/account/11111111-1111-4111-8111-111111111111/request-send-money");
+    expect(calls[0].url).toContain(
+      "/account/11111111-1111-4111-8111-111111111111/request-send-money",
+    );
   });
 
   it("mercury_update_transaction → PATCH /transaction/{id} (no accountId)", async () => {

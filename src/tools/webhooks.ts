@@ -12,17 +12,19 @@ const eventTypesDescription = `Event types to subscribe to. Common values:
 Check https://docs.mercury.com/reference/webhooks for the full list.`;
 
 export function registerWebhookTools(server: McpServer, client: MercuryClient): void {
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_list_webhooks",
     "List all webhook endpoints configured for your Mercury account.",
     {},
     async () => {
       const data = await client.get("/webhooks");
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_get_webhook",
     "Retrieve a specific webhook endpoint by ID.",
     {
@@ -31,10 +33,11 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     async ({ webhookId }) => {
       const data = await client.get(`/webhooks/${webhookId}`);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server, 
+  defineTool(
+    server,
     "mercury_create_webhook",
     "Register a new webhook endpoint. Mercury will POST events as JSON to the provided URL.",
     {
@@ -44,10 +47,11 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     async ({ url, events }) => {
       const data = await client.post("/webhooks", { url, events });
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server,
+  defineTool(
+    server,
     "mercury_update_webhook",
     "Update an existing webhook endpoint (URL, status, or events). Mercury endpoint is POST /webhooks/{id}. A webhook disabled after consecutive failures can be reactivated by setting status to 'active'.",
     {
@@ -59,10 +63,11 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     async ({ webhookId, ...body }) => {
       const data = await client.post(`/webhooks/${webhookId}`, body);
       return textResult(data);
-    }
+    },
   );
 
-  defineTool(server,
+  defineTool(
+    server,
     "mercury_delete_webhook",
     "Delete a webhook endpoint.",
     {
@@ -71,6 +76,6 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
     async ({ webhookId }) => {
       const data = await client.delete(`/webhooks/${webhookId}`);
       return textResult(data);
-    }
+    },
   );
 }
