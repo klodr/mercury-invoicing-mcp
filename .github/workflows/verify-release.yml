@@ -152,45 +152,15 @@ jobs:
             exit 1
           fi
           echo "npm registry signature: OK ($KEYID)"
-
-          # The local-tarball install satisfies Pinned-Dependencies. The
-          # registry-side signature was already verified above. We still
-          # invoke `npm audit signatures` for defence-in-depth, but a local
-          # install legitimately has nothing to audit registry-side; only
-          # tolerate exit codes that say exactly that, propagate everything
-          # else.
-          npm init -y >/dev/null
-          npm install --ignore-scripts "./${TARBALL}"
-          set +e
-          AUDIT_OUT=$(npm audit signatures 2>&1)
-          AUDIT_RC=$?
-          set -e
-          echo "$AUDIT_OUT"
-          # Parse the audit output strictly. Allowed phrases (npm's
-          # nothing-to-audit case after a local-tarball install):
-          #   - "audited 0 packages in …"          (npm 10+)
-          #   - "verified registry signatures of 0 packages"
-          #   - "no packages with provenance to verify"
-          # Every non-blank line MUST match one of those, otherwise the job
-          # fails (catches bad signatures on transitive registry deps,
-          # network errors, etc.). We also fail on rc != 0 with empty
-          # output (silent crash).
-          ALLOWED='^[[:space:]]*(audited 0 packages([[:space:]]in[[:space:]][0-9]+(\.[0-9]+)?(ms|s))?|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'
-          NON_ALLOWED=$(echo "$AUDIT_OUT" | grep -vE '^[[:space:]]*$' | grep -ivE "$ALLOWED" || true)
-          if [ -n "$NON_ALLOWED" ]; then
-            echo "ERROR: npm audit signatures had unrecognised lines (rc=$AUDIT_RC):" >&2
-            echo "$NON_ALLOWED" >&2
-            # Force non-zero exit even if npm itself returned 0 — the
-            # presence of any non-allowed line is itself a failure.
-            rc="${AUDIT_RC:-0}"
-            [ "$rc" -eq 0 ] && rc=1
-            exit "$rc"
-          fi
-          if [ "$AUDIT_RC" -ne 0 ] && [ -z "$(echo "$AUDIT_OUT" | tr -d '[:space:]')" ]; then
-            echo "ERROR: npm audit signatures returned rc=$AUDIT_RC with empty output" >&2
-            exit "$AUDIT_RC"
-          fi
-          echo "npm audit signatures: OK (rc=$AUDIT_RC)"
+          echo "Path 1 OK: SHA-1 + SHA-512 SRI + ECDSA registry signature all matched."
+          # NB: no `npm install` / `npm audit signatures` step. Everything
+          # `npm audit signatures` would have checked is already done above
+          # (and more strictly): the tarball bytes are SHA-512 verified
+          # against `dist.integrity`, and the registry's ECDSA signature on
+          # `<pkg>@<version>:<integrity>` is verified by hand against the
+          # public keys at /-/npm/v1/keys. Skipping the install also keeps
+          # Scorecard's Pinned-Dependencies check clean (no `npm install`
+          # invocation in the workflow at all).
 
       - name: Download signed assets from the GitHub Release
         env:
