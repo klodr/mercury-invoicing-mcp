@@ -2,8 +2,9 @@
  * MCP middleware: dry-run, rate limiting, audit log.
  */
 
-import { appendFileSync } from "node:fs";
-import { isAbsolute } from "node:path";
+import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { isAbsolute, join } from "node:path";
 import { MercuryError } from "./client.js";
 
 const TOOL_CATEGORIES: Record<string, string> = {
@@ -66,10 +67,59 @@ function getRateLimit(category: string): ParsedRate | null {
 }
 
 const callHistory = new Map<string, number[]>();
+let stateLoaded = false;
+
+function getStateFile(): string {
+  const dir = process.env.MERCURY_MCP_STATE_DIR || join(homedir(), ".mercury-mcp");
+  return join(dir, "ratelimit.json");
+}
+
+function loadCallHistory(): void {
+  if (stateLoaded) return;
+  stateLoaded = true;
+  const path = getStateFile();
+  let raw: string;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    /* istanbul ignore else -- ENOENT is the only expected case (cold start). */
+    if (code === "ENOENT") return;
+    console.error(`[ratelimit] failed to read state from ${path}: ${(err as Error).message}`);
+    return;
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+        if (Array.isArray(v) && v.every((n) => typeof n === "number")) {
+          callHistory.set(k, v);
+        }
+      }
+    }
+  } catch (err) {
+    console.error(`[ratelimit] corrupted state at ${path}, starting fresh: ${(err as Error).message}`);
+  }
+}
+
+function persistCallHistory(): void {
+  const path = getStateFile();
+  try {
+    mkdirSync(join(path, ".."), { recursive: true, mode: 0o700 });
+    const obj: Record<string, number[]> = {};
+    for (const [k, v] of callHistory) obj[k] = v;
+    const tmp = `${path}.tmp`;
+    writeFileSync(tmp, JSON.stringify(obj), { mode: 0o600 });
+    renameSync(tmp, path);
+  } catch (err) {
+    console.error(`[ratelimit] failed to persist state to ${path}: ${(err as Error).message}`);
+  }
+}
 
 /** Reset in-memory call history. Useful for tests. */
 export function resetRateLimitHistory(): void {
   callHistory.clear();
+  stateLoaded = false;
 }
 
 export class RateLimitError extends Error {
@@ -108,6 +158,8 @@ export function enforceRateLimit(toolName: string): void {
   const rl = getRateLimit(category);
   if (!rl) return;
 
+  loadCallHistory();
+
   const now = Date.now();
   const records = (callHistory.get(category) ?? []).filter((ts) => now - ts < rl.windowMs);
 
@@ -118,6 +170,7 @@ export function enforceRateLimit(toolName: string): void {
 
   records.push(now);
   callHistory.set(category, records);
+  persistCallHistory();
 }
 
 export function isDryRun(): boolean {

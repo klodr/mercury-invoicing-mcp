@@ -8,11 +8,13 @@ import {
   logAudit,
 } from "../src/middleware.js";
 import { MercuryError } from "../src/client.js";
-import { mkdtempSync, readFileSync, statSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, statSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 describe("Middleware", () => {
+  let stateDir: string;
+
   beforeEach(() => {
     delete process.env.MERCURY_MCP_DRY_RUN;
     delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
@@ -20,7 +22,14 @@ describe("Middleware", () => {
     delete process.env.MERCURY_MCP_RATE_LIMIT_money;
     delete process.env.MERCURY_MCP_RATE_LIMIT_invoicing;
     delete process.env.MERCURY_MCP_RATE_LIMIT_banking;
+    stateDir = mkdtempSync(join(tmpdir(), "mercury-state-"));
+    process.env.MERCURY_MCP_STATE_DIR = stateDir;
     resetRateLimitHistory();
+  });
+
+  afterEach(() => {
+    delete process.env.MERCURY_MCP_STATE_DIR;
+    rmSync(stateDir, { recursive: true, force: true });
   });
 
   describe("enforceRateLimit", () => {
@@ -69,6 +78,32 @@ describe("Middleware", () => {
       expect(errSpy).toHaveBeenCalledWith(
         expect.stringContaining("Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoicing"),
       );
+      errSpy.mockRestore();
+    });
+
+    it("persists call history across simulated process restarts", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "2/day";
+      enforceRateLimit("mercury_send_money");
+      // File written
+      const stateFile = join(stateDir, "ratelimit.json");
+      const stat = statSync(stateFile);
+      expect(stat.mode & 0o777).toBe(0o600);
+      const persisted = JSON.parse(readFileSync(stateFile, "utf8")) as Record<string, number[]>;
+      expect(persisted.money).toHaveLength(1);
+
+      // Simulate restart: clear in-memory only, state file remains
+      resetRateLimitHistory();
+      enforceRateLimit("mercury_send_money"); // 2nd
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+    });
+
+    it("starts fresh when state file is corrupted", () => {
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      writeFileSync(join(stateDir, "ratelimit.json"), "{not valid json");
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("corrupted state"));
       errSpy.mockRestore();
     });
   });
