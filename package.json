@@ -38,8 +38,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/index.js",
-    "lint": "eslint src",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
@@ -53,7 +52,6 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.0",
-    "eslint": "^9.16.0",
     "fast-check": "^4.7.0",
     "jest": "^30.3.0",
     "ts-jest": "^29.2.5",
