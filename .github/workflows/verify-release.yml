@@ -53,22 +53,24 @@ jobs:
 
       - name: Wait for npm to propagate the new version AND its attestations
         # npm publishes in steps: version metadata → tarball → provenance
-        # attestations. Polling on .version alone races against
-        # .dist.attestations.url being still null when Path 1 runs.
+        # attestations → registry signatures. Polling on .version alone
+        # races against .dist.attestations.url or .dist.signatures still
+        # being absent when Path 1 runs. Wait for all three.
         run: |
           VERSION="${TAG#v}"
           for i in 1 2 3 4 5 6 7 8 9 10; do
             META=$(npm view "${PKG}@${VERSION}" --json 2>/dev/null || echo '{}')
             VER_OK=$(printf '%s' "$META" | jq -r '.version // ""')
             ATT_OK=$(printf '%s' "$META" | jq -r '.dist.attestations.url // ""')
-            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ]; then
-              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK)"
+            SIG_OK=$(printf '%s' "$META" | jq -r '.dist.signatures | length // 0')
+            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ] && [ "${SIG_OK:-0}" -ge 1 ]; then
+              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK, signatures: $SIG_OK)"
               exit 0
             fi
-            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}) — $i/10"
+            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}, sigs=${SIG_OK:-0}) — $i/10"
             sleep 10
           done
-          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations)" >&2
+          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations+signatures)" >&2
           exit 1
 
       - name: Path 1 — npm provenance via npm CLI
@@ -112,9 +114,53 @@ jobs:
             echo "  actual:   $ACTUAL_B64" >&2
             exit 1
           fi
-          npm init -y >/dev/null
-          npm install --ignore-scripts "./${TARBALL}"
-          npm audit signatures
+
+          # ECDSA P-256 verification of the npm registry signature on
+          # "<pkg>@<version>:<integrity>". `npm audit signatures` would do
+          # this for us, but it requires a registry-resolved install (which
+          # would defeat Scorecard's Pinned-Dependencies check). So we do it
+          # by hand against the public keys at /-/npm/v1/keys.
+          SIG_COUNT=$(echo "$META" | jq -r '.dist.signatures | length // 0')
+          if [ "${SIG_COUNT:-0}" -lt 1 ]; then
+            echo "ERROR: no .dist.signatures on ${PKG}@${VERSION} (npm registry didn't sign — refusing to proceed)" >&2
+            exit 1
+          fi
+          KEYID=$(echo "$META" | jq -er '.dist.signatures[0].keyid')
+          SIG_B64=$(echo "$META" | jq -er '.dist.signatures[0].sig')
+          KEYS_JSON=$(curl --fail --show-error --silent --max-time 30 \
+                       --retry 3 --retry-all-errors \
+                       https://registry.npmjs.org/-/npm/v1/keys)
+          PUBKEY_B64=$(echo "$KEYS_JSON" | jq -r --arg keyid "$KEYID" '.keys[] | select(.keyid == $keyid) | .key')
+          if [ -z "$PUBKEY_B64" ]; then
+            echo "ERROR: public key for keyid '$KEYID' not found in npm registry keys" >&2
+            echo "Available keyids in /-/npm/v1/keys:" >&2
+            echo "$KEYS_JSON" | jq -r '.keys[].keyid' >&2
+            exit 1
+          fi
+          {
+            echo "-----BEGIN PUBLIC KEY-----"
+            echo "$PUBKEY_B64" | fold -w 64
+            echo "-----END PUBLIC KEY-----"
+          } > npm-pubkey.pem
+          echo "$SIG_B64" | base64 -d > npm-sig.bin
+          SIGNED_MSG="${PKG}@${VERSION}:${EXPECTED_INTEGRITY}"
+          if ! printf '%s' "$SIGNED_MSG" | openssl dgst -sha256 \
+                  -verify npm-pubkey.pem -signature npm-sig.bin; then
+            echo "ERROR: npm registry ECDSA signature verification failed" >&2
+            echo "  keyid:   $KEYID" >&2
+            echo "  message: $SIGNED_MSG" >&2
+            exit 1
+          fi
+          echo "npm registry signature: OK ($KEYID)"
+          echo "Path 1 OK: SHA-1 + SHA-512 SRI + ECDSA registry signature all matched."
+          # NB: no `npm install` / `npm audit signatures` step. Everything
+          # `npm audit signatures` would have checked is already done above
+          # (and more strictly): the tarball bytes are SHA-512 verified
+          # against `dist.integrity`, and the registry's ECDSA signature on
+          # `<pkg>@<version>:<integrity>` is verified by hand against the
+          # public keys at /-/npm/v1/keys. Skipping the install also keeps
+          # Scorecard's Pinned-Dependencies check clean (no `npm install`
+          # invocation in the workflow at all).
 
       - name: Download signed assets from the GitHub Release
         env:
