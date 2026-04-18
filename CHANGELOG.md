@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-04-18
+
+### Changed
+
+- `release.yml`: end-to-end automated release on `git push origin vX.Y.Z`. The workflow now extracts the matching `## [VERSION]` section from `CHANGELOG.md`, creates (or updates) the GitHub Release with those notes, signs `dist/index.js` with Sigstore, attaches the signed bundle, and `npm publish --provenance`. No manual UI step.
+- `release.yml`: added a sanity check that the pushed tag matches `package.json`'s `version` — fails fast on mismatched bumps.
+- `release.yml`: changelog link in the auto-generated release notes pinned to `/blob/${TAG}/CHANGELOG.md` (was `/blob/main/`) so it stays authoritative for the release it accompanies.
+- `release.yml`: GitHub Release creation is idempotent (`view` then `edit` if it exists, `create` otherwise) so re-runs after a later-step failure are not blocked.
+- `codeql.yml`: matrix now includes both `javascript-typescript` and `actions` languages. Replaces the deleted auto-generated `codeql-analysis.yml` whose duplicate job name was triggering parallel runs and confusing the required `Code scanning results / CodeQL` status check.
+
+### Added
+
+- README: OpenSSF Best Practices badge ([project 12575](https://www.bestpractices.dev/projects/12575), passing tier).
+
 ## [0.6.1] - 2026-04-18
 
 ### Fixed
