@@ -51,7 +51,34 @@ npx mercury-invoicing-mcp
 
 The server reads `MERCURY_API_KEY` from the environment. Get your API key at [Mercury Settings → API Tokens](https://app.mercury.com/settings/tokens).
 
-**Recommended**: use a token with the minimal scope needed. For invoicing-only usage, a token scoped to AR write is sufficient.
+### Right-sizing the token
+
+Mercury exposes **fine-grained per-resource scopes** at token creation — not a single read/write toggle. Pick exactly what your use case needs and Mercury enforces the rest server-side: a tool called without the right scope returns `403`, which the MCP surfaces as a clean `isError: true` response (with a Mercury Plus hint when relevant).
+
+When you create the token, you choose:
+
+- **Which accounts** the token can see (one, several, or all).
+- **Read or Write per resource family**: Accounts, Transactions, Recipients, Send Money, Cards, Statements, Treasury, Invoicing (AR), Webhooks.
+
+Common scope recipes for this MCP:
+
+| Use case | Scopes to grant |
+|---|---|
+| Read-only consultation (dashboards, chat-channel bots) | Read on `accounts`, `transactions`, `statements`, `cards`, `treasury` — nothing else |
+| Bookkeeping (categorise transactions) | Read everywhere + Write on `transactions` (for `update_transaction`) |
+| Invoicing automation | Read on `accounts` + Write on `invoices`, `customers` (Mercury Plus required) |
+| Recipients management | + Write on `recipients` |
+| Internal transfers between your own accounts | + Write on `send_money` (used for `create_internal_transfer`) |
+| Outbound send-money requests | + Write on `send_money` (creates the request — see safety note below) |
+| Webhooks-only ops | Write on `webhooks` only |
+
+### Important: Mercury never auto-executes outbound payments
+
+Every **external** money movement created by this MCP — `send_money`, `request_send_money` — is queued as a **pending request inside Mercury** and **must be approved by a human in the Mercury web app or mobile app** before any funds leave the account. The token scope authorises the MCP to *create* the request; it cannot bypass Mercury's approval workflow.
+
+The only money operations that complete without explicit human re-approval are **internal transfers between accounts you own** (`create_internal_transfer`) — funds stay inside your Mercury organisation.
+
+So even if a prompt-injected agent calls `send_money` with attacker-chosen recipient and amount, you (or whoever holds approval rights in your Mercury workspace) still see the pending request in the Mercury UI and can reject it before money moves. This is a **structural safety boundary on Mercury's side**, not just a feature of the MCP.
 
 ### Sandbox mode
 
@@ -125,7 +152,7 @@ Add to `~/.cursor/mcp.json`:
 
 Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equivalent). All tools become available to all your OpenClaw agents.
 
-> **Tip**: Use a Mercury **read-only** token if you want to expose the MCP to chat-channel agents (WhatsApp, Telegram, Slack). Mercury rejects any write operation regardless of which tool the LLM tries to call — defense in depth against prompt injection.
+> **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
 ## Tools (34 total)
 
