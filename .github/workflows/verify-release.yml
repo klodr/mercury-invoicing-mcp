@@ -169,7 +169,7 @@ jobs:
             # Anything else (bad signature on a transitive registry dep,
             # network error, etc.) propagates and fails the job.
             if echo "$AUDIT_OUT" | grep -qiE \
-              '(^|[^[:alnum:]])(audited 0 packages|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'; then
+              '^[[:space:]]*(audited 0 packages|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'; then
               echo "npm audit signatures: nothing to verify on a local install — OK"
             else
               echo "ERROR: npm audit signatures failed (rc=$AUDIT_RC) with unrecognised output" >&2
