@@ -78,6 +78,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
         run: |
+          test -n "${BUNDLE_PATH:-}" || { echo "Missing attestation bundle-path output"; exit 1; }
+          test -f "$BUNDLE_PATH" || { echo "Bundle file not found: $BUNDLE_PATH"; exit 1; }
           cp "$BUNDLE_PATH" dist/index.js.sigstore
           gh release upload "${{ github.event.release.tag_name }}" \
             dist/index.js \
