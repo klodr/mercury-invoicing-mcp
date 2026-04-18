@@ -253,17 +253,17 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_invoice → GET /ar/invoices/{id}", async () => {
     await client.callTool({
       name: "mercury_get_invoice",
-      arguments: { invoiceId: "00000000-0000-0000-0000-000000000001" },
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
     });
-    expect(calls[0].url).toContain("/ar/invoices/00000000-0000-0000-0000-000000000001");
+    expect(calls[0].url).toContain("/ar/invoices/00000000-0000-4000-8000-000000000001");
   });
 
   it("mercury_create_invoice → POST /ar/invoices with body", async () => {
     await client.callTool({
       name: "mercury_create_invoice",
       arguments: {
-        customerId: "00000000-0000-0000-0000-000000000001",
-        destinationAccountId: "00000000-0000-0000-0000-000000000002",
+        customerId: "00000000-0000-4000-8000-000000000001",
+        destinationAccountId: "00000000-0000-4000-8000-000000000002",
         invoiceDate: "2026-04-17",
         dueDate: "2026-05-17",
         lineItems: [{ name: "Test", quantity: 1, unitPrice: 10 }],
@@ -291,7 +291,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       const responseBody =
         callNum === 1
           ? {
-              id: "00000000-0000-0000-0000-000000000001",
+              id: "00000000-0000-4000-8000-000000000001",
               invoiceDate: "2026-04-01",
               dueDate: "2026-04-15",
               invoiceNumber: "INV-99",
@@ -321,7 +321,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     await client.callTool({
       name: "mercury_update_invoice",
       arguments: {
-        invoiceId: "00000000-0000-0000-0000-000000000001",
+        invoiceId: "00000000-0000-4000-8000-000000000001",
         dueDate: "2026-06-01",
       },
     });
@@ -329,7 +329,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(localCalls).toHaveLength(2);
     expect(localCalls[0].method).toBe("GET");
     expect(localCalls[1].method).toBe("POST");
-    expect(localCalls[1].url).toContain("/ar/invoices/00000000-0000-0000-0000-000000000001");
+    expect(localCalls[1].url).toContain("/ar/invoices/00000000-0000-4000-8000-000000000001");
     const body = JSON.parse(localCalls[1].body!);
     expect(body.dueDate).toBe("2026-06-01"); // changed
     expect(body.invoiceNumber).toBe("INV-99"); // preserved
@@ -343,7 +343,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_cancel_invoice → POST /ar/invoices/{id}/cancel", async () => {
     await client.callTool({
       name: "mercury_cancel_invoice",
-      arguments: { invoiceId: "00000000-0000-0000-0000-000000000001" },
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
     });
     expect(calls[0].url).toContain("/cancel");
   });
@@ -351,7 +351,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_list_invoice_attachments → GET /ar/invoices/{id}/attachments", async () => {
     await client.callTool({
       name: "mercury_list_invoice_attachments",
-      arguments: { invoiceId: "00000000-0000-0000-0000-000000000001" },
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
     });
     expect(calls[0].url).toContain("/attachments");
   });
@@ -366,9 +366,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_customer → GET /ar/customers/{id}", async () => {
     await client.callTool({
       name: "mercury_get_customer",
-      arguments: { customerId: "00000000-0000-0000-0000-000000000001" },
+      arguments: { customerId: "00000000-0000-4000-8000-000000000001" },
     });
-    expect(calls[0].url).toContain("/ar/customers/00000000-0000-0000-0000-000000000001");
+    expect(calls[0].url).toContain("/ar/customers/00000000-0000-4000-8000-000000000001");
   });
 
   it("mercury_create_customer → POST /ar/customers", async () => {
@@ -383,7 +383,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_update_customer → PATCH /ar/customers/{id}", async () => {
     await client.callTool({
       name: "mercury_update_customer",
-      arguments: { customerId: "00000000-0000-0000-0000-000000000001", name: "New" },
+      arguments: { customerId: "00000000-0000-4000-8000-000000000001", name: "New" },
     });
     expect(calls[0].method).toBe("PATCH");
   });
@@ -391,7 +391,7 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_delete_customer → DELETE /ar/customers/{id}", async () => {
     await client.callTool({
       name: "mercury_delete_customer",
-      arguments: { customerId: "00000000-0000-0000-0000-000000000001" },
+      arguments: { customerId: "00000000-0000-4000-8000-000000000001" },
     });
     expect(calls[0].method).toBe("DELETE");
   });

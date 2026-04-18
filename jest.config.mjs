@@ -13,7 +13,7 @@ export default {
         useESM: true,
         tsconfig: {
           module: "ESNext",
-          target: "ES2022",
+          target: "ES2023",
           types: ["node", "jest"],
           esModuleInterop: true,
         },
