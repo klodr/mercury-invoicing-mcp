@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read         # gh release download
-      id-token: write        # cosign keyless verify (Fulcio cert chain)
       attestations: read     # gh attestation verify
     env:
       PKG: mercury-invoicing-mcp
