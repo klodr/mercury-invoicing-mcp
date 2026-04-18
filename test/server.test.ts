@@ -68,4 +68,14 @@ describe("createServer", () => {
   it("exposes the package VERSION", () => {
     expect(VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });
+
+  it("falls back to console.error when no log option is given", () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      createServer({ apiKey: "secret-token:mercury_sandbox_test" });
+      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("sandbox"));
+    } finally {
+      errSpy.mockRestore();
+    }
+  });
 });

@@ -148,6 +148,9 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       } = current;
       const merged: Record<string, unknown> = { ...editable };
       for (const [k, v] of Object.entries(changes)) {
+        /* istanbul ignore else -- Zod-validated args never carry undefined
+           values (optional keys are elided), so the false branch is a
+           defensive guard rather than a runtime path we can hit. */
         if (v !== undefined) merged[k] = v;
       }
       const data = await client.post(`/ar/invoices/${invoiceId}`, merged);
