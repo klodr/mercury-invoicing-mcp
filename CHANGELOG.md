@@ -19,9 +19,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Major dep bumps** (all green on the test suite):
+  - `zod` 3.25 → **4.3.6**. `z.string().uuid()` is now strict v1-v8 (or nil/max);
+    13 fake UUIDs in `test/integration.test.ts` migrated from `00000000-...` to
+    `00000000-0000-4000-8000-...` (valid v4 pattern, suffix preserved). MCP SDK
+    1.29 already supports `^3.25 || ^4.0`.
+  - `typescript` 5.9 → **6.0.3** (no source change required).
+  - `eslint` 9.39 → **10.2.1** + `@eslint/js` 9.39 → **10.0.1**. The new
+    `no-useless-assignment` rule flagged a redundant `let json = undefined`
+    initializer in `src/client.ts:76` (now `let json: unknown;`).
+  - `@types/node` 22 → **25.6.0**.
+- **Minor dep bumps**:
+  - `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
+  - `tsup` 8.3 → **8.5.1**
+  - `ts-jest` 29.2 → **29.4.9**
+- **GitHub Actions bumps** (SHA-pinned with corrected version comments):
+  - `actions/checkout` v4.3.1 (in `scorecard.yml`) → **v6.0.2**
+  - `actions/upload-artifact` v4.6.2 → **v7.0.1**
+  - `actions/setup-node` (label fix) v6.0.0 → **v6.3.0** (SHA was already current)
+  - `actions/checkout` (label fix) v6.0.0 → **v6.0.2** (SHA was already current)
 - `eslint.config.js`: replaced the Node 18 `dirname(fileURLToPath(import.meta.url))`
   shim with the native `import.meta.dirname` (Node 20.11+). Drops the
   `node:path` and `node:url` imports.
+
+### Documentation
+
+- `CONTINUITY.md`, `ASSURANCE_CASE.md`: updated CI matrix mention from
+  Node 18/20/22 to Node 20/22/24.
 
 ## [0.7.8] - 2026-04-18
 
