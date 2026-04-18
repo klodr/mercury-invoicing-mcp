@@ -99,6 +99,25 @@ describe("MercuryClient", () => {
     const result = await client.delete<{ ok: boolean }>("/ar/customers/abc");
     expect(result).toEqual({ ok: true });
   });
+
+  it("falls back to raw text when the response body is not JSON", async () => {
+    mockFetch({
+      ok: false,
+      status: 502,
+      statusText: "Bad Gateway",
+      body: "<html><body>Bad gateway</body></html>",
+    });
+    const client = new MercuryClient({ apiKey: "k" });
+    try {
+      await client.get("/accounts");
+      fail("Expected MercuryError");
+    } catch (err) {
+      expect(err).toBeInstanceOf(MercuryError);
+      const e = err as MercuryError;
+      expect(e.status).toBe(502);
+      expect(e.body).toBe("<html><body>Bad gateway</body></html>");
+    }
+  });
 });
 
 describe("MercuryError", () => {
