@@ -69,6 +69,16 @@ jobs:
             --pattern 'index.js.intoto.jsonl' \
             --dir verify-assets
 
+      - name: Assert all three release assets were actually downloaded
+        # gh release download silently skips missing patterns. We must fail
+        # fast if any of the three artifacts is absent — a missing
+        # .intoto.jsonl would mean Scorecard's Signed-Releases check drops
+        # back to 8/10 even though the rest of the verify steps still pass.
+        run: |
+          for f in index.js index.js.sigstore index.js.intoto.jsonl; do
+            test -f "verify-assets/$f" || { echo "ERROR: release asset missing: $f" >&2; exit 1; }
+          done
+
       - name: Path 2 — gh attestation verify
         env:
           GH_TOKEN: ${{ github.token }}
