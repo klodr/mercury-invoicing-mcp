@@ -143,7 +143,7 @@ describe("Middleware", () => {
     });
 
     it("does NOT clobber an unreadable state file when persisting", () => {
-      jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       // Pre-existing state file with prior counter, made unreadable mid-session.
       mkdirSync(stateDir, { recursive: true });
@@ -158,6 +158,7 @@ describe("Middleware", () => {
       }
       // The file must still hold the original counter — fail-closed on persist.
       expect(readFileSync(stateFile, "utf8")).toBe(originalContent);
+      errSpy.mockRestore();
     });
 
     it("logs (and does not throw) when the state file cannot be persisted", () => {
