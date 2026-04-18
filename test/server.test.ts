@@ -1,16 +1,11 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import {
-  createServer,
-  resolveBaseUrl,
-  SANDBOX_BASE_URL,
-  VERSION,
-} from "../src/server.js";
+import { createServer, resolveBaseUrl, SANDBOX_BASE_URL, VERSION } from "../src/server.js";
 
 describe("resolveBaseUrl", () => {
   it("returns explicit baseUrl when provided", () => {
     expect(resolveBaseUrl("any-key", "https://custom.example.com/v1")).toBe(
-      "https://custom.example.com/v1"
+      "https://custom.example.com/v1",
     );
   });
 
@@ -23,9 +18,9 @@ describe("resolveBaseUrl", () => {
   });
 
   it("explicit baseUrl wins over sandbox auto-detection", () => {
-    expect(
-      resolveBaseUrl("secret-token:mercury_sandbox_abc", "https://override.example.com")
-    ).toBe("https://override.example.com");
+    expect(resolveBaseUrl("secret-token:mercury_sandbox_abc", "https://override.example.com")).toBe(
+      "https://override.example.com",
+    );
   });
 });
 

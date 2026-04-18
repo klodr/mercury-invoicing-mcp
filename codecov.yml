@@ -1,0 +1,21 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        # The project coverage shouldn't drop more than 1% in any single PR.
+    patch:
+      default:
+        target: 90%
+        threshold: 5%
+        # Relaxed because:
+        # - Defensive code paths (e.g. TOCTOU re-checks, OS-level error
+        #   branches) are intentionally hard to exercise in unit tests.
+        # - Pure-formatting PRs (Prettier reflows, ESLint cleanups)
+        #   surface as "new" lines but add no logic to test.
+
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
