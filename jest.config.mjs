@@ -25,6 +25,7 @@ export default {
   // assertion throws — prevents spies from leaking and silencing
   // console output in subsequent tests.
   restoreMocks: true,
+  setupFiles: ["<rootDir>/test/setup.ts"],
   collectCoverageFrom: [
     "src/**/*.ts",
     "!src/**/*.d.ts",

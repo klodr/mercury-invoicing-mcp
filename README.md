@@ -259,6 +259,8 @@ MERCURY_MCP_RATE_LIMIT_DISABLE=true       # disable all rate limiting (not recom
 
 When exceeded, the tool returns an `isError: true` response with a clear message and retry hint — the agent learns to back off naturally.
 
+The rate-limit window **survives process restarts**. State is persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`); override the location with `MERCURY_MCP_STATE_DIR=/abs/path` if you need to share state between hosts or pin it to a specific volume. Without persistence, an MCP host that respawns the server per session would silently bypass the limit.
+
 #### 2. Dry-run mode
 
 Inspect what an agent *would* do without actually calling Mercury. Useful for debugging suspected behaviour or staging:
