@@ -142,6 +142,24 @@ describe("Middleware", () => {
       errSpy.mockRestore();
     });
 
+    it("does NOT clobber an unreadable state file when persisting", () => {
+      jest.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      // Pre-existing state file with prior counter, made unreadable mid-session.
+      mkdirSync(stateDir, { recursive: true });
+      const stateFile = join(stateDir, "ratelimit.json");
+      const originalContent = '{"money":[1,2,3]}';
+      writeFileSync(stateFile, originalContent);
+      chmodSync(stateFile, 0o000);
+      try {
+        enforceRateLimit("mercury_send_money");
+      } finally {
+        chmodSync(stateFile, 0o600);
+      }
+      // The file must still hold the original counter — fail-closed on persist.
+      expect(readFileSync(stateFile, "utf8")).toBe(originalContent);
+    });
+
     it("logs (and does not throw) when the state file cannot be persisted", () => {
       const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";

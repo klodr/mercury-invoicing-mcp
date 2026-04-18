@@ -77,15 +77,24 @@ function getStateFile(): string {
 
 function loadCallHistory(): void {
   if (stateLoaded) return;
-  stateLoaded = true;
   const path = getStateFile();
   let raw: string;
   try {
     raw = readFileSync(path, "utf8");
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
-    /* istanbul ignore else -- ENOENT is the only expected case (cold start). */
-    if (code === "ENOENT") return;
+    if (code === "ENOENT") {
+      // Cold start: no prior state to load. Mark loaded so the first
+      // enforce can persist its first record.
+      stateLoaded = true;
+      return;
+    }
+    // Other read errors (EACCES, EIO…): do NOT mark loaded. We do not
+    // know the prior counter, and if we marked loaded here, the next
+    // persist would clobber the unreadable-but-present state file with
+    // an empty counter — silently resetting the rate limit. Keeping
+    // stateLoaded=false makes persistCallHistory a no-op (see below)
+    // and lets the next enforce retry the read.
     console.error(`[ratelimit] failed to read state from ${path}: ${(err as Error).message}`);
     return;
   }
@@ -99,13 +108,20 @@ function loadCallHistory(): void {
       }
     }
   } catch (err) {
+    // Corrupted JSON: we *did* read the file, so a fresh start is the
+    // documented recovery — overwriting the corrupt file is intentional.
     console.error(
       `[ratelimit] corrupted state at ${path}, starting fresh: ${(err as Error).message}`,
     );
   }
+  stateLoaded = true;
 }
 
 function persistCallHistory(): void {
+  // Refuse to persist if we never successfully loaded the prior state.
+  // Otherwise we would overwrite a present-but-unreadable state file with
+  // an empty counter — silently resetting the rate limit on EACCES/EIO.
+  if (!stateLoaded) return;
   const path = getStateFile();
   // Per-write unique tmp filename so two MCP processes that both call
   // persistCallHistory at the same instant cannot clobber each other's
