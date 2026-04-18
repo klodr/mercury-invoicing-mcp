@@ -1,9 +1,14 @@
 // ESLint v9 flat config.
 // Type-aware rules: requires `parserOptions.projectService: true` (TS 5+).
 
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
@@ -24,7 +29,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: __dirname,
       },
     },
     rules: {
