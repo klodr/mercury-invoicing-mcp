@@ -173,7 +173,7 @@ jobs:
           # fails (catches bad signatures on transitive registry deps,
           # network errors, etc.). We also fail on rc != 0 with empty
           # output (silent crash).
-          ALLOWED='^[[:space:]]*(audited 0 packages( in .*)?|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'
+          ALLOWED='^[[:space:]]*(audited 0 packages([[:space:]]in[[:space:]][0-9]+(\.[0-9]+)?(ms|s))?|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'
           NON_ALLOWED=$(echo "$AUDIT_OUT" | grep -vE '^[[:space:]]*$' | grep -ivE "$ALLOWED" || true)
           if [ -n "$NON_ALLOWED" ]; then
             echo "ERROR: npm audit signatures had unrecognised lines (rc=$AUDIT_RC):" >&2
