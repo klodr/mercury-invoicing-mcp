@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.6] - 2026-04-18
+
+### Changed
+
+- `.github/workflows/verify-release.yml` — `gh attestation verify` now also
+  passes `--cert-identity` (in addition to `--signer-workflow` and
+  `--source-ref`) to lock the exact Fulcio SAN encoded in the attestation
+  certificate, matching what cosign verifies in Path 3. `--signer-workflow`
+  alone matches the workflow file but not the ref encoded in the SAN; the
+  added flag closes the last latitude.
+
 ## [0.7.5] - 2026-04-18
 
 ### Added
