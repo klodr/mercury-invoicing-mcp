@@ -131,8 +131,12 @@ export function isDryRun(): boolean {
  * Lower-case names of fields that must never appear in audit logs, dry-run
  * payloads, or error responses. Exported so test/fuzz.test.ts can use the
  * canonical list (avoids drift between implementation and properties).
+ *
+ * Frozen at runtime: `as const` only widens the type, so without
+ * Object.freeze the exported array would still be mutable from outside the
+ * module. Freezing locks it down at runtime too.
  */
-export const SENSITIVE_KEYS = [
+export const SENSITIVE_KEYS = Object.freeze([
   "accountnumber",
   "routingnumber",
   "apikey",
@@ -141,7 +145,7 @@ export const SENSITIVE_KEYS = [
   "token",
   "secret",
   "ssn",
-] as const;
+] as const);
 
 const SENSITIVE_KEYS_SET: ReadonlySet<string> = new Set(SENSITIVE_KEYS);
 
