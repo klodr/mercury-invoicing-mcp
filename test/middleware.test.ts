@@ -8,7 +8,17 @@ import {
   logAudit,
 } from "../src/middleware.js";
 import { MercuryError } from "../src/client.js";
-import { mkdirSync, mkdtempSync, readFileSync, statSync, rmSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  fstatSync,
+  mkdirSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -84,12 +94,19 @@ describe("Middleware", () => {
     it("persists call history across simulated process restarts", () => {
       process.env.MERCURY_MCP_RATE_LIMIT_money = "2/day";
       enforceRateLimit("mercury_send_money");
-      // File written
+
+      // Open the persisted state once and use fstat + read on the same fd
+      // (avoids the path-based TOCTOU pattern that CodeQL flags).
       const stateFile = join(stateDir, "ratelimit.json");
-      const stat = statSync(stateFile);
-      expect(stat.mode & 0o777).toBe(0o600);
-      const persisted = JSON.parse(readFileSync(stateFile, "utf8")) as Record<string, number[]>;
-      expect(persisted.money).toHaveLength(1);
+      const fd = openSync(stateFile, "r");
+      try {
+        const stat = fstatSync(fd);
+        expect(stat.mode & 0o777).toBe(0o600);
+        const persisted = JSON.parse(readFileSync(fd, "utf8")) as Record<string, number[]>;
+        expect(persisted.money).toHaveLength(1);
+      } finally {
+        closeSync(fd);
+      }
 
       // Simulate restart: clear in-memory only, state file remains
       resetRateLimitHistory();

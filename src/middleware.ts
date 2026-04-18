@@ -98,7 +98,9 @@ function loadCallHistory(): void {
       }
     }
   } catch (err) {
-    console.error(`[ratelimit] corrupted state at ${path}, starting fresh: ${(err as Error).message}`);
+    console.error(
+      `[ratelimit] corrupted state at ${path}, starting fresh: ${(err as Error).message}`,
+    );
   }
 }
 
