@@ -1,0 +1,126 @@
+name: Verify published release
+
+# Runs after the publish job in release.yml has put the package on npm.
+# Exercises the three verification paths documented in SECURITY.md so we
+# catch any regression in the release pipeline (broken provenance, missing
+# Sigstore bundle, asset upload mismatch) within minutes of publish.
+on:
+  workflow_run:
+    workflows: ["Release & npm publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Re-run the three SECURITY.md verify paths
+    # Only fire when the upstream workflow was triggered by a tag push
+    # (event == 'push'), succeeded, and the ref looks like a version tag.
+    # We re-validate the exact tag format in the first step below.
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read         # gh release download
+      attestations: read     # gh attestation verify
+    env:
+      PKG: mercury-invoicing-mcp
+      TAG: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Validate TAG format (semver, no shell metacharacters)
+        # head_branch is whatever ref triggered the upstream workflow. We
+        # already filtered on event=push and startsWith(v) at the job level,
+        # but TAG ends up in `cosign --certificate-identity ...@refs/tags/${TAG}`
+        # and in shell strings, so re-validate the bytes before they reach
+        # any subprocess. Reject anything that isn't strict semver.
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "ERROR: refusing to verify with TAG='$TAG' — not a semver tag" >&2
+            exit 1
+          fi
+
+      - name: Setup Node 20
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.0.0
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+
+      - name: Wait for npm to propagate the new version AND its attestations
+        # npm publishes in steps: version metadata → tarball → provenance
+        # attestations. Polling on .version alone races against
+        # .dist.attestations.url being still null when Path 1 runs.
+        run: |
+          VERSION="${TAG#v}"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            META=$(npm view "${PKG}@${VERSION}" --json 2>/dev/null || echo '{}')
+            VER_OK=$(printf '%s' "$META" | jq -r '.version // ""')
+            ATT_OK=$(printf '%s' "$META" | jq -r '.dist.attestations.url // ""')
+            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ]; then
+              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK)"
+              exit 0
+            fi
+            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}) — $i/10"
+            sleep 10
+          done
+          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations)" >&2
+          exit 1
+
+      - name: Path 1 — npm provenance via npm CLI
+        run: |
+          VERSION="${TAG#v}"
+          ATT=$(npm view "${PKG}@${VERSION}" --json | jq -er '.dist.attestations.url')
+          echo "Attestation URL: $ATT"
+          mkdir verify-tmp && cd verify-tmp
+          npm init -y >/dev/null
+          npm install --ignore-scripts "${PKG}@${VERSION}"
+          npm audit signatures
+
+      - name: Download signed assets from the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p verify-assets
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern 'index.js' \
+            --pattern 'index.js.sigstore' \
+            --pattern 'index.js.intoto.jsonl' \
+            --dir verify-assets
+
+      - name: Assert all three release assets were actually downloaded
+        # gh release download silently skips missing patterns. We must fail
+        # fast if any of the three artifacts is absent — a missing
+        # .intoto.jsonl would mean Scorecard's Signed-Releases check drops
+        # back to 8/10 even though the rest of the verify steps still pass.
+        run: |
+          for f in index.js index.js.sigstore index.js.intoto.jsonl; do
+            test -f "verify-assets/$f" || { echo "ERROR: release asset missing: $f" >&2; exit 1; }
+          done
+
+      - name: Path 2 — gh attestation verify
+        # Pin the signer workflow path AND the source ref so that an
+        # attestation produced by any other workflow in the repo (or by
+        # release.yml on a different ref) is rejected.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify verify-assets/index.js \
+            --repo "${{ github.repository }}" \
+            --signer-workflow "${{ github.repository }}/.github/workflows/release.yml" \
+            --source-ref "refs/tags/${TAG}"
+
+      - name: Path 3 — cosign verify-blob-attestation
+        # Same hardening: replace the open identity-regexp with the exact
+        # Fulcio SAN that release.yml at this tag would have produced.
+        run: |
+          cosign verify-blob-attestation \
+            --bundle verify-assets/index.js.sigstore \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${TAG}" \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            verify-assets/index.js
