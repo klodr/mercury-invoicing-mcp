@@ -1,0 +1,86 @@
+name: Verify published release
+
+# Runs after the publish job in release.yml has put the package on npm.
+# Exercises the three verification paths documented in SECURITY.md so we
+# catch any regression in the release pipeline (broken provenance, missing
+# Sigstore bundle, asset upload mismatch) within minutes of publish.
+on:
+  workflow_run:
+    workflows: ["Release & npm publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Re-run the three SECURITY.md verify paths
+    if: github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read         # gh release download
+      id-token: write        # cosign keyless verify (Fulcio cert chain)
+      attestations: read     # gh attestation verify
+    env:
+      PKG: mercury-invoicing-mcp
+      TAG: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Setup Node 20
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.0.0
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+
+      - name: Wait for npm to propagate the new version
+        run: |
+          VERSION="${TAG#v}"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if [ "$(npm view "${PKG}@${VERSION}" version 2>/dev/null)" = "$VERSION" ]; then
+              echo "npm OK: ${PKG}@${VERSION}"
+              exit 0
+            fi
+            echo "Waiting for npm propagation... ($i/10)"
+            sleep 10
+          done
+          echo "Timeout waiting for npm to publish ${PKG}@${VERSION}" >&2
+          exit 1
+
+      - name: Path 1 — npm provenance via npm CLI
+        run: |
+          VERSION="${TAG#v}"
+          ATT=$(npm view "${PKG}@${VERSION}" --json | jq -er '.dist.attestations.url')
+          echo "Attestation URL: $ATT"
+          mkdir verify-tmp && cd verify-tmp
+          npm init -y >/dev/null
+          npm install --foreground-scripts --ignore-scripts "${PKG}@${VERSION}"
+          npm audit signatures
+
+      - name: Download signed assets from the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p verify-assets
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern 'index.js' \
+            --pattern 'index.js.sigstore' \
+            --pattern 'index.js.intoto.jsonl' \
+            --dir verify-assets
+
+      - name: Path 2 — gh attestation verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify verify-assets/index.js \
+            --repo "${{ github.repository }}"
+
+      - name: Path 3 — cosign verify-blob-attestation
+        run: |
+          cosign verify-blob-attestation \
+            --bundle verify-assets/index.js.sigstore \
+            --certificate-identity-regexp '^https://github\.com/${{ github.repository }}/' \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            verify-assets/index.js

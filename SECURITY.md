@@ -46,7 +46,16 @@ maintainer commits to, and limits that callers must account for.
   by the other process can be dropped, slightly under-counting against the
   per-day limit. Mercury's own server-side limits remain authoritative; for
   this MCP's local cap, treat the local rate-limit as best-effort under
-  concurrent-host conditions.
+  concurrent-host conditions. **Persistent unreadable state**: if the state
+  file becomes chronically unreadable mid-session (`EACCES`, `EIO`, broken
+  mount, container respawn without the volume), the middleware logs a
+  warning, refuses to overwrite the file (so the prior counter is
+  preserved), and falls back to an in-memory cap that lasts only for the
+  current process — i.e. the cross-restart guarantee degrades to "cross-call
+  within one session". An attacker able to make the file cyclically
+  unreadable (cron, container churn) effectively neutralises persistence.
+  Mercury's server-side limits remain the load-bearing control in that
+  scenario.
 
 ### What this MCP does NOT protect against
 
