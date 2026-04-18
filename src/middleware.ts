@@ -5,7 +5,7 @@
 import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
-import { isAbsolute, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { MercuryError } from "./client.js";
 
 const TOOL_CATEGORIES: Record<string, string> = {
@@ -114,7 +114,7 @@ function persistCallHistory(): void {
   // read-modify-write cycle — see SECURITY.md "single-process state" entry.
   const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    mkdirSync(join(path, ".."), { recursive: true, mode: 0o700 });
+    mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
     const obj: Record<string, number[]> = {};
     for (const [k, v] of callHistory) obj[k] = v;
     writeFileSync(tmp, JSON.stringify(obj), { mode: 0o600 });
