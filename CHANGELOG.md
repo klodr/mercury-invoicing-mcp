@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.8] - 2026-04-18
+
+### Changed
+
+- `.github/workflows/verify-release.yml` — added manual ECDSA P-256 verification
+  of the npm registry signature on `<pkg>@<version>:<integrity>` against the
+  public keys at `https://registry.npmjs.org/-/npm/v1/keys`. Closes the gap
+  introduced in 0.7.7 where the local-tarball install bypassed
+  `npm audit signatures` registry-side check (a registry-based install
+  would have re-tripped Scorecard's Pinned-Dependencies). Per CodeRabbit
+  on PR #33.
+
 ## [0.7.7] - 2026-04-18
 
 ### Changed
