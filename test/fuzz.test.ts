@@ -119,21 +119,26 @@ describe("Fuzz: redactSensitive", () => {
 });
 
 describe("Fuzz: MercuryError serialisation", () => {
+  // Use a sentinel that fast-check's string arbitraries cannot reasonably
+  // produce, AND filter `message` to make sure it never collides — otherwise
+  // a chance match in `message` would falsely fail the property.
+  const SENTINEL = "__LEAK_SENTINEL_4f9c2b__";
+  const safeMessage = fc.string({ minLength: 1, maxLength: 50 }).filter((m) => !m.includes(SENTINEL));
+
   it("toString never leaks the response body", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1, maxLength: 50 }), // message
+        safeMessage,
         fc.integer({ min: 100, max: 599 }), // status
         fc.dictionary(fc.string({ minLength: 1, maxLength: 8 }), fc.string()), // body
         (message, status, body) => {
-          // Generate a body whose values are unmistakable so we can grep for them.
+          // Tag every body value with the sentinel so we can grep for it.
           const tagged: Record<string, string> = {};
-          for (const [k, v] of Object.entries(body)) tagged[k] = `__LEAK__${v}`;
+          for (const [k, v] of Object.entries(body)) tagged[k] = `${SENTINEL}${v}`;
 
           const err = new MercuryError(message, status, tagged);
-          const str = err.toString();
           // None of the tagged values should appear in the string form.
-          return !str.includes("__LEAK__");
+          return !err.toString().includes(SENTINEL);
         },
       ),
       { numRuns: 200 },
@@ -143,14 +148,14 @@ describe("Fuzz: MercuryError serialisation", () => {
   it("toJSON never leaks the response body", () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1, maxLength: 50 }),
+        safeMessage,
         fc.integer({ min: 100, max: 599 }),
         fc.dictionary(fc.string({ minLength: 1, maxLength: 8 }), fc.string()),
         (message, status, body) => {
           const tagged: Record<string, string> = {};
-          for (const [k, v] of Object.entries(body)) tagged[k] = `__LEAK__${v}`;
+          for (const [k, v] of Object.entries(body)) tagged[k] = `${SENTINEL}${v}`;
           const err = new MercuryError(message, status, tagged);
-          return !JSON.stringify(err.toJSON()).includes("__LEAK__");
+          return !JSON.stringify(err.toJSON()).includes(SENTINEL);
         },
       ),
       { numRuns: 200 },

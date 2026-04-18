@@ -136,7 +136,16 @@ jobs:
           # The DSSE envelope inside the bundle IS the SLSA in-toto attestation.
           # Extracting it to .intoto.jsonl satisfies Scorecard's "provenance"
           # check (10/10) — Scorecard recognises *.intoto.jsonl specifically.
-          jq -c '.dsseEnvelope' "$BUNDLE_PATH" > dist/index.js.intoto.jsonl
+          # Guard: jq emits the literal string "null" when the field is
+          # missing, which would still be a valid file but useless. Validate
+          # the extraction before writing it to the upload path.
+          DSSE=$(jq -c '.dsseEnvelope' "$BUNDLE_PATH")
+          if [ -z "$DSSE" ] || [ "$DSSE" = "null" ]; then
+            echo "ERROR: no .dsseEnvelope in Sigstore bundle at $BUNDLE_PATH" >&2
+            echo "       jq output: $DSSE" >&2
+            exit 1
+          fi
+          printf '%s\n' "$DSSE" > dist/index.js.intoto.jsonl
           gh release upload "$TAG" \
             dist/index.js \
             dist/index.js.sigstore \
