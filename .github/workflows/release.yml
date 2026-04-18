@@ -75,6 +75,11 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           VERSION="${TAG#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+            echo "ERROR: tag $TAG does not match package.json version $PACKAGE_VERSION" >&2
+            exit 1
+          fi
           NOTES=$(awk -v ver="^## \\\\[${VERSION}\\\\]" '$0 ~ ver {flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
           if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
             echo "ERROR: no CHANGELOG.md section found for version $VERSION" >&2
