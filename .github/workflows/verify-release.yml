@@ -118,6 +118,11 @@ jobs:
           # this for us, but it requires a registry-resolved install (which
           # would defeat Scorecard's Pinned-Dependencies check). So we do it
           # by hand against the public keys at /-/npm/v1/keys.
+          SIG_COUNT=$(echo "$META" | jq -r '.dist.signatures | length // 0')
+          if [ "${SIG_COUNT:-0}" -lt 1 ]; then
+            echo "ERROR: no .dist.signatures on ${PKG}@${VERSION} (npm registry didn't sign — refusing to proceed)" >&2
+            exit 1
+          fi
           KEYID=$(echo "$META" | jq -er '.dist.signatures[0].keyid')
           SIG_B64=$(echo "$META" | jq -er '.dist.signatures[0].sig')
           KEYS_JSON=$(curl --fail --show-error --silent --max-time 30 \
