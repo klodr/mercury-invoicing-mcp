@@ -34,7 +34,8 @@ If the maintainer is confirmed unable to continue, anyone can:
 4. Update downstream MCP client configs to point at the fork's package.
 
 There is no organisational lock-in: every secret and every external
-service can be re-provisioned by the new maintainer in under an hour.
+service can be re-provisioned by the new maintainer, typically within
+hours, depending on third-party account approval and token issuance times.
 
 ## Ongoing improvements
 
