@@ -3,12 +3,12 @@ coverage:
     project:
       default:
         target: auto
-        threshold: 1%
-        # The project coverage shouldn't drop more than 1% in any single PR.
+        threshold: 0.5%
+        # The project coverage shouldn't drop more than 0.5% in any single PR.
     patch:
       default:
-        target: 90%
-        threshold: 5%
+        target: 95%
+        threshold: 2%
         # Relaxed because:
         # - Defensive code paths (e.g. TOCTOU re-checks, OS-level error
         #   branches) are intentionally hard to exercise in unit tests.
