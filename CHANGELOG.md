@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-04-18
+
+### Changed
+
+- `codeql.yml` + `scorecard.yml`: bumped `github/codeql-action` from v3 to **v4.35.2** (SHA-pinned `7fc6561…`). v3 EOL is December 2026 and the underlying actions still ran on Node 20, which GitHub deprecates in September 2026; v4 runs on Node 24.
+- Tooling consistency with `klodr/faxdrop-mcp`: ESLint v9 flat config with `typescript-eslint` type-aware rules; Prettier + `eslint-config-prettier`; `Lint & Format` CI job gating every PR; TypeScript strict + `noUnusedLocals/noUnusedParameters/noImplicitReturns/noFallthroughCasesInSwitch`; jest `restoreMocks: true` to auto-restore spies between tests. Already on `main` since PRs #25/#26; surfaced in this release for the npm changelog.
+
 ## [0.7.1] - 2026-04-18
 
 ### Changed
