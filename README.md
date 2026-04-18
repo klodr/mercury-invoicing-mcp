@@ -3,7 +3,7 @@
 > Mercury Banking MCP server with full **Invoicing API** support — first MCP to expose Mercury's accounts receivable endpoints.
 
 [![CI](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/klodr/mercury-invoicing-mcp/security/code-scanning)
+[![CodeQL](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/klodr/mercury-invoicing-mcp/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/klodr/mercury-invoicing-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/klodr/mercury-invoicing-mcp)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/klodr/mercury-invoicing-mcp/badge)](https://scorecard.dev/viewer/?uri=github.com/klodr/mercury-invoicing-mcp)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12575/badge)](https://www.bestpractices.dev/projects/12575)
