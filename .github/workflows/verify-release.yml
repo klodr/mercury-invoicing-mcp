@@ -53,22 +53,24 @@ jobs:
 
       - name: Wait for npm to propagate the new version AND its attestations
         # npm publishes in steps: version metadata → tarball → provenance
-        # attestations. Polling on .version alone races against
-        # .dist.attestations.url being still null when Path 1 runs.
+        # attestations → registry signatures. Polling on .version alone
+        # races against .dist.attestations.url or .dist.signatures still
+        # being absent when Path 1 runs. Wait for all three.
         run: |
           VERSION="${TAG#v}"
           for i in 1 2 3 4 5 6 7 8 9 10; do
             META=$(npm view "${PKG}@${VERSION}" --json 2>/dev/null || echo '{}')
             VER_OK=$(printf '%s' "$META" | jq -r '.version // ""')
             ATT_OK=$(printf '%s' "$META" | jq -r '.dist.attestations.url // ""')
-            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ]; then
-              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK)"
+            SIG_OK=$(printf '%s' "$META" | jq -r '.dist.signatures | length // 0')
+            if [ "$VER_OK" = "$VERSION" ] && [ -n "$ATT_OK" ] && [ "${SIG_OK:-0}" -ge 1 ]; then
+              echo "npm OK: ${PKG}@${VERSION} (attestations: $ATT_OK, signatures: $SIG_OK)"
               exit 0
             fi
-            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}) — $i/10"
+            echo "Waiting for ${PKG}@${VERSION} (version=$VER_OK, att=${ATT_OK:-<missing>}, sigs=${SIG_OK:-0}) — $i/10"
             sleep 10
           done
-          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations)" >&2
+          echo "Timeout waiting for ${PKG}@${VERSION} (version+attestations+signatures)" >&2
           exit 1
 
       - name: Path 1 — npm provenance via npm CLI
