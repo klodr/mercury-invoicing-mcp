@@ -161,18 +161,22 @@ jobs:
           echo "$AUDIT_OUT"
           if [ "$AUDIT_RC" -ne 0 ]; then
             # Tolerate ONLY the exact phrases npm emits when the install
-            # has no registry-sourced packages to audit (which is the
-            # legitimate state after `npm install ./tarball.tgz`):
+            # has no registry-sourced packages to audit (legitimate state
+            # after `npm install ./tarball.tgz`):
             #   - "audited 0 packages in …"          (npm 10+)
             #   - "verified registry signatures of 0 packages"
             #   - "no packages with provenance to verify"
+            # We verify that EVERY non-blank line in the output matches one
+            # of those phrases, not just that one of them is present.
             # Anything else (bad signature on a transitive registry dep,
             # network error, etc.) propagates and fails the job.
-            if echo "$AUDIT_OUT" | grep -qiE \
-              '^[[:space:]]*(audited 0 packages( in .*)?|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'; then
+            ALLOWED='^[[:space:]]*(audited 0 packages( in .*)?|verified registry signatures of 0 packages|no packages with provenance to verify)[[:space:]]*$'
+            NON_ALLOWED=$(echo "$AUDIT_OUT" | grep -vE '^[[:space:]]*$' | grep -ivE "$ALLOWED" || true)
+            if [ -z "$NON_ALLOWED" ]; then
               echo "npm audit signatures: nothing to verify on a local install — OK"
             else
-              echo "ERROR: npm audit signatures failed (rc=$AUDIT_RC) with unrecognised output" >&2
+              echo "ERROR: npm audit signatures failed (rc=$AUDIT_RC) with unrecognised lines:" >&2
+              echo "$NON_ALLOWED" >&2
               exit "$AUDIT_RC"
             fi
           fi
