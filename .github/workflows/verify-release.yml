@@ -185,16 +185,15 @@ jobs:
           done
 
       - name: Path 2 — gh attestation verify
-        # Pin the signer workflow path, the source ref, AND the exact
-        # Fulcio SAN. --signer-workflow alone matches the workflow file but
-        # not the ref encoded in the cert SAN; --cert-identity locks the
-        # full workflow@ref tuple, matching what cosign verifies in Path 3.
+        # Pin the exact Fulcio SAN (workflow path + ref) and the source ref.
+        # --cert-identity is mutually exclusive with --signer-workflow in the
+        # current gh CLI: the cert-identity already encodes the workflow path
+        # AND the tag ref, so it is strictly more specific.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh attestation verify verify-assets/index.js \
             --repo "${{ github.repository }}" \
-            --signer-workflow "${{ github.repository }}/.github/workflows/release.yml" \
             --source-ref "refs/tags/${TAG}" \
             --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${TAG}"
 
