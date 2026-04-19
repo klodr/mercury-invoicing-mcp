@@ -14,7 +14,9 @@ coverage:
       default:
         target: 95%
         threshold: 2%
-        # Relaxed because:
+        # Strict patch gate (95% target, 2% threshold) — new code must be
+        # ≥93% covered. The 2% threshold (vs an absolute 95% requirement)
+        # exists for two narrow exceptions, not a blanket relaxation:
         # - Defensive code paths (e.g. TOCTOU re-checks, OS-level error
         #   branches) are intentionally hard to exercise in unit tests.
         # - Pure-formatting PRs (Prettier reflows, ESLint cleanups)
