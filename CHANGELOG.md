@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-04-19
+
 ### Changed
 
 - `codecov.yml`: revert `project.threshold` from `1.5%` to `0.5%` now that
@@ -14,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The 1.5% was a one-shot accommodation for the istanbul → v8
   instrumentation switch; PRs from here on compare like-for-like.
   Patch threshold (`95%` / `1.5%`) is unchanged.
+- `socket.yml`: flip the intrinsic-behavior alerts (`envVars`,
+  `filesystemAccess`, `networkAccess`, `urlStrings`, `hasIPProxy`) from
+  `true` to `false`. These rules aren't in Socket's default-enabled set,
+  so the previous `true` opted us IN to the warnings instead of silencing
+  them. The behaviors themselves (env-var reads, fetch calls, etc.) are
+  intentional for an MCP server that talks to an external API.
 
 ## [0.8.0] - 2026-04-19
 
