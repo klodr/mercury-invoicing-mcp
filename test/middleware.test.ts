@@ -127,7 +127,7 @@ describe("Middleware", () => {
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       mkdirSync(stateDir, { recursive: true });
       // JSON.parse succeeds but the type-guard on parsed-is-object rejects.
-      writeFileSync(join(stateDir, "ratelimit.json"), '[1,2,3]');
+      writeFileSync(join(stateDir, "ratelimit.json"), "[1,2,3]");
       expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
     });
 
