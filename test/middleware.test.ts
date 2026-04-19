@@ -83,13 +83,12 @@ describe("Middleware", () => {
     });
 
     it("invalid rate limit format logs a warning and falls back to default", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_invoicing = "not-a-rate";
       expect(() => enforceRateLimit("mercury_create_invoice")).not.toThrow();
       expect(errSpy).toHaveBeenCalledWith(
         expect.stringContaining("Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoicing"),
       );
-      errSpy.mockRestore();
     });
 
     it("persists call history across simulated process restarts", () => {
@@ -116,17 +115,51 @@ describe("Middleware", () => {
     });
 
     it("starts fresh when state file is corrupted", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       mkdirSync(stateDir, { recursive: true });
       writeFileSync(join(stateDir, "ratelimit.json"), "{not valid json");
       expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
       expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("corrupted state"));
-      errSpy.mockRestore();
+    });
+
+    it("ignores state files whose JSON shape is unexpected (array root)", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      // JSON.parse succeeds but the type-guard on parsed-is-object rejects.
+      writeFileSync(join(stateDir, "ratelimit.json"), "[1,2,3]");
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+    });
+
+    it("skips entries whose value is not a number array", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      // money entry is a number-array (loaded — needs a timestamp inside the
+      // 1-day window so it actually counts), webhooks is a string (skipped
+      // by the type-guard at middleware.ts:105).
+      writeFileSync(
+        join(stateDir, "ratelimit.json"),
+        `{"money":[${Date.now()}],"webhooks":"not-an-array"}`,
+      );
+      // money already has 1 prior call → 2nd should hit the limit.
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+    });
+
+    it("supports the 'week' window in custom rate limits", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/week";
+      enforceRateLimit("mercury_send_money");
+      try {
+        enforceRateLimit("mercury_send_money");
+        fail("Expected RateLimitError");
+      } catch (err) {
+        expect(err).toBeInstanceOf(RateLimitError);
+        // The week window doesn't have a short label — falls through to seconds.
+        expect((err as RateLimitError).message).toMatch(/limit: 1\/\d+s\)/);
+      }
     });
 
     it("logs (and does not throw) when the state file cannot be read", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       // Existing state file with mode 0 → readFileSync raises EACCES (not ENOENT).
       mkdirSync(stateDir, { recursive: true });
@@ -139,11 +172,10 @@ describe("Middleware", () => {
         chmodSync(stateFile, 0o600);
       }
       expect(errSpy).toHaveBeenCalledWith(expect.stringMatching(/failed to read state from/));
-      errSpy.mockRestore();
     });
 
     it("does NOT clobber an unreadable state file when persisting", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       // Pre-existing state file with prior counter, made unreadable mid-session.
       mkdirSync(stateDir, { recursive: true });
@@ -158,11 +190,10 @@ describe("Middleware", () => {
       }
       // The file must still hold the original counter — fail-closed on persist.
       expect(readFileSync(stateFile, "utf8")).toBe(originalContent);
-      errSpy.mockRestore();
     });
 
     it("logs (and does not throw) when the state file cannot be persisted", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       // Pre-create the state dir read-only so writeFileSync(tmp) raises EACCES.
       mkdirSync(stateDir, { recursive: true });
@@ -173,7 +204,6 @@ describe("Middleware", () => {
         chmodSync(stateDir, 0o700);
       }
       expect(errSpy).toHaveBeenCalledWith(expect.stringMatching(/failed to persist state to/));
-      errSpy.mockRestore();
     });
   });
 
@@ -190,7 +220,7 @@ describe("Middleware", () => {
 
   describe("wrapToolHandler", () => {
     it("passes through read tool calls unchanged", async () => {
-      const handler = jest.fn(async () => ({
+      const handler = vi.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
       const wrapped = wrapToolHandler("mercury_list_accounts", handler);
@@ -201,7 +231,7 @@ describe("Middleware", () => {
 
     it("returns dry-run response without calling handler when DRY_RUN=true", async () => {
       process.env.MERCURY_MCP_DRY_RUN = "true";
-      const handler = jest.fn(async () => ({
+      const handler = vi.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
       const wrapped = wrapToolHandler("mercury_create_invoice", handler);
@@ -213,7 +243,7 @@ describe("Middleware", () => {
 
     it("returns isError when rate limit is exceeded", async () => {
       process.env.MERCURY_MCP_RATE_LIMIT_webhooks = "1/day";
-      const handler = jest.fn(async () => ({
+      const handler = vi.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
       const wrapped = wrapToolHandler("mercury_create_webhook", handler);
@@ -224,7 +254,7 @@ describe("Middleware", () => {
     });
 
     it("converts MercuryError 403 on AR tool to isError with Plus-plan hint", async () => {
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         throw new MercuryError("Forbidden", 403, { message: "subscription required" });
       });
       const wrapped = wrapToolHandler("mercury_create_invoice", handler);
@@ -237,7 +267,7 @@ describe("Middleware", () => {
     });
 
     it("converts MercuryError 403 on non-AR tool to isError without Plus-plan hint", async () => {
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         throw new MercuryError("Forbidden", 403, {});
       });
       const wrapped = wrapToolHandler("mercury_send_money", handler);
@@ -248,7 +278,7 @@ describe("Middleware", () => {
     });
 
     it("converts MercuryError 500 to isError without hint", async () => {
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         throw new MercuryError("Boom", 500, {});
       });
       const wrapped = wrapToolHandler("mercury_create_customer", handler);
@@ -259,7 +289,7 @@ describe("Middleware", () => {
     });
 
     it("re-throws non-Mercury errors unchanged", async () => {
-      const handler = jest.fn(async () => {
+      const handler = vi.fn(async () => {
         throw new Error("unexpected");
       });
       const wrapped = wrapToolHandler("mercury_create_invoice", handler);
@@ -268,7 +298,7 @@ describe("Middleware", () => {
 
     it("dry-run wouldCallWith redacts sensitive args", async () => {
       process.env.MERCURY_MCP_DRY_RUN = "true";
-      const handler = jest.fn(async () => ({
+      const handler = vi.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
       const wrapped = wrapToolHandler("mercury_add_recipient", handler);
@@ -361,15 +391,14 @@ describe("Middleware", () => {
     });
 
     it("rejects relative paths and logs error", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_AUDIT_LOG = "relative/audit.log";
       logAudit("mercury_send_money", { amount: 1 }, "ok");
       expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("must be an absolute path"));
-      errSpy.mockRestore();
     });
 
     it("does not throw when write fails (best-effort)", () => {
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       // Path inside a non-existent dir → ENOENT
       process.env.MERCURY_MCP_AUDIT_LOG = "/nonexistent-dir-mercury-test/audit.log";
       expect(() => logAudit("mercury_send_money", {}, "error")).not.toThrow();
@@ -377,7 +406,6 @@ describe("Middleware", () => {
         expect.stringContaining("failed to write"),
         expect.any(String),
       );
-      errSpy.mockRestore();
     });
   });
 });

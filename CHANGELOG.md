@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-04-19
+
+### Security
+
+- Tighten date validation on every `YYYY-MM-DD` tool input (12 fields
+  across `invoices`, `statements`, `transactions`, `treasury`).
+  `z.string().describe("YYYY-MM-DD")` had no actual validation —
+  arbitrary strings were forwarded to Mercury. Now uses zod 4's
+  `z.iso.date()` (strict ISO date format).
+
+### BREAKING
+
+- **Drop Node 18.** Minimum runtime is now **Node 20.11+** (Node 18 is past
+  EOL; the 20.11 floor is required by `import.meta.dirname` in
+  `eslint.config.js`). `engines.node` is `>=20.11`, the CI matrix is
+  `[20, 22, 24]`, and tsup target is `node20`.
+
+### Changed
+
+- **Major dep bumps** (all green on the test suite):
+  - `zod` 3.25 → **4.3.6**. `z.string().uuid()` is now strict v1-v8 (or nil/max);
+    13 fake UUIDs in `test/integration.test.ts` migrated from `00000000-...` to
+    `00000000-0000-4000-8000-...` (valid v4 pattern, suffix preserved). MCP SDK
+    1.29 already supports `^3.25 || ^4.0`.
+  - `typescript` 5.9 → **6.0.3** (no source change required).
+  - `eslint` 9.39 → **10.2.1** + `@eslint/js` 9.39 → **10.0.1**. The new
+    `no-useless-assignment` rule flagged a redundant `let json = undefined`
+    initializer in `src/client.ts:76` (now `let json: unknown;`).
+  - `@types/node` 22 → **20.19.0** (matches `engines.node >=20.11`; previously
+    bumped to 25 then walked back so typings can't introduce Node 21+ APIs).
+- **Minor dep bumps**:
+  - `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
+  - `tsup` 8.3 → **8.5.1**
+- **Test runner: jest → vitest** (`vitest@4.1.4` + `@vitest/coverage-v8`).
+  Drops `jest`, `@types/jest`, `ts-jest` and their deprecated `glob@10`
+  / `inflight` / `babel-plugin-istanbul` transitives
+  ([jestjs/jest#15173](https://github.com/jestjs/jest/issues/15173)).
+  Native ESM/TS, no preset. v8 coverage instead of istanbul. API is
+  drop-in: `jest.fn`/`jest.spyOn` → `vi.fn`/`vi.spyOn`.
+- **GitHub Actions bumps** (SHA-pinned):
+  - `actions/checkout` → **v6.0.2**
+  - `actions/setup-node` → **v6.3.0**
+  - `actions/upload-artifact` → **v7.0.1**
+- `eslint.config.js`: replaced the Node 18 `dirname(fileURLToPath(import.meta.url))`
+  shim with the native `import.meta.dirname` (Node 20.11+). Drops the
+  `node:path` and `node:url` imports.
+
+### Documentation
+
+- `CONTINUITY.md`, `ASSURANCE_CASE.md`: updated CI matrix mention from
+  Node 18/20/22 to Node 20/22/24.
+
 ## [0.7.9] - 2026-04-19
 
 ### Fixed

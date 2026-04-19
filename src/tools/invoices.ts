@@ -76,8 +76,8 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         .string()
         .uuid()
         .describe("Mercury account ID where invoice payments will be deposited"),
-      invoiceDate: z.string().describe("Invoice date (YYYY-MM-DD)"),
-      dueDate: z.string().describe("Due date (YYYY-MM-DD)"),
+      invoiceDate: z.iso.date().describe("Invoice date (YYYY-MM-DD)"),
+      dueDate: z.iso.date().describe("Due date (YYYY-MM-DD)"),
       lineItems: z.array(lineItemSchema).min(1).describe("Invoice line items"),
       achDebitEnabled: z.boolean().optional().describe("Allow ACH debit payments. Default: true"),
       creditCardEnabled: z
@@ -103,8 +103,8 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       poNumber: z.string().optional().describe("Purchase order number"),
       payerMemo: z.string().optional().describe("Memo shown to payer"),
       internalNote: z.string().optional().describe("Note visible only to your org"),
-      servicePeriodStartDate: z.string().optional().describe("Service period start (YYYY-MM-DD)"),
-      servicePeriodEndDate: z.string().optional().describe("Service period end (YYYY-MM-DD)"),
+      servicePeriodStartDate: z.iso.date().optional().describe("Service period start (YYYY-MM-DD)"),
+      servicePeriodEndDate: z.iso.date().optional().describe("Service period end (YYYY-MM-DD)"),
     },
     async (args) => {
       const body = {
@@ -125,8 +125,8 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     "Update an existing invoice. Pass only the fields you want to change; the MCP fetches the current invoice and merges your changes before submitting (Mercury's update endpoint requires the full payload, even though the API documents it as PATCH-style).",
     {
       invoiceId: z.string().uuid().describe("Invoice ID"),
-      invoiceDate: z.string().optional().describe("Invoice date (YYYY-MM-DD)"),
-      dueDate: z.string().optional().describe("Due date (YYYY-MM-DD)"),
+      invoiceDate: z.iso.date().optional().describe("Invoice date (YYYY-MM-DD)"),
+      dueDate: z.iso.date().optional().describe("Due date (YYYY-MM-DD)"),
       lineItems: z.array(lineItemSchema).optional(),
       ccEmails: z.array(z.string().email()).optional(),
       payerMemo: z.string().optional(),

@@ -10,8 +10,8 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
     "List monthly statements for a Mercury account. Each statement has a downloadable PDF URL.",
     {
       accountId: z.string().uuid().describe("The Mercury account ID"),
-      start: z.string().optional().describe("Filter statements from this date (YYYY-MM-DD)"),
-      end: z.string().optional().describe("Filter statements to this date (YYYY-MM-DD)"),
+      start: z.iso.date().optional().describe("Filter statements from this date (YYYY-MM-DD)"),
+      end: z.iso.date().optional().describe("Filter statements to this date (YYYY-MM-DD)"),
     },
     async ({ accountId, ...query }) => {
       const data = await client.get(`/account/${accountId}/statements`, query);
