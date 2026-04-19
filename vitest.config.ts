@@ -10,8 +10,9 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "lcov"],
       include: ["src/**/*.ts"],
-      // index.ts is just stdio glue (env validation + StdioServerTransport
-      // wiring); the actual server logic lives in server.ts.
+      // index.ts is the stdio entry point; testing it requires process/stdio
+      // mocking that adds complexity disproportionate to its coverage value.
+      // The actual server logic lives in server.ts.
       exclude: ["src/**/*.d.ts", "src/index.ts"],
     },
   },
