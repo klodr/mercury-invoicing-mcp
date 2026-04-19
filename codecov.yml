@@ -13,9 +13,10 @@ coverage:
     patch:
       default:
         target: 95%
-        threshold: 2%
-        # Strict patch gate (95% target, 2% threshold) — new code must be
-        # ≥93% covered. The 2% threshold (vs an absolute 95% requirement)
+        threshold: 1.5%
+        # Strict patch gate (95% target, 1.5% threshold) — new code must
+        # be ≥93.5% covered. The 1.5% threshold (vs an absolute 95%
+        # requirement, and aligned with the project threshold above)
         # exists for two narrow exceptions, not a blanket relaxation:
         # - Defensive code paths (e.g. TOCTOU re-checks, OS-level error
         #   branches) are intentionally hard to exercise in unit tests.
