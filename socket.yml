@@ -19,16 +19,18 @@ githubApp:
   secretAlertsEnabled: true
 
 issueRules:
-  # Legitimate behaviour for a Mercury Banking client — accepted, not a finding.
-  # Each is documented in README.md (see Configuration / Security sections).
-  envVars: true
-  filesystemAccess: true
-  networkAccess: true
-  urlStrings: true
-  hasIPProxy: true
+  # Silence the alerts that are intrinsic to what this MCP does (read env,
+  # read local rate-limit state, call the Mercury Banking API, hardcode the
+  # Mercury production / sandbox URLs). Each is intentional and documented
+  # in README.md (Configuration / Security sections).
+  envVars: false
+  filesystemAccess: false
+  networkAccess: false
+  urlStrings: false
+  hasIPProxy: false
 
-  # Transitive deps from @modelcontextprotocol/sdk → express. Not actionable
-  # from this package. Tracked upstream:
+  # Silence noise from transitive deps via @modelcontextprotocol/sdk → express.
+  # Not actionable from this package. Tracked upstream:
   #   https://github.com/modelcontextprotocol/typescript-sdk/issues/1924
   gptDidYouMean: false
   unstableOwnership: false
