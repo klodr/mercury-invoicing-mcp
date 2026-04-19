@@ -22,6 +22,13 @@ reviews:
     base_branches:
       - main
 
+  pre_merge_checks:
+    docstrings:
+      # The codebase deliberately keeps comments to non-obvious WHY only;
+      # function names like `enforceRateLimit` / `redactSensitive` are
+      # self-documenting and a forced JSDoc would just paraphrase them.
+      mode: off
+
   path_instructions:
     - path: "src/tools/**"
       instructions: |
