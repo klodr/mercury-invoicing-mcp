@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `codecov.yml`: revert `project.threshold` from `1.5%` to `0.5%` now that
+  v0.8.0 has shipped and codecov has a clean v8-instrumented baseline.
+  The 1.5% was a one-shot accommodation for the istanbul → v8
+  instrumentation switch; PRs from here on compare like-for-like.
+  Patch threshold (`95%` / `1.5%`) is unchanged.
+
 ## [0.8.0] - 2026-04-19
 
 ### Security
