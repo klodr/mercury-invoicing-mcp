@@ -449,4 +449,46 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     await client.callTool({ name: "mercury_list_accounts", arguments: {} });
     expect(calls[0].headers.Authorization).toBe("Bearer test-key");
   });
+
+  // --- SEC-004: strict ISO date validation on YYYY-MM-DD inputs ---
+
+  it("rejects an invalid YYYY-MM-DD date and never reaches Mercury", async () => {
+    const res = await client.callTool({
+      name: "mercury_create_invoice",
+      arguments: {
+        customerId: "00000000-0000-4000-8000-000000000001",
+        destinationAccountId: "00000000-0000-4000-8000-000000000002",
+        invoiceDate: "2026-4-17", // single-digit month — rejected by z.iso.date()
+        dueDate: "2026-05-17",
+        lineItems: [{ name: "Test", quantity: 1, unitPrice: 10 }],
+      },
+    });
+    expect(res.isError).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
+  it("rejects a non-date string and never reaches Mercury", async () => {
+    const res = await client.callTool({
+      name: "mercury_list_transactions",
+      arguments: {
+        accountId: "00000000-0000-4000-8000-000000000001",
+        start: "yesterday",
+      },
+    });
+    expect(res.isError).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
+  it("accepts a valid YYYY-MM-DD date (regression after SEC-004 tightening)", async () => {
+    await client.callTool({
+      name: "mercury_list_transactions",
+      arguments: {
+        accountId: "00000000-0000-4000-8000-000000000001",
+        start: "2026-01-01",
+        end: "2026-04-19",
+      },
+    });
+    expect(calls[0].url).toContain("start=2026-01-01");
+    expect(calls[0].url).toContain("end=2026-04-19");
+  });
 });
