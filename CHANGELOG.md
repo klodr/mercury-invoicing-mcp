@@ -59,6 +59,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CONTINUITY.md`, `ASSURANCE_CASE.md`: updated CI matrix mention from
   Node 18/20/22 to Node 20/22/24.
 
+## [0.7.9] - 2026-04-19
+
+### Fixed
+
+- `.github/workflows/verify-release.yml` — drop `--signer-workflow` from
+  `gh attestation verify` (Path 2). The current `gh` CLI rejects the
+  combination with `--cert-identity` (mutually exclusive flag group),
+  so the post-release verify job exited 1 on every release since 0.7.6
+  without performing any actual verification. `--cert-identity` is
+  strictly more specific (encodes both the workflow path and the tag
+  ref in the Fulcio SAN), so we keep it and drop `--signer-workflow`.
+  Symmetric to klodr/faxdrop-mcp v0.1.9.
+
 ## [0.7.8] - 2026-04-18
 
 ### Changed
