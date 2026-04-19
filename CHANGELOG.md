@@ -11,11 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### BREAKING
 
-- **Drop Node 18.** Minimum runtime is now Node 20. Node 18 reached EOL in
-  April 2025 (a year ago); every maintained MCP host (Claude Desktop/Code,
-  Cursor, Continue.dev, Windsurf, OpenClaw) ships Node 20+. `engines.node`
-  is now `>=20`, the CI matrix is `[20, 22, 24]`, and tsup target is
-  `node20`.
+- **Drop Node 18.** Minimum runtime is now Node 20 (Node 18 is past EOL).
+  `engines.node` is `>=20`, the CI matrix is `[20, 22, 24]`, and tsup
+  target is `node20`.
 
 ### Changed
 
@@ -32,12 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Minor dep bumps**:
   - `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
   - `tsup` 8.3 → **8.5.1**
-  - `ts-jest` 29.2 → **29.4.9**
-- **GitHub Actions bumps** (SHA-pinned with corrected version comments):
-  - `actions/checkout` v4.3.1 (in `scorecard.yml`) → **v6.0.2**
-  - `actions/upload-artifact` v4.6.2 → **v7.0.1**
-  - `actions/setup-node` (label fix) v6.0.0 → **v6.3.0** (SHA was already current)
-  - `actions/checkout` (label fix) v6.0.0 → **v6.0.2** (SHA was already current)
+- **Test runner: jest → vitest** (`vitest@4.1.4` + `@vitest/coverage-v8`).
+  Drops `jest`, `@types/jest`, `ts-jest` and their deprecated `glob@10`
+  / `inflight` / `babel-plugin-istanbul` transitives
+  ([jestjs/jest#15173](https://github.com/jestjs/jest/issues/15173)).
+  Native ESM/TS, no preset. v8 coverage instead of istanbul. API is
+  drop-in: `jest.fn`/`jest.spyOn` → `vi.fn`/`vi.spyOn`.
+- **GitHub Actions bumps** (SHA-pinned):
+  - `actions/checkout` → **v6.0.2**
+  - `actions/setup-node` → **v6.3.0**
+  - `actions/upload-artifact` → **v7.0.1**
 - `eslint.config.js`: replaced the Node 18 `dirname(fileURLToPath(import.meta.url))`
   shim with the native `import.meta.dirname` (Node 20.11+). Drops the
   `node:path` and `node:url` imports.

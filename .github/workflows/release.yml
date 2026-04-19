@@ -37,7 +37,7 @@ jobs:
         run: npm run build
 
       - name: Test
-        run: npm test -- --coverage
+        run: npm run test:coverage
 
   publish:
     name: Create release, sign artifacts, publish to npm

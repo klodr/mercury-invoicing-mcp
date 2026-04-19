@@ -41,7 +41,9 @@
     "lint": "eslint src",
     "format": "prettier --write src test",
     "format:check": "prettier --check src test",
-    "test": "jest",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
@@ -54,19 +56,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/jest": "^30.0.0",
     "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "fast-check": "^4.7.0",
-    "jest": "^30.3.0",
     "prettier": "^3.8.3",
-    "ts-jest": "^29.4.9",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2"
-  },
-  "overrides": {
-    "test-exclude": "^8.0.0"
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.4"
   }
 }
