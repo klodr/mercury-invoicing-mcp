@@ -7,7 +7,7 @@ afterEach(() => {
 });
 
 function mockFetch(response: { ok: boolean; status: number; statusText?: string; body: unknown }) {
-  global.fetch = jest.fn(async () => ({
+  global.fetch = vi.fn(async () => ({
     ok: response.ok,
     status: response.status,
     statusText: response.statusText ?? (response.ok ? "OK" : "Error"),

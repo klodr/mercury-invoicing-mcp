@@ -23,8 +23,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
         .enum(["pending", "sent", "cancelled", "failed"])
         .optional()
         .describe("Filter by transaction status"),
-      start: z.string().optional().describe("Filter posted on/after this date (YYYY-MM-DD)"),
-      end: z.string().optional().describe("Filter posted on/before this date (YYYY-MM-DD)"),
+      start: z.iso.date().optional().describe("Filter posted on/after this date (YYYY-MM-DD)"),
+      end: z.iso.date().optional().describe("Filter posted on/before this date (YYYY-MM-DD)"),
       search: z.string().optional().describe("Search query (counterparty name, memo, etc.)"),
     },
     async ({ accountId, ...query }) => {
