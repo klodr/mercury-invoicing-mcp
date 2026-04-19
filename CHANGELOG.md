@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### BREAKING
 
 - **Drop Node 18.** Minimum runtime is now Node 20 (Node 18 is past EOL).
-  `engines.node` is `>=20`, the CI matrix is `[20, 22, 24]`, and tsup
-  target is `node20`.
+  `engines.node` is `>=20.11` (we use `import.meta.dirname` in
+  `eslint.config.js`, native since 20.11), the CI matrix is `[20, 22, 24]`,
+  and tsup target is `node20`.
 
 ### Changed
 
@@ -34,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `eslint` 9.39 → **10.2.1** + `@eslint/js` 9.39 → **10.0.1**. The new
     `no-useless-assignment` rule flagged a redundant `let json = undefined`
     initializer in `src/client.ts:76` (now `let json: unknown;`).
-  - `@types/node` 22 → **25.6.0**.
+  - `@types/node` 22 → **20.19.0** (matches `engines.node >=20.11`; previously
+    bumped to 25 then walked back so typings can't introduce Node 21+ APIs).
 - **Minor dep bumps**:
   - `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
   - `tsup` 8.3 → **8.5.1**

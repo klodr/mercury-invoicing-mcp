@@ -140,7 +140,7 @@ describe("Middleware", () => {
     });
 
     it("does NOT clobber an unreadable state file when persisting", () => {
-      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
       // Pre-existing state file with prior counter, made unreadable mid-session.
       mkdirSync(stateDir, { recursive: true });

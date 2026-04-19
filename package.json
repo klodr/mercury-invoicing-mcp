@@ -48,7 +48,7 @@
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.11"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.6.0",
+    "@types/node": "^20.19.0",
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",

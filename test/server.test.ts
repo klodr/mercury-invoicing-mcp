@@ -71,10 +71,7 @@ describe("createServer", () => {
 
   it("falls back to console.error when no log option is given", () => {
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
-      createServer({ apiKey: "secret-token:mercury_sandbox_test" });
-      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("sandbox"));
-    } finally {
-    }
+    createServer({ apiKey: "secret-token:mercury_sandbox_test" });
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("sandbox"));
   });
 });
