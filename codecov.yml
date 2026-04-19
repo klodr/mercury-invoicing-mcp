@@ -4,12 +4,14 @@ coverage:
       default:
         target: auto
         threshold: 1.5%
-        # Project coverage shouldn't drop more than 1.5% in any single PR.
-        # The 1.5% (vs the historical 0.5%) absorbs the one-shot accounting
-        # gap of the istanbul → v8 instrumentation switch in the jest →
-        # vitest migration: v8 splits some ternary/optional branches that
-        # istanbul collapsed, surfacing ~7 "partials" with no real loss
-        # of code coverage. Tighten back once the next baseline lands.
+        # TODO(post-v0.8.0): revert `threshold` to 0.5% once the first v8-
+        # instrumented release has landed on main and codecov has a clean
+        # baseline. The 1.5% (vs the historical 0.5%) is a one-shot
+        # accommodation for the istanbul → v8 instrumentation switch in
+        # the jest → vitest migration: v8 splits some ternary/optional
+        # branches that istanbul collapsed, surfacing ~7 "partials" with
+        # no real loss of code coverage. Project coverage shouldn't drop
+        # more than 1.5% in any single PR until then.
     patch:
       default:
         target: 95%
