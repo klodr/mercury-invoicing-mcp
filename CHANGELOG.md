@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0] - 2026-04-19
 
+### Security
+
+- Tighten date validation on every `YYYY-MM-DD` tool input (12 fields
+  across `invoices`, `statements`, `transactions`, `treasury`).
+  `z.string().describe("YYYY-MM-DD")` had no actual validation —
+  arbitrary strings were forwarded to Mercury. Now uses zod 4's
+  `z.iso.date()` (strict ISO date format).
+
 ### BREAKING
 
 - **Drop Node 18.** Minimum runtime is now Node 20 (Node 18 is past EOL).
