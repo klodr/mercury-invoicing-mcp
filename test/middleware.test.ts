@@ -123,6 +123,41 @@ describe("Middleware", () => {
       expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("corrupted state"));
     });
 
+    it("ignores state files whose JSON shape is unexpected (array root)", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      // JSON.parse succeeds but the type-guard on parsed-is-object rejects.
+      writeFileSync(join(stateDir, "ratelimit.json"), '[1,2,3]');
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+    });
+
+    it("skips entries whose value is not a number array", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      mkdirSync(stateDir, { recursive: true });
+      // money entry is a number-array (loaded — needs a timestamp inside the
+      // 1-day window so it actually counts), webhooks is a string (skipped
+      // by the type-guard at middleware.ts:105).
+      writeFileSync(
+        join(stateDir, "ratelimit.json"),
+        `{"money":[${Date.now()}],"webhooks":"not-an-array"}`,
+      );
+      // money already has 1 prior call → 2nd should hit the limit.
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+    });
+
+    it("supports the 'week' window in custom rate limits", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/week";
+      enforceRateLimit("mercury_send_money");
+      try {
+        enforceRateLimit("mercury_send_money");
+        fail("Expected RateLimitError");
+      } catch (err) {
+        expect(err).toBeInstanceOf(RateLimitError);
+        // The week window doesn't have a short label — falls through to seconds.
+        expect((err as RateLimitError).message).toMatch(/limit: 1\/\d+s\)/);
+      }
+    });
+
     it("logs (and does not throw) when the state file cannot be read", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
