@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-04-21
+
+### Added
+
+- Funding links in `.github/FUNDING.yml` (GitHub Sponsors, Patreon,
+  Ko-fi) and matching badges at the top of the README. Monthly
+  recurring funding helps cover the tooling (Claude Code, Socket
+  Security, CI) behind steady security patches and issue triage.
+
 ### Changed (BREAKING for env overrides + state file)
 
 - **Dual-window rate limits**: every write tool now enforces both a daily
@@ -29,9 +38,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `invoicing`, …) is ignored on first load after upgrade — effectively
   a fresh 30-day window starts from the upgrade moment.
 - Rate-limit errors now return a structured JSON payload with
-  `error_type` (`daily_limit_exceeded` or `monthly_limit_exceeded`),
-  `message`, `hint`, and `retry_after` (ISO 8601 timestamp) — so the
-  agent can back off at the right granularity instead of guessing.
+  `source: "mcp_safeguard"`, `error_type` (`mcp_rate_limit_daily_exceeded`
+  or `mcp_rate_limit_monthly_exceeded`), `message`, `hint`, and
+  `retry_after` (ISO 8601 timestamp) — unambiguously distinct from a
+  server-side Mercury 429 (which surfaces separately as
+  `"Mercury API error 429: …"` via the `MercuryError` branch).
+- `.coderabbit.yaml` now carries an explicit policy NOTE forbidding
+  CodeRabbit-authored commits: on a solo-maintainer repo the branch
+  protection rule "approval from someone other than the last pusher"
+  deadlocks if the bot is both the last pusher and the approver. The
+  NOTE complements the existing
+  `pre_merge_checks.override_requested_reviewers_only: true` gate with
+  explicit human discipline (never click "Commit suggestion", never
+  run `@coderabbitai apply suggestions`).
+- `SECURITY.md` updated to describe the dual-window design and clarify
+  that `isError: true` lives on the `ToolResult` as a sibling of the
+  `content` array (set by `wrapToolHandler`), while the structured
+  JSON payload with `source` / `error_type` is inside
+  `content[0].text` (returned by `formatRateLimitError`).
+- `dependabot.yml`: drop `include: "scope"` (was producing duplicated
+  titles like `deps(deps): bump X` / `deps-dev(deps-dev): bump X`
+  because the prefix already encodes prod vs dev). Reduce
+  `open-pull-requests-limit` from 10 to 5 to keep the review queue
+  manageable.
 
 ### Security
 
