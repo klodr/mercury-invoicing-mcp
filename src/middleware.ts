@@ -1,5 +1,21 @@
 /**
- * MCP middleware: dry-run, rate limiting, audit log.
+ * MCP middleware: dry-run, dual-window rate limiting, audit log.
+ *
+ * Each write tool is associated with a bucket. Buckets enforce two
+ * rolling windows simultaneously:
+ *   - daily  (24h)
+ *   - monthly (30-day rolling)
+ * A call is rejected as soon as either window is at its cap. The daily
+ * window is checked first so an explicit "Daily Limit Exceeded" is
+ * surfaced when both caps are hit at once.
+ *
+ * Persistence: ~/.mercury-mcp/ratelimit.json (mode 0o600, atomic write).
+ * State is keyed by bucket; entries are arrays of Unix-ms timestamps
+ * pruned to the monthly window on every access.
+ *
+ * Env overrides:
+ *   MERCURY_MCP_RATE_LIMIT_<BUCKET>=D/day,M/month
+ *   MERCURY_MCP_RATE_LIMIT_DISABLE=true    # disable all limits
  */
 
 import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -8,63 +24,87 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { MercuryError } from "./client.js";
 
-const TOOL_CATEGORIES: Record<string, string> = {
-  // Money movements
-  mercury_send_money: "money",
-  mercury_request_send_money: "money",
+const DAY_MS = 86_400_000;
+const MONTH_MS = 30 * DAY_MS; // 30-day rolling window
+
+/**
+ * Tool → bucket. Tools that share a bucket also share the same
+ * history array (e.g. `send_money` and `request_send_money` both
+ * count against the `payments` bucket).
+ */
+const TOOL_BUCKET: Record<string, string> = {
+  // Money out
+  mercury_send_money: "payments",
+  mercury_request_send_money: "payments",
   mercury_create_internal_transfer: "internal_transfer",
-  // AR (invoicing + customers)
-  mercury_create_invoice: "invoicing",
-  mercury_update_invoice: "invoicing",
-  mercury_cancel_invoice: "invoicing",
-  mercury_create_customer: "invoicing",
-  mercury_update_customer: "invoicing",
-  mercury_delete_customer: "invoicing",
+
+  // Invoicing
+  mercury_create_invoice: "invoices_write",
+  mercury_update_invoice: "invoices_write",
+  mercury_cancel_invoice: "invoices_cancel",
+
+  // Customers (AR)
+  mercury_create_customer: "customers_write",
+  mercury_update_customer: "customers_write",
+  mercury_delete_customer: "customers_write",
+
   // Banking writes
-  mercury_add_recipient: "banking",
-  mercury_update_recipient: "banking",
-  mercury_update_transaction: "banking",
-  // Webhooks (config)
-  mercury_create_webhook: "webhooks",
-  mercury_update_webhook: "webhooks",
-  mercury_delete_webhook: "webhooks",
+  mercury_add_recipient: "recipients_add",
+  mercury_update_recipient: "recipients_update",
+  mercury_update_transaction: "transactions_update",
+
+  // Webhooks
+  mercury_create_webhook: "webhooks_create",
+  mercury_update_webhook: "webhooks_update",
+  mercury_delete_webhook: "webhooks_delete",
 };
 
-const DEFAULT_LIMITS_PER_DAY: Record<string, number> = {
-  money: 50,
-  internal_transfer: 5,
-  invoicing: 100,
-  banking: 200,
-  webhooks: 5,
+interface BucketLimit {
+  daily: number;
+  monthly: number;
+}
+
+const DEFAULT_BUCKET_LIMITS: Record<string, BucketLimit> = {
+  payments: { daily: 7, monthly: 150 },
+  internal_transfer: { daily: 2, monthly: 40 },
+  invoices_write: { daily: 10, monthly: 200 },
+  invoices_cancel: { daily: 3, monthly: 30 },
+  customers_write: { daily: 3, monthly: 60 },
+  recipients_add: { daily: 3, monthly: 45 },
+  recipients_update: { daily: 2, monthly: 15 },
+  transactions_update: { daily: 50, monthly: 500 },
+  webhooks_create: { daily: 2, monthly: 15 },
+  webhooks_update: { daily: 2, monthly: 15 },
+  webhooks_delete: { daily: 2, monthly: 15 },
 };
 
-interface ParsedRate {
-  count: number;
-  windowMs: number;
+/**
+ * Parse an override env var of the form "D/day,M/month".
+ * Returns null on malformed input so the caller can fall back.
+ */
+function parseOverride(raw: string): BucketLimit | null {
+  const parts = raw.split(",").map((s) => s.trim());
+  if (parts.length !== 2) return null;
+  const dailyM = parts[0].match(/^(\d+)\s*\/\s*day$/i);
+  const monthlyM = parts[1].match(/^(\d+)\s*\/\s*month$/i);
+  if (!dailyM || !monthlyM) return null;
+  const daily = Number(dailyM[1]);
+  const monthly = Number(monthlyM[1]);
+  if (daily < 1 || monthly < 1) return null;
+  return { daily, monthly };
 }
 
-function parseRate(raw: string): ParsedRate | null {
-  const m = raw.match(/^(\d+)\s*\/\s*(hour|day|week)$/i);
-  if (!m) return null;
-  const count = Number(m[1]);
-  const unit = m[2].toLowerCase();
-  const windowMs = unit === "hour" ? 3600_000 : unit === "day" ? 86400_000 : 604800_000;
-  return { count, windowMs };
-}
-
-function getRateLimit(category: string): ParsedRate | null {
-  const envKey = `MERCURY_MCP_RATE_LIMIT_${category}`;
+function getBucketLimit(bucket: string): BucketLimit | null {
+  const envKey = `MERCURY_MCP_RATE_LIMIT_${bucket}`;
   const raw = process.env[envKey];
   if (raw) {
-    const parsed = parseRate(raw);
+    const parsed = parseOverride(raw);
     if (parsed) return parsed;
     console.error(
-      `Invalid rate limit format for ${envKey}: "${raw}" — expected like "100/day". Using default.`,
+      `Invalid rate limit format for ${envKey}: "${raw}" — expected like "7/day,150/month". Using default.`,
     );
   }
-  const defaultCount = DEFAULT_LIMITS_PER_DAY[category];
-  if (defaultCount === undefined) return null;
-  return { count: defaultCount, windowMs: 86400_000 };
+  return DEFAULT_BUCKET_LIMITS[bucket] ?? null;
 }
 
 const callHistory = new Map<string, number[]>();
@@ -146,54 +186,68 @@ export function resetRateLimitHistory(): void {
   stateLoaded = false;
 }
 
+export type LimitType = "daily" | "monthly";
+
 export class RateLimitError extends Error {
   constructor(
     public toolName: string,
-    public category: string,
+    public bucket: string,
+    public limitType: LimitType,
     public limit: number,
-    public windowMs: number,
     public retryAfterMs: number,
   ) {
-    const win =
-      windowMs === 86400_000
-        ? "day"
-        : windowMs === 3600_000
-          ? "hour"
-          : `${Math.round(windowMs / 1000)}s`;
-    const retrySec = Math.ceil(retryAfterMs / 1000);
+    const retryMinutes = Math.ceil(retryAfterMs / 60_000);
+    const windowLabel = limitType === "daily" ? "24h" : "30-day rolling";
+    const title = limitType === "daily" ? "Daily Limit Exceeded" : "Monthly Limit Exceeded";
     super(
-      `Rate limit exceeded for ${toolName} (category: ${category}, limit: ${limit}/${win}). Retry in ${retrySec}s. ` +
-        `Override with MERCURY_MCP_RATE_LIMIT_${category}=N/day if this is a legitimate batch.`,
+      `${title}: ${toolName} (bucket: ${bucket}) capped at ${limit} per ${windowLabel}. ` +
+        `Retry in ~${retryMinutes} min. ` +
+        `Override with MERCURY_MCP_RATE_LIMIT_${bucket}=D/day,M/month if this is a legitimate batch.`,
     );
     this.name = "RateLimitError";
   }
 }
 
 /**
- * Returns true if the call is allowed; throws RateLimitError otherwise.
- * Mutates internal call history if allowed.
+ * Enforce both rate-limit windows for a tool call.
+ *
+ * - No-op for read tools or tools not in TOOL_BUCKET
+ * - Prunes records older than the monthly window before counting
+ * - Daily window checked first (so an explicit "Daily Limit Exceeded"
+ *   is surfaced when both caps happen to land at the same instant)
+ * - On allow: appends a timestamp and persists state
+ * - On deny: throws RateLimitError with the limit type that failed
  */
 export function enforceRateLimit(toolName: string): void {
   if (process.env.MERCURY_MCP_RATE_LIMIT_DISABLE === "true") return;
 
-  const category = TOOL_CATEGORIES[toolName];
-  if (!category) return; // read tools or untracked → no limit
+  const bucket = TOOL_BUCKET[toolName];
+  if (!bucket) return; // read tool or untracked → no limit
 
-  const rl = getRateLimit(category);
-  if (!rl) return;
+  const limits = getBucketLimit(bucket);
+  if (!limits) return;
 
   loadCallHistory();
 
   const now = Date.now();
-  const records = (callHistory.get(category) ?? []).filter((ts) => now - ts < rl.windowMs);
+  // Prune: keep only records within the monthly window
+  const records = (callHistory.get(bucket) ?? []).filter((ts) => now - ts < MONTH_MS);
 
-  if (records.length >= rl.count) {
-    const retryAfterMs = rl.windowMs - (now - records[0]);
-    throw new RateLimitError(toolName, category, rl.count, rl.windowMs, retryAfterMs);
+  // Daily window: records within the last 24h
+  const dailyRecords = records.filter((ts) => now - ts < DAY_MS);
+  if (dailyRecords.length >= limits.daily) {
+    const retryAfterMs = DAY_MS - (now - dailyRecords[0]);
+    throw new RateLimitError(toolName, bucket, "daily", limits.daily, retryAfterMs);
+  }
+
+  // Monthly window: records is already pruned to 30 days
+  if (records.length >= limits.monthly) {
+    const retryAfterMs = MONTH_MS - (now - records[0]);
+    throw new RateLimitError(toolName, bucket, "monthly", limits.monthly, retryAfterMs);
   }
 
   records.push(now);
-  callHistory.set(category, records);
+  callHistory.set(bucket, records);
   persistCallHistory();
 }
 
@@ -260,8 +314,27 @@ export function logAudit(
 export type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
 
 /**
+ * Format a RateLimitError as a structured JSON payload for the MCP client.
+ * The LLM gets explicit error_type / message / hint / retry_after fields
+ * instead of a free-form error string.
+ */
+function formatRateLimitError(err: RateLimitError): string {
+  const retryAfter = new Date(Date.now() + err.retryAfterMs).toISOString();
+  return JSON.stringify(
+    {
+      error_type: `${err.limitType}_limit_exceeded`,
+      message: err.limitType === "daily" ? "Daily Limit Exceeded" : "Monthly Limit Exceeded",
+      hint: err.message,
+      retry_after: retryAfter,
+    },
+    null,
+    2,
+  );
+}
+
+/**
  * Wrap a tool handler with rate limit, dry-run, and audit middleware.
- * - Rate limit: throws RateLimitError if exceeded
+ * - Rate limit: returns structured isError payload if either window exceeded
  * - Dry-run: returns a mock response without calling Mercury
  * - Audit log: writes structured entry to MERCURY_MCP_AUDIT_LOG if set
  */
@@ -269,7 +342,7 @@ export function wrapToolHandler<TArgs>(
   toolName: string,
   handler: (args: TArgs) => Promise<ToolResult>,
 ): (args: TArgs) => Promise<ToolResult> {
-  const isWriteOp = toolName in TOOL_CATEGORIES;
+  const isWriteOp = toolName in TOOL_BUCKET;
 
   return async (args: TArgs): Promise<ToolResult> => {
     if (isWriteOp) {
@@ -279,7 +352,7 @@ export function wrapToolHandler<TArgs>(
         if (err instanceof RateLimitError) {
           logAudit(toolName, args, "error");
           return {
-            content: [{ type: "text", text: `Error: ${err.message}` }],
+            content: [{ type: "text", text: formatRateLimitError(err) }],
             isError: true,
           };
         }

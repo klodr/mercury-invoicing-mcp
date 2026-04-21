@@ -240,27 +240,44 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 This MCP includes three middleware layers that activate automatically on write tools (read tools are unaffected):
 
-#### 1. Rate limiting
+#### 1. Rate limiting (dual-window)
 
-Per-category daily limits prevent runaway agents from draining accounts or spamming the API.
+Each write tool is mapped to a **bucket**. Every bucket enforces **two rolling windows simultaneously** — a daily cap (24 h) and a monthly cap (30-day rolling). A call is rejected as soon as either window is at its cap, so a runaway agent cannot drain accounts even if it stays under the daily limit by pacing itself over weeks.
 
-| Category | Tools | Default |
-|---|---|---|
-| `money` | send_money, request_send_money | 50/day |
-| `internal_transfer` | create_internal_transfer (between your own Mercury accounts) | 5/day |
-| `invoicing` | create/update/cancel invoice + create/update/delete customer | 100/day |
-| `banking` | add_recipient, update_recipient, update_transaction | 200/day |
-| `webhooks` | create/update/delete webhook | 5/day |
+| Bucket | Tools | Daily | Monthly (30d) |
+|---|---|---|---|
+| `payments` | send_money, request_send_money | 7 | 150 |
+| `internal_transfer` | create_internal_transfer | 2 | 40 |
+| `invoices_write` | create_invoice, update_invoice | 10 | 200 |
+| `invoices_cancel` | cancel_invoice | 3 | 30 |
+| `customers_write` | create_customer, update_customer, delete_customer | 3 | 60 |
+| `recipients_add` | add_recipient | 3 | 45 |
+| `recipients_update` | update_recipient | 2 | 15 |
+| `transactions_update` | update_transaction (bookkeeping, tagging, receipts) | 50 | 500 |
+| `webhooks_create` | create_webhook | 2 | 15 |
+| `webhooks_update` | update_webhook | 2 | 15 |
+| `webhooks_delete` | delete_webhook | 2 | 15 |
 
-Override per category (units: `/hour`, `/day`, `/week`):
+Override per bucket (both windows must be supplied):
 
 ```bash
-MERCURY_MCP_RATE_LIMIT_money=200/day      # bigger supplier batch
-MERCURY_MCP_RATE_LIMIT_invoicing=1000/day # large monthly billing run
-MERCURY_MCP_RATE_LIMIT_DISABLE=true       # disable all rate limiting (not recommended)
+MERCURY_MCP_RATE_LIMIT_payments=15/day,300/month   # larger supplier batch
+MERCURY_MCP_RATE_LIMIT_invoices_write=20/day,400/month  # large monthly billing run
+MERCURY_MCP_RATE_LIMIT_DISABLE=true                # disable all rate limiting (not recommended)
 ```
 
-When exceeded, the tool returns an `isError: true` response with a clear message and retry hint — the agent learns to back off naturally.
+When exceeded, the tool returns an `isError: true` response with a structured JSON payload:
+
+```json
+{
+  "error_type": "daily_limit_exceeded",
+  "message": "Daily Limit Exceeded",
+  "hint": "Daily Limit Exceeded: mercury_send_money (bucket: payments) capped at 7 per 24h. Retry in ~180 min. Override with MERCURY_MCP_RATE_LIMIT_payments=D/day,M/month if this is a legitimate batch.",
+  "retry_after": "2026-04-22T00:00:00.000Z"
+}
+```
+
+`error_type` is either `daily_limit_exceeded` or `monthly_limit_exceeded` — the agent learns to back off at the right granularity.
 
 The rate-limit window **survives process restarts**. State is persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`); override the location with `MERCURY_MCP_STATE_DIR=/abs/path` if you need to share state between hosts or pin it to a specific volume. Without persistence, an MCP host that respawns the server per session would silently bypass the limit.
 

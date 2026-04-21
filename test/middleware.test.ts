@@ -29,10 +29,22 @@ describe("Middleware", () => {
   beforeEach(() => {
     delete process.env.MERCURY_MCP_DRY_RUN;
     delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_webhooks;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_money;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_invoicing;
-    delete process.env.MERCURY_MCP_RATE_LIMIT_banking;
+    // Clear every bucket env var a test might set.
+    for (const bucket of [
+      "payments",
+      "internal_transfer",
+      "invoices_write",
+      "invoices_cancel",
+      "customers_write",
+      "recipients_add",
+      "recipients_update",
+      "transactions_update",
+      "webhooks_create",
+      "webhooks_update",
+      "webhooks_delete",
+    ]) {
+      delete process.env[`MERCURY_MCP_RATE_LIMIT_${bucket}`];
+    }
     stateDir = mkdtempSync(join(tmpdir(), "mercury-state-"));
     process.env.MERCURY_MCP_STATE_DIR = stateDir;
     resetRateLimitHistory();
@@ -44,55 +56,100 @@ describe("Middleware", () => {
   });
 
   describe("enforceRateLimit", () => {
-    it("does nothing for read tools (no category)", () => {
+    it("does nothing for read tools (no bucket)", () => {
       expect(() => enforceRateLimit("mercury_list_accounts")).not.toThrow();
-      // Many calls → still no throw
       for (let i = 0; i < 100; i++) enforceRateLimit("mercury_list_accounts");
     });
 
     it("respects MERCURY_MCP_RATE_LIMIT_DISABLE=true", () => {
       process.env.MERCURY_MCP_RATE_LIMIT_DISABLE = "true";
-      // Webhook default is 5/day, but disabled → unlimited
+      // webhooks_create default is 2/day, but disabled → unlimited
       for (let i = 0; i < 10; i++) {
         expect(() => enforceRateLimit("mercury_create_webhook")).not.toThrow();
       }
     });
 
-    it("enforces custom env limit", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "2/day";
+    it("enforces default daily cap on create_customer (3/day)", () => {
+      enforceRateLimit("mercury_create_customer");
+      enforceRateLimit("mercury_create_customer");
+      enforceRateLimit("mercury_create_customer");
+      expect(() => enforceRateLimit("mercury_create_customer")).toThrow(RateLimitError);
+    });
+
+    it("enforces a dual-window env override", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "2/day,5/month";
       enforceRateLimit("mercury_send_money");
       enforceRateLimit("mercury_send_money");
       expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
     });
 
-    it("RateLimitError contains useful info", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
-      enforceRateLimit("mercury_request_send_money"); // 1st OK
+    it("shared bucket: send_money and request_send_money count together", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "2/day,5/month";
+      enforceRateLimit("mercury_send_money");
+      enforceRateLimit("mercury_request_send_money");
+      // Third call from either tool trips the shared bucket.
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+    });
+
+    it("RateLimitError contains limitType=daily and bucket info", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
+      enforceRateLimit("mercury_send_money"); // 1st OK
       try {
-        enforceRateLimit("mercury_request_send_money"); // 2nd throws
+        enforceRateLimit("mercury_send_money"); // 2nd trips daily
         fail("Expected RateLimitError");
       } catch (err) {
         expect(err).toBeInstanceOf(RateLimitError);
         const e = err as RateLimitError;
-        expect(e.toolName).toBe("mercury_request_send_money");
-        expect(e.category).toBe("money");
+        expect(e.toolName).toBe("mercury_send_money");
+        expect(e.bucket).toBe("payments");
+        expect(e.limitType).toBe("daily");
         expect(e.limit).toBe(1);
-        expect(e.message).toContain("Rate limit exceeded");
-        expect(e.message).toContain("Override with MERCURY_MCP_RATE_LIMIT_money");
+        expect(e.message).toContain("Daily Limit Exceeded");
+        expect(e.message).toContain("Override with MERCURY_MCP_RATE_LIMIT_payments");
+      }
+    });
+
+    it("monthly window: trips even when daily cap is never reached", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "10/day,2/month";
+      enforceRateLimit("mercury_send_money");
+      enforceRateLimit("mercury_send_money");
+      try {
+        enforceRateLimit("mercury_send_money");
+        fail("Expected RateLimitError");
+      } catch (err) {
+        expect(err).toBeInstanceOf(RateLimitError);
+        const e = err as RateLimitError;
+        expect(e.limitType).toBe("monthly");
+        expect(e.message).toContain("Monthly Limit Exceeded");
+        expect(e.message).toContain("30-day rolling");
       }
     });
 
     it("invalid rate limit format logs a warning and falls back to default", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      process.env.MERCURY_MCP_RATE_LIMIT_invoicing = "not-a-rate";
+      process.env.MERCURY_MCP_RATE_LIMIT_invoices_write = "not-a-rate";
       expect(() => enforceRateLimit("mercury_create_invoice")).not.toThrow();
       expect(errSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoicing"),
+        expect.stringContaining(
+          "Invalid rate limit format for MERCURY_MCP_RATE_LIMIT_invoices_write",
+        ),
       );
     });
 
+    it.each([
+      ["5/day", "single window"],
+      ["5/day,10/week", "unknown monthly unit"],
+      ["0/day,10/month", "zero daily"],
+      ["5/day,0/month", "zero monthly"],
+    ])("rejects override '%s' (%s)", (raw) => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = raw;
+      // Falls back to default (7/day, 150/month) — single call stays under.
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+    });
+
     it("persists call history across simulated process restarts", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "2/day";
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "2/day,10/month";
       enforceRateLimit("mercury_send_money");
 
       // Open the persisted state once and use fstat + read on the same fd
@@ -103,7 +160,7 @@ describe("Middleware", () => {
         const stat = fstatSync(fd);
         expect(stat.mode & 0o777).toBe(0o600);
         const persisted = JSON.parse(readFileSync(fd, "utf8")) as Record<string, number[]>;
-        expect(persisted.money).toHaveLength(1);
+        expect(persisted.payments).toHaveLength(1);
       } finally {
         closeSync(fd);
       }
@@ -116,7 +173,7 @@ describe("Middleware", () => {
 
     it("starts fresh when state file is corrupted", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
       writeFileSync(join(stateDir, "ratelimit.json"), "{not valid json");
       expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
@@ -124,44 +181,26 @@ describe("Middleware", () => {
     });
 
     it("ignores state files whose JSON shape is unexpected (array root)", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
-      // JSON.parse succeeds but the type-guard on parsed-is-object rejects.
       writeFileSync(join(stateDir, "ratelimit.json"), "[1,2,3]");
       expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
     });
 
     it("skips entries whose value is not a number array", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
-      // money entry is a number-array (loaded — needs a timestamp inside the
-      // 1-day window so it actually counts), webhooks is a string (skipped
-      // by the type-guard at middleware.ts:105).
       writeFileSync(
         join(stateDir, "ratelimit.json"),
-        `{"money":[${Date.now()}],"webhooks":"not-an-array"}`,
+        `{"payments":[${Date.now()}],"webhooks_create":"not-an-array"}`,
       );
-      // money already has 1 prior call → 2nd should hit the limit.
+      // payments already has 1 prior call → 2nd should hit the daily cap.
       expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
-    });
-
-    it("supports the 'week' window in custom rate limits", () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/week";
-      enforceRateLimit("mercury_send_money");
-      try {
-        enforceRateLimit("mercury_send_money");
-        fail("Expected RateLimitError");
-      } catch (err) {
-        expect(err).toBeInstanceOf(RateLimitError);
-        // The week window doesn't have a short label — falls through to seconds.
-        expect((err as RateLimitError).message).toMatch(/limit: 1\/\d+s\)/);
-      }
     });
 
     it("logs (and does not throw) when the state file cannot be read", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
-      // Existing state file with mode 0 → readFileSync raises EACCES (not ENOENT).
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
       const stateFile = join(stateDir, "ratelimit.json");
       writeFileSync(stateFile, "{}");
@@ -176,11 +215,10 @@ describe("Middleware", () => {
 
     it("does NOT clobber an unreadable state file when persisting", () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
-      // Pre-existing state file with prior counter, made unreadable mid-session.
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
       const stateFile = join(stateDir, "ratelimit.json");
-      const originalContent = '{"money":[1,2,3]}';
+      const originalContent = '{"payments":[1,2,3]}';
       writeFileSync(stateFile, originalContent);
       chmodSync(stateFile, 0o000);
       try {
@@ -188,14 +226,12 @@ describe("Middleware", () => {
       } finally {
         chmodSync(stateFile, 0o600);
       }
-      // The file must still hold the original counter — fail-closed on persist.
       expect(readFileSync(stateFile, "utf8")).toBe(originalContent);
     });
 
     it("logs (and does not throw) when the state file cannot be persisted", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      process.env.MERCURY_MCP_RATE_LIMIT_money = "1/day";
-      // Pre-create the state dir read-only so writeFileSync(tmp) raises EACCES.
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
       mkdirSync(stateDir, { recursive: true });
       chmodSync(stateDir, 0o500);
       try {
@@ -241,8 +277,8 @@ describe("Middleware", () => {
       expect(result.content[0].text).toContain("mercury_create_invoice");
     });
 
-    it("returns isError when rate limit is exceeded", async () => {
-      process.env.MERCURY_MCP_RATE_LIMIT_webhooks = "1/day";
+    it("returns structured daily-limit isError payload when rate limit is exceeded", async () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_webhooks_create = "1/day,5/month";
       const handler = vi.fn(async () => ({
         content: [{ type: "text" as const, text: "ok" }],
       }));
@@ -250,7 +286,26 @@ describe("Middleware", () => {
       await wrapped({});
       const result2 = await wrapped({});
       expect(result2.isError).toBe(true);
-      expect(result2.content[0].text).toContain("Rate limit exceeded");
+      const payload = JSON.parse(result2.content[0].text) as Record<string, string>;
+      expect(payload.error_type).toBe("daily_limit_exceeded");
+      expect(payload.message).toBe("Daily Limit Exceeded");
+      expect(payload.hint).toContain("mercury_create_webhook");
+      expect(payload.retry_after).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    it("returns structured monthly-limit isError payload when only monthly cap is hit", async () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_webhooks_create = "10/day,2/month";
+      const handler = vi.fn(async () => ({
+        content: [{ type: "text" as const, text: "ok" }],
+      }));
+      const wrapped = wrapToolHandler("mercury_create_webhook", handler);
+      await wrapped({});
+      await wrapped({});
+      const result3 = await wrapped({});
+      expect(result3.isError).toBe(true);
+      const payload = JSON.parse(result3.content[0].text) as Record<string, string>;
+      expect(payload.error_type).toBe("monthly_limit_exceeded");
+      expect(payload.message).toBe("Monthly Limit Exceeded");
     });
 
     it("converts MercuryError 403 on AR tool to isError with Plus-plan hint", async () => {
@@ -377,7 +432,6 @@ describe("Middleware", () => {
 
     it("does nothing when MERCURY_MCP_AUDIT_LOG is unset", () => {
       logAudit("mercury_send_money", { amount: 100 }, "ok");
-      // No-op (no file path), no throw
     });
 
     it("writes redacted entry to absolute path with mode 0600", () => {
@@ -399,7 +453,6 @@ describe("Middleware", () => {
 
     it("does not throw when write fails (best-effort)", () => {
       const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      // Path inside a non-existent dir → ENOENT
       process.env.MERCURY_MCP_AUDIT_LOG = "/nonexistent-dir-mercury-test/audit.log";
       expect(() => logAudit("mercury_send_money", {}, "error")).not.toThrow();
       expect(errSpy).toHaveBeenCalledWith(
