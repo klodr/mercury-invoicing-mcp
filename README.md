@@ -266,18 +266,19 @@ MERCURY_MCP_RATE_LIMIT_invoices_write=20/day,400/month  # large monthly billing 
 MERCURY_MCP_RATE_LIMIT_DISABLE=true                # disable all rate limiting (not recommended)
 ```
 
-When exceeded, the tool returns an `isError: true` response with a structured JSON payload:
+When exceeded, the tool returns an `isError: true` response with a structured JSON payload. The `source` and `error_type` prefix make it unambiguous that this is a **local MCP safeguard** — the call was never sent to Mercury. A genuine Mercury 429 surfaces separately as `"Mercury API error 429: ..."`.
 
 ```json
 {
-  "error_type": "daily_limit_exceeded",
-  "message": "Daily Limit Exceeded",
+  "source": "mcp_safeguard",
+  "error_type": "mcp_rate_limit_daily_exceeded",
+  "message": "MCP Rate Limit Exceeded — Daily (local safeguard, not a Mercury API error)",
   "hint": "Daily Limit Exceeded: mercury_send_money (bucket: payments) capped at 7 per 24h. Retry in ~180 min. Override with MERCURY_MCP_RATE_LIMIT_payments=D/day,M/month if this is a legitimate batch.",
   "retry_after": "2026-04-22T00:00:00.000Z"
 }
 ```
 
-`error_type` is either `daily_limit_exceeded` or `monthly_limit_exceeded` — the agent learns to back off at the right granularity.
+`error_type` is either `mcp_rate_limit_daily_exceeded` or `mcp_rate_limit_monthly_exceeded` — the agent learns to back off at the right granularity without confusing the MCP's local cap with a server-side Mercury limit.
 
 The rate-limit window **survives process restarts**. State is persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`); override the location with `MERCURY_MCP_STATE_DIR=/abs/path` if you need to share state between hosts or pin it to a specific volume. Without persistence, an MCP host that respawns the server per session would silently bypass the limit.
 
