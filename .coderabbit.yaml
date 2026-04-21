@@ -6,7 +6,9 @@ early_access: false
 
 reviews:
   profile: assertive          # stricter feedback (vs "chill")
-  request_changes_workflow: true
+  # request_changes_workflow intentionally not set — we don't want
+  # @coderabbitai approve shortcutting the human-approval requirement
+  # or @coderabbitai resolve blanket-clearing conversation threads.
   high_level_summary: true
   poem: false                 # no decorative poetry
   review_status: true
