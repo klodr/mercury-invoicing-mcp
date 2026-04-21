@@ -19,6 +19,5 @@ Loose planning horizon of ~12 months. The MCP follows Mercury's own API surface 
 
 ### Compliance / governance
 
-- **OpenSSF Best Practices Silver** — maintain the Silver badge, then pursue Gold once a second maintainer joins.
-- **Second maintainer** — actively welcome co-maintainership via `.github/CODEOWNERS` once a contributor has several merged PRs. Gold-level requirements (≥2 active maintainers) are the longer-term motivator.
+- **Second maintainer → OpenSSF Gold** — actively welcome co-maintainership via `.github/CODEOWNERS` once a contributor has several merged PRs. Gold requires ≥2 active maintainers; that's the gating constraint.
 
