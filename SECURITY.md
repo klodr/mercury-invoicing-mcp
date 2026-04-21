@@ -33,10 +33,13 @@ maintainer commits to, and limits that callers must account for.
   that a single-day limit would miss. Each limit is configurable via
   `MERCURY_MCP_RATE_LIMIT_<BUCKET>=D/day,M/month`. A dry-run mode
   (`MERCURY_MCP_DRY_RUN=true`) lets you exercise prompts without hitting
-  Mercury. When either window is exceeded the MCP returns a structured
-  `isError: true` payload with `source: "mcp_safeguard"` and
+  Mercury. When either window is exceeded, `wrapToolHandler` returns a
+  `ToolResult` with `isError: true` set as a sibling of the `content`
+  array (per the MCP spec); the first entry of `content` is a text block
+  whose body is a JSON document with `source: "mcp_safeguard"` and
   `error_type: "mcp_rate_limit_{daily,monthly}_exceeded"` — unambiguously
-  distinct from a server-side Mercury 429.
+  distinct from a server-side Mercury 429, which surfaces as
+  `"Mercury API error 429: …"` via the `MercuryError` branch.
 - **Optional audit trail**: `MERCURY_MCP_AUDIT_LOG=/abs/path/audit.log` writes
   an append-only JSON Lines record (file mode `0o600`, sensitive fields
   redacted) of every write call.
