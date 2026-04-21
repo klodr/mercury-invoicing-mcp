@@ -96,7 +96,7 @@ relevant.
 - Always prefer `mercury_request_send_money` (creates a *pending*
   approval request) over `mercury_send_money` (may execute immediately
   depending on workspace policy) when the use case allows it.
-- Never bypass the dry-run mode (`MERCURY_DRY_RUN=true`) to "test"
+- Never bypass the dry-run mode (`MERCURY_MCP_DRY_RUN=true`) to "test"
   production flows.
 - Never paste the `MERCURY_API_KEY` back into the chat (it ends up in
   conversation transcripts).
