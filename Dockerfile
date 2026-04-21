@@ -16,7 +16,10 @@ RUN npm ci
 
 COPY tsconfig.json tsup.config.ts ./
 COPY src ./src
-# sync-version reads server.json / src/server.ts, both copied above.
+# tsup reads src/ and the two tsconfig/tsup.config files above. The
+# repo's server.json is maintenance metadata (touched by
+# scripts/sync-version.mjs during `npm version`) and is not needed
+# at build or runtime, so we deliberately do not copy it.
 RUN npm run build \
     && npm prune --omit=dev
 

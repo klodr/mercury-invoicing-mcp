@@ -100,14 +100,27 @@ jobs:
         # so a broken entrypoint cannot silently ship.
         run: |
           set +e
-          timeout 5 docker run --rm mercury-invoicing-mcp:ci < /dev/null
+          out=$(timeout 5 docker run --rm mercury-invoicing-mcp:ci < /dev/null 2>&1)
           ec=$?
+          echo "$out"
           case $ec in
-            1|124)
-              echo "Startup OK (exit=$ec)"
+            124)
+              # Timeout = server is alive and waiting for stdin (needed a
+              # real MERCURY_API_KEY, which CI does not ship).
+              echo "Startup OK (exit=124 — stdin wait)"
+              ;;
+            1)
+              # Exit 1 is only the expected fail-fast if the stderr
+              # mentions the missing env. Otherwise it's a real crash.
+              if echo "$out" | grep -qi "MERCURY_API_KEY"; then
+                echo "Startup OK (exit=1 — fail-fast on missing MERCURY_API_KEY)"
+              else
+                echo "Exit 1 without the expected missing-env error — real crash" >&2
+                exit 1
+              fi
               ;;
             *)
-              echo "Unexpected exit code $ec — only 1 (missing env) or 124 (stdin wait) are healthy" >&2
+              echo "Unexpected exit code $ec — only 1 (with missing-env message) or 124 (stdin wait) are healthy" >&2
               exit 1
               ;;
           esac
