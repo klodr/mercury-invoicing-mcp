@@ -60,23 +60,54 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Inspect image labels
+      - name: Assert OCI labels and non-root user
+        # These are load-bearing for Docker MCP Registry ingestion — we
+        # fail CI here rather than silently ship an image without them.
         run: |
-          docker inspect --format='{{json .Config.Labels}}' mercury-invoicing-mcp:ci | jq .
-          docker inspect --format='{{.Config.User}}' mercury-invoicing-mcp:ci | grep -q '^mcp$'
+          set -euo pipefail
+          expected_version="${{ steps.pkg.outputs.version }}"
+          labels_json=$(docker inspect --format='{{json .Config.Labels}}' mercury-invoicing-mcp:ci)
+          echo "$labels_json" | jq .
+          actual_version=$(echo "$labels_json" | jq -r '."org.opencontainers.image.version"')
+          if [ "$actual_version" != "$expected_version" ]; then
+            echo "Expected org.opencontainers.image.version=$expected_version, got '$actual_version'" >&2
+            exit 1
+          fi
+          for key in \
+            org.opencontainers.image.source \
+            org.opencontainers.image.licenses \
+            org.opencontainers.image.title \
+            org.opencontainers.image.description; do
+            value=$(echo "$labels_json" | jq -r --arg k "$key" '.[$k]')
+            if [ -z "$value" ] || [ "$value" = "null" ]; then
+              echo "Missing required OCI label: $key" >&2
+              exit 1
+            fi
+          done
+          user=$(docker inspect --format='{{.Config.User}}' mercury-invoicing-mcp:ci)
+          if [ "$user" != "mcp" ]; then
+            echo "Expected non-root USER=mcp, got '$user'" >&2
+            exit 1
+          fi
 
       - name: Smoke-test (container is executable and reaches the entrypoint)
         # The stdio MCP server blocks on stdin, so a healthy start looks
-        # like either a fast non-zero exit (missing required env var) or
-        # a timeout (124) when the process is waiting for a JSON-RPC frame.
-        # Exit 0 would be suspicious — it means the process finished
-        # without starting the server at all.
+        # like either:
+        #   - exit 1: fail-fast when a required env var is missing
+        #   - exit 124: `timeout` killed the process while it was waiting
+        #     on stdin for a JSON-RPC frame
+        # Any other exit code (including 0) is flagged as a regression
+        # so a broken entrypoint cannot silently ship.
         run: |
           set +e
           timeout 5 docker run --rm mercury-invoicing-mcp:ci < /dev/null
           ec=$?
-          if [ $ec -eq 0 ]; then
-            echo "Unexpected clean exit — the MCP server should have either failed fast or kept waiting for stdin" >&2
-            exit 1
-          fi
-          echo "Startup OK (exit=$ec — non-zero or timeout=124 as expected)"
+          case $ec in
+            1|124)
+              echo "Startup OK (exit=$ec)"
+              ;;
+            *)
+              echo "Unexpected exit code $ec — only 1 (missing env) or 124 (stdin wait) are healthy" >&2
+              exit 1
+              ;;
+          esac
