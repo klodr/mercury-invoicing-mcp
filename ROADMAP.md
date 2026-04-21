@@ -10,7 +10,7 @@ Loose planning horizon of ~12 months. The MCP follows Mercury's own API surface 
 
 ## Tracking Mercury's API
 
-- **New endpoints as Mercury ships them** — if Mercury widens the public API (PDF download, send-money approvals, user/credit endpoints, Raise SAFE, OAuth flow — see "Endpoints not yet wrapped" above), wrap them on a demand-driven basis.
+- **New endpoints as Mercury ships them** — if Mercury widens the public API (PDF download, send-money approvals, user/credit endpoints, Raise SAFE, OAuth flow — see the [`Endpoints not yet wrapped`](./README.md#tools-34-total) section of the README for the full list), wrap them on a demand-driven basis.
 - **Webhooks signature verification** — add `verifywebhook` helper + a worked example once Mercury formalises the signing algorithm in docs.
 
 ## Discoverability
