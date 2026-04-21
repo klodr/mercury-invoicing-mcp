@@ -1,0 +1,82 @@
+name: Docker build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "tsup.config.ts"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "tsup.config.ts"
+      - ".github/workflows/docker.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
+
+      - name: Read package version
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@3b3ad8bf7c02cb9fce7b42b3e1f36ef2eb5ac4a5 # v3.11.1
+
+      - name: Build image (linux/amd64, tarball only — no push)
+        uses: docker/build-push-action@2a5e5b2dd37325bfa05e3e87d3b5abb44d7f6c91 # v6.22.0
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            VERSION=${{ steps.pkg.outputs.version }}
+          push: false
+          load: true
+          tags: mercury-invoicing-mcp:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Inspect image labels
+        run: |
+          docker inspect --format='{{json .Config.Labels}}' mercury-invoicing-mcp:ci | jq .
+          docker inspect --format='{{.Config.User}}' mercury-invoicing-mcp:ci | grep -q '^mcp$'
+
+      - name: Smoke-test (container is executable and reaches the entrypoint)
+        # The stdio MCP server blocks on stdin, so a healthy start looks
+        # like either a fast non-zero exit (missing required env var) or
+        # a timeout (124) when the process is waiting for a JSON-RPC frame.
+        # Exit 0 would be suspicious — it means the process finished
+        # without starting the server at all.
+        run: |
+          set +e
+          timeout 5 docker run --rm mercury-invoicing-mcp:ci < /dev/null
+          ec=$?
+          if [ $ec -eq 0 ]; then
+            echo "Unexpected clean exit — the MCP server should have either failed fast or kept waiting for stdin" >&2
+            exit 1
+          fi
+          echo "Startup OK (exit=$ec — non-zero or timeout=124 as expected)"
