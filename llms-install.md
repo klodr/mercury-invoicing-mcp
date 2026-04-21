@@ -75,8 +75,8 @@ client that can launch a stdio child process can use this server.
 ## Verifying
 
 After reconnection, the assistant should observe a `mercury-invoicing`
-server in the client's MCP server list, exposing up to 34 tools depending
-on the granted scopes. Safe smoke tests:
+server in the client's MCP server list. The exposed tools depend on the
+granted token scopes. Safe smoke tests:
 
 - `mercury_get_organization` — needs no scope, confirms the token works
 - `mercury_list_accounts` — confirms read scope on accounts
