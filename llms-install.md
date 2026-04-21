@@ -35,6 +35,7 @@ client that can launch a stdio child process can use this server.
 
 2. Add the server to the MCP client's configuration. The entry below is
    **client-agnostic**; place it inside the client's `mcpServers` map:
+
    ```json
    {
      "mcpServers": {
@@ -61,6 +62,7 @@ client that can launch a stdio child process can use this server.
 3. (Optional) For testing, use a **sandbox token** instead — the MCP
    auto-detects `mercury_sandbox_*` prefixes and routes to
    `https://api-sandbox.mercury.com/api/v1`:
+
    ```bash
    MERCURY_API_KEY=secret-token:mercury_sandbox_xxxxxxxxxxxxxxxx
    ```
