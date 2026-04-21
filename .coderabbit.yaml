@@ -1,5 +1,16 @@
 # CodeRabbit configuration
 # Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+#
+# NOTE — CodeRabbit must NOT push commits to this repo.
+# The branch protection on main requires "approval from someone other
+# than the last pusher". On a solo-maintainer repo, a CodeRabbit-authored
+# commit makes the bot both the last pusher AND the approver, which
+# makes the rule impossible to satisfy and deadlocks the PR.
+#
+# Never use `@coderabbitai apply suggestions`, `@coderabbitai auto_commit`,
+# or click GitHub's "Commit suggestion" button on CodeRabbit inline
+# suggestions. If a suggestion is valuable, copy the diff and commit it
+# as a human — keep CodeRabbit's role strictly read-only.
 
 language: en-US
 early_access: false
@@ -9,6 +20,7 @@ reviews:
   request_changes_workflow: true
   high_level_summary: true
   poem: false                 # no decorative poetry
+  in_progress_fortune: false  # no fortune-cookie message during reviews
   review_status: true
   collapse_walkthrough: false
   abort_on_close: true
@@ -28,6 +40,14 @@ reviews:
       # function names like `enforceRateLimit` / `redactSensitive` are
       # self-documenting and a forced JSDoc would just paraphrase them.
       mode: off
+    # If a specific human reviewer is explicitly requested on a PR
+    # (via GitHub's "Reviewers" UI), CodeRabbit's own approval must NOT
+    # count as a substitute for theirs. Does not affect the common case
+    # where no specific reviewer is requested — CodeRabbit can still
+    # approve routine PRs (including Dependabot bumps) and satisfy the
+    # "approval from someone other than the last pusher" branch
+    # protection rule.
+    override_requested_reviewers_only: true
 
   path_instructions:
     - path: "src/tools/**"
@@ -47,3 +67,4 @@ reviews:
 
 chat:
   auto_reply: true
+  art: false                  # no ASCII/emoji art in chat responses
