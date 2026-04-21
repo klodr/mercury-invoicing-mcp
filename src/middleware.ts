@@ -315,15 +315,21 @@ export type ToolResult = { content: { type: "text"; text: string }[]; isError?: 
 
 /**
  * Format a RateLimitError as a structured JSON payload for the MCP client.
- * The LLM gets explicit error_type / message / hint / retry_after fields
- * instead of a free-form error string.
+ *
+ * The `source: "mcp_safeguard"` + `mcp_rate_limit_…` prefix make it
+ * unambiguous that this is a *local* cap enforced by the MCP itself —
+ * the call was never sent to Mercury. A real Mercury 429 comes back
+ * formatted as "Mercury API error 429: …" via the MercuryError branch
+ * in wrapToolHandler; the two are distinct.
  */
 function formatRateLimitError(err: RateLimitError): string {
   const retryAfter = new Date(Date.now() + err.retryAfterMs).toISOString();
+  const windowLabel = err.limitType === "daily" ? "Daily" : "Monthly";
   return JSON.stringify(
     {
-      error_type: `${err.limitType}_limit_exceeded`,
-      message: err.limitType === "daily" ? "Daily Limit Exceeded" : "Monthly Limit Exceeded",
+      source: "mcp_safeguard",
+      error_type: `mcp_rate_limit_${err.limitType}_exceeded`,
+      message: `MCP Rate Limit Exceeded — ${windowLabel} (local safeguard, not a Mercury API error)`,
       hint: err.message,
       retry_after: retryAfter,
     },

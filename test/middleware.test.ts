@@ -287,8 +287,11 @@ describe("Middleware", () => {
       const result2 = await wrapped({});
       expect(result2.isError).toBe(true);
       const payload = JSON.parse(result2.content[0].text) as Record<string, string>;
-      expect(payload.error_type).toBe("daily_limit_exceeded");
-      expect(payload.message).toBe("Daily Limit Exceeded");
+      expect(payload.source).toBe("mcp_safeguard");
+      expect(payload.error_type).toBe("mcp_rate_limit_daily_exceeded");
+      expect(payload.message).toBe(
+        "MCP Rate Limit Exceeded — Daily (local safeguard, not a Mercury API error)",
+      );
       expect(payload.hint).toContain("mercury_create_webhook");
       expect(payload.retry_after).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
@@ -304,8 +307,11 @@ describe("Middleware", () => {
       const result3 = await wrapped({});
       expect(result3.isError).toBe(true);
       const payload = JSON.parse(result3.content[0].text) as Record<string, string>;
-      expect(payload.error_type).toBe("monthly_limit_exceeded");
-      expect(payload.message).toBe("Monthly Limit Exceeded");
+      expect(payload.source).toBe("mcp_safeguard");
+      expect(payload.error_type).toBe("mcp_rate_limit_monthly_exceeded");
+      expect(payload.message).toBe(
+        "MCP Rate Limit Exceeded — Monthly (local safeguard, not a Mercury API error)",
+      );
     });
 
     it("converts MercuryError 403 on AR tool to isError with Plus-plan hint", async () => {
