@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (BREAKING for env overrides + state file)
+
+- **Dual-window rate limits**: every write tool now enforces both a daily
+  and a 30-day rolling cap, rejecting calls as soon as either window is
+  at its limit. Previously only a daily cap existed, so a slow agent
+  could spread enough calls across weeks to drain an account while
+  staying under the daily threshold.
+- Per-category limits replaced with finer-grained **per-bucket limits**
+  (see README for the full matrix). Example: `create_customer` /
+  `update_customer` / `delete_customer` now share a `customers_write`
+  bucket capped at 3/day, 60/month (previously pooled under `invoicing`
+  at 100/day with no monthly cap).
+- Rate-limit env override format changed from
+  `MERCURY_MCP_RATE_LIMIT_<category>=N/day` to
+  `MERCURY_MCP_RATE_LIMIT_<bucket>=D/day,M/month` — both windows must
+  be supplied. Old-format values now fall back to the built-in default
+  (with a stderr warning) instead of being silently mis-parsed.
+- Rate-limit state file (`~/.mercury-mcp/ratelimit.json`) is now keyed
+  by bucket name. Pre-existing state keyed by category (`money`,
+  `invoicing`, …) is ignored on first load after upgrade — effectively
+  a fresh 30-day window starts from the upgrade moment.
+- Rate-limit errors now return a structured JSON payload with
+  `error_type` (`daily_limit_exceeded` or `monthly_limit_exceeded`),
+  `message`, `hint`, and `retry_after` (ISO 8601 timestamp) — so the
+  agent can back off at the right granularity instead of guessing.
+
+### Security
+
+- Monthly cap blocks a drain-by-pacing attack that the previous
+  single-window limiter could not catch: e.g. 7 `send_money` calls per
+  day × 30 days = 210 outbound payments that used to pass silently.
+  The new 150/month cap on `payments` stops this at 150.
+
 ## [0.8.1] - 2026-04-19
 
 ### Changed
