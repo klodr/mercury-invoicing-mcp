@@ -100,6 +100,10 @@ maintainer commits to, and limits that callers must account for.
   uses `crypto.randomUUID()` from Node's standard library for idempotency
   keys; everything else relies on TLS and Sigstore.
 
+## Supported runtimes
+
+`mercury-invoicing-mcp` supports **Node.js ≥ 22** (Maintenance LTS, supported through 2027-04-30). Releases prior to 0.9.1 shipped with a `>=20.11` floor; releases cut from 2026-04-30 onward require Node 22+ because Node 20 reaches end-of-life on 2026-04-30. Older pinned versions of the package remain installable but will not receive back-ported security fixes.
+
 ## Verifying releases
 
 Every published release of `mercury-invoicing-mcp` is cryptographically
