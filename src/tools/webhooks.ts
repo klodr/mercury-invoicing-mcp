@@ -53,6 +53,10 @@ const HttpsWebhookUrl = z
       try {
         return new URL(raw).protocol === "https:";
       } catch {
+        // `z.string().url()` rejects malformed URLs before this refine
+        // runs, so `new URL()` cannot actually throw here. Kept
+        // defensive in case the upstream validator changes.
+        /* v8 ignore next */
         return false;
       }
     },
@@ -64,6 +68,10 @@ const HttpsWebhookUrl = z
       try {
         h = new URL(raw).hostname.toLowerCase();
       } catch {
+        // Same reason as above: `new URL()` cannot throw at this
+        // point because the upstream `.url()` check already rejected
+        // malformed inputs.
+        /* v8 ignore next */
         return false;
       }
       // Unwrap bracketed IPv6 literals. `URL().hostname` keeps the brackets
@@ -95,7 +103,10 @@ const HttpsWebhookUrl = z
       //   fc00::/7  → first 7 bits = 0b1111110 → mask 0xfe00, match 0xfc00
       //   fe80::/10 → first 10 bits = 0b1111111010 → mask 0xffc0, match 0xfe80
       // The old string-prefix check missed fe90..febf (still inside fe80::/10).
-      const firstHextet = Number.parseInt(host.split(":")[0] ?? "", 16);
+      // `String.split(":")[0]` always returns a defined string (possibly
+      // empty), so the nullish-coalesce that used to sit here was dead
+      // code and showed up as an uncovered branch on Codecov.
+      const firstHextet = Number.parseInt(host.split(":")[0], 16);
       if (!Number.isNaN(firstHextet)) {
         if ((firstHextet & 0xfe00) === 0xfc00) return false; // fc00::/7 (ULA)
         if ((firstHextet & 0xffc0) === 0xfe80) return false; // fe80::/10 (link-local)
