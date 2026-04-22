@@ -9,7 +9,13 @@ import { registerWebhookTools } from "../src/tools/webhooks.js";
 // MercuryClient issues a request) return a deterministic stub response
 // instead of actually reaching api.mercury.com and failing on a fake
 // API key. Keeps the suite network-independent and fast.
+//
+// Also disable the local rate limiter: the CIDR-adjacency case loops
+// through six public IPs and the `webhooks_create` bucket is only 2/day,
+// so without this toggle the 3rd call would see `mcp_rate_limit_daily_exceeded`
+// instead of reaching the 401 stub that proves validation actually passed.
 beforeEach(() => {
+  process.env.MERCURY_MCP_RATE_LIMIT_DISABLE = "true";
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -23,6 +29,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
   vi.unstubAllGlobals();
 });
 
@@ -133,6 +140,10 @@ describe("mercury_create_webhook — URL validation", () => {
       const text = (r.content as Array<{ text: string }>)[0]?.text ?? "";
       expect(text.toLowerCase(), `should have accepted ${u}`).not.toContain("publicly reachable");
       expect(text.toLowerCase(), `should have accepted ${u}`).not.toContain("must use https");
+      // Positive assertion: schema passed → MercuryClient was called and
+      // failed on the 401 stub, proving we actually reached the downstream
+      // path instead of short-circuiting on a false-negative validation pass.
+      expect(text, `should have reached downstream for ${u}`).toContain("401");
     }
   });
 

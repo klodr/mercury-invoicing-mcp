@@ -89,6 +89,7 @@ const HttpsWebhookUrl = z
         const a = Number(ipv4[1]);
         const b = Number(ipv4[2]);
         if (
+          a === 0 || //                              0.0.0.0/8      "this host"/unspecified — some stacks resolve it to loopback
           a === 127 || //                            127.0.0.0/8    loopback
           a === 10 || //                             10.0.0.0/8     RFC 1918
           (a === 169 && b === 254) || //             169.254.0.0/16 link-local + cloud metadata
