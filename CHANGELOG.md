@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-04-22
+
+### Added
+
+- **Dockerfile + `.github/icon.png`** — container distribution path for the Docker MCP Registry submission. Multi-stage, `node:20-alpine` pinned by digest, non-root `mcp` user, OCI labels (`version` from build-arg), no EXPOSE, explicit `HEALTHCHECK NONE` to silence Checkov `CKV_DOCKER_2` on stdio images.
+- **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, required for OpenSSF Silver.
+- **`.github/workflows/docker.yml`** — buildx + GHA cache, asserts required OCI labels + non-root `USER=mcp`, strict smoke-test of the entrypoint.
+
+### Changed
+
+- **Roadmap extracted to `ROADMAP.md`** (no longer inlined in the README) and Silver-tier wording consolidated. Purely a docs reshuffle; the repo content covered by OpenSSF Best Practices is unchanged.
+- `.github/dependabot.yml` — `@types/node` major-version-clamp comment aligned with `engines.node` floor.
+
 ## [0.8.2] - 2026-04-21
 
 ### Added
