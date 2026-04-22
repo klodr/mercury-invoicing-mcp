@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (BREAKING)
+
+- **Node.js floor: `>=22`** (was `>=20.11`). Node 20 reaches end of Active LTS on 2026-04-30; keeping the floor there would ship 0.9.0-era packages on an unmaintained runtime the day after. Active-LTS Node 22 runs maintenance until 2027-04-30, which gives a year of headroom before the next cadence bump.
+- **Compile target: `ES2024`** (was `ES2023`). Node 22 implements the full ES2024 surface (`Object.groupBy`, `Map.groupBy`, `Promise.withResolvers`, iterator helpers, etc.) — the TypeScript `target` and `lib` now match, so stdlib additions don't need polyfills.
+- **Bundle target: `tsup target: node22`** (was `node20`). Without this the bundler kept down-levelling Node 22 intrinsics (WebCrypto globals, `AbortSignal.any`) and the shipped `dist/index.js` wasn't actually exploiting the higher floor we just set.
+
+### Changed
+
+- `@types/node` bumped from `^20.19.0` to `^22.19.17` so the TypeScript definitions line up with the runtime floor.
+- CI matrix dropped Node 20 — builds now run on Node 22 + 24. The coverage-upload step (Codecov) moved from Node 20 to Node 22.
+- Release and verify-release workflows set up Node 22 (`setup-node node-version: "22"`).
+- Dockerfile base image pinned to `node:22-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f` (digest resolved via Docker Hub API at release time).
+- `package-lock.json` refreshed via `npm update` — minor bumps within existing carets, no semver-major shifts.
+
+### Added
+
+- `.nvmrc` with `22` so `nvm use` in a fresh checkout matches `engines.node` and the CI matrix without guessing.
+- `SECURITY.md` gained a **Supported runtimes** section stating the Node 22 floor and the LTS window.
+- `ROADMAP.md` item **Node.js 22 migration** ticked off; `dependabot.yml` `@types/node` pin comment now references the 22.x line.
+- Issue-template `bug_report.yml` / `CONTINUITY.md` / `ASSURANCE_CASE.md` / `llms-install.md` scrubbed of stray Node 20 / `20.11` references.
+
 ## [0.9.0] - 2026-04-22
 
 ### Added
