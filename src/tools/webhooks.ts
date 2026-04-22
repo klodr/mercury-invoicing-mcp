@@ -66,20 +66,41 @@ const HttpsWebhookUrl = z
       } catch {
         return false;
       }
-      if (h === "localhost" || h === "127.0.0.1" || h === "::1") return false;
-      if (h.startsWith("169.254.")) return false; // link-local + AWS/GCP/Azure metadata
-      if (h.startsWith("10.")) return false; // RFC 1918 private
-      if (h.startsWith("192.168.")) return false; // RFC 1918 private
-      // RFC 1918: 172.16.0.0 – 172.31.255.255
-      if (h.startsWith("172.")) {
-        const second = Number(h.split(".")[1]);
-        if (second >= 16 && second <= 31) return false;
+      // Unwrap bracketed IPv6 literals. `URL().hostname` keeps the brackets
+      // for IPv6 ([::1], [fe80::1]) — strip them before range checks.
+      const host = h.startsWith("[") && h.endsWith("]") ? h.slice(1, -1) : h;
+      if (host === "localhost" || host === "::1") return false;
+
+      // IPv4: match literal a.b.c.d and reject loopback (127/8),
+      // link-local (169.254/16), and the RFC 1918 ranges. startsWith()
+      // based checks were insufficient — "127.0.0.2" bypassed the old
+      // exact-match on "127.0.0.1", and "10." matches "10." but not
+      // correctly masks higher ranges. Numeric CIDR matching fixes both.
+      const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+      if (ipv4) {
+        const a = Number(ipv4[1]);
+        const b = Number(ipv4[2]);
+        if (
+          a === 127 || //                            127.0.0.0/8    loopback
+          a === 10 || //                             10.0.0.0/8     RFC 1918
+          (a === 169 && b === 254) || //             169.254.0.0/16 link-local + cloud metadata
+          (a === 192 && b === 168) || //             192.168.0.0/16 RFC 1918
+          (a === 172 && b >= 16 && b <= 31) //       172.16.0.0/12  RFC 1918
+        ) {
+          return false;
+        }
       }
-      // IPv6: fc00::/7 (ULA) and fe80::/10 (link-local)
-      if (h.startsWith("[")) {
-        const v6 = h.slice(1, -1);
-        if (v6.startsWith("fc") || v6.startsWith("fd") || v6.startsWith("fe80:")) return false;
+
+      // IPv6 CIDR bitmask check on the first hextet:
+      //   fc00::/7  → first 7 bits = 0b1111110 → mask 0xfe00, match 0xfc00
+      //   fe80::/10 → first 10 bits = 0b1111111010 → mask 0xffc0, match 0xfe80
+      // The old string-prefix check missed fe90..febf (still inside fe80::/10).
+      const firstHextet = Number.parseInt(host.split(":")[0] ?? "", 16);
+      if (!Number.isNaN(firstHextet)) {
+        if ((firstHextet & 0xfe00) === 0xfc00) return false; // fc00::/7 (ULA)
+        if ((firstHextet & 0xffc0) === 0xfe80) return false; // fe80::/10 (link-local)
       }
+
       return true;
     },
     {
