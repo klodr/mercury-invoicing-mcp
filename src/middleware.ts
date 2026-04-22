@@ -23,6 +23,7 @@ import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { MercuryError } from "./client.js";
+import { sanitizeForLlm } from "./sanitize.js";
 
 const DAY_MS = 86_400_000;
 const MONTH_MS = 30 * DAY_MS; // 30-day rolling window
@@ -311,7 +312,18 @@ export function logAudit(
   }
 }
 
-export type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
+export type ToolResult = {
+  content: { type: "text"; text: string }[];
+  /**
+   * Per MCP spec (2025-06-18+), the parseable JSON form of the
+   * response. `content[0].text` is the LLM-display surface (still
+   * valid JSON for Mercury success responses, fenced text for error
+   * responses); `structuredContent` carries the same data for
+   * programmatic consumers without any display-time massaging.
+   */
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+};
 
 /**
  * Format a RateLimitError as a structured JSON payload for the MCP client.
@@ -403,11 +415,16 @@ export function wrapToolHandler<TArgs>(
           err.status === 403 && isAR
             ? " (Mercury's Invoicing/Customers API requires the Plus plan or higher.)"
             : "";
+        // err.message is plain text that can carry an upstream
+        // reflection of attacker-supplied bytes. Route it through the
+        // stripControl + fence pipeline so a prompt injection smuggled
+        // via (say) an invoice memo cannot exit the error channel as
+        // free-form instructions.
         return {
           content: [
             {
               type: "text",
-              text: `Mercury API error ${err.status}: ${err.message}${planHint}`,
+              text: sanitizeForLlm(`Mercury API error ${err.status}: ${err.message}${planHint}`),
             },
           ],
           isError: true,
