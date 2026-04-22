@@ -44,5 +44,8 @@ COPY --from=build --chown=mcp:mcp /app/node_modules ./node_modules
 COPY --from=build --chown=mcp:mcp /app/dist ./dist
 COPY --from=build --chown=mcp:mcp /app/package.json ./package.json
 
-# stdio MCP: no listening sockets, no EXPOSE.
+# stdio MCP: no listening sockets, no EXPOSE. HEALTHCHECK is meaningless
+# for a stdio child process — make that explicit so scanners (Checkov
+# CKV_DOCKER_2 etc.) stop flagging it as a missing-probe finding.
+HEALTHCHECK NONE
 ENTRYPOINT ["node", "dist/index.js"]
