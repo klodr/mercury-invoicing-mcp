@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-04-22
+
+### Security & privacy — clean-slate republish
+
+This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. The reasons are strictly hygiene, not a change in the wire-level behaviour consumers rely on:
+
+- **Commit-metadata privacy**: `main` was historically authored under two of the maintainer's personal email addresses. `main` has been rewritten so that every commit, every `Signed-off-by:` trailer, and every `Co-authored-by:` line carries `klodr@users.noreply.github.com` instead. 101 of the 101 commits on the new `main` carry a verified SSH signature; 95 are authored by the maintainer, 6 by Dependabot.
+- **Supply-chain contract actually deliverable**: the `SECURITY.md` of earlier releases advertised SBOM attestations verifiable with `gh attestation verify --predicate-type https://spdx.dev/Document/v2.3`. That was never true on 0.8.4 and earlier — the two `actions/attest` steps lacked `id:` fields, so their signed `.sigstore` bundles were never captured and never uploaded. Starting with 0.8.5 the promise is actually met: the bundles are referenced via `${{ steps.attest_spdx.outputs.bundle-path }}` / `${{ steps.attest_cdx.outputs.bundle-path }}`, copied to `dist/sbom.spdx.sigstore` / `dist/sbom.cdx.sigstore`, and uploaded to the Release alongside the JSON SBOMs.
+- **npm `--ignore-scripts` on publish**: the `prepublishOnly` build hook needs `tsc`/`tsup`, which the earlier `npm prune --omit=dev` step (run before SBOM generation) removes. `npm publish --access public --provenance --ignore-scripts` now skips the redundant re-build — the dist/ artefact produced earlier in the job is what ships, with its own Sigstore signature.
+
+### What this means for consumers
+
+- **`npm install mercury-invoicing-mcp@0.8.5`** produces an install that is **functionally identical** to what 0.8.4 would have shipped — the bundled `dist/index.js` carries the same tools, same schemas, same Zod bounds, same rate-limit middleware, same FaxDrop/Mercury client.
+- **`npm install mercury-invoicing-mcp@0.7.4`** (the previous stable on npm) still works; that version is deprecated with a pointer to 0.8.5, but not unpublished.
+- **Every 0.x tag other than `v0.7.4`** has been removed from the GitHub repository — those tags pointed to pre-rewrite SHAs that are no longer reachable from `main` and their npm counterparts (0.7.5 through 0.8.3) had already been unpublished from the registry within the 72-hour window. Removing the orphan tags keeps the tag history coherent with what's actually installable.
+
+### Technical scope (content-wise identical to 0.8.4)
+
+- Docker MCP Registry submission path — Dockerfile, `.github/icon.png`, `.github/workflows/docker.yml` (multi-stage, `node:20-alpine` digest-pinned, non-root `mcp` user, OCI labels, `HEALTHCHECK NONE`, strict smoke-test)
+- `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 (OpenSSF Silver requirement)
+- `ROADMAP.md` extracted from the README, Node.js 22 migration tracked with the 2026-04-30 deadline
+- Dual-reviewer-friendly `.coderabbit.yaml` — `finishing_touches.docstrings.enabled: false`, `finishing_touches.unit_tests.enabled: false` so CodeRabbit never auto-commits against the branch-protection `require_last_push_approval` gate
+
 ## [0.8.4] - 2026-04-22
 
 ### Added
