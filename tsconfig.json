@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
+    "target": "ES2024",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "outDir": "dist",
@@ -17,7 +17,7 @@
     "declaration": true,
     "sourceMap": true,
     "types": ["node"],
-    "lib": ["ES2023"]
+    "lib": ["ES2024"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]

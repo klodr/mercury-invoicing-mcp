@@ -100,7 +100,7 @@ boundary.
 | **Fail closed** | 30 s fetch timeout. Missing `MERCURY_API_KEY` → exit at startup. Invalid rate-limit env value → log + fall back to default (no silent disable). |
 | **Minimise attack surface** | No sourcemaps in published tarball (`prepublishOnly` sets `NODE_ENV=production`). Only `dist/`, `README.md`, `LICENSE` in the npm files allowlist. No HTTP transport (stdio only); no listening sockets. |
 | **Secrets are env-only** | API key never on the command line, never in URL params, never in error bodies. `.env.example` shows shape only. Audit log mode `0o600`. |
-| **Auditable & reproducible** | Every release is signed and attested. Every commit triggers CI on Node 20/22/24 + CodeQL + Scorecard + Snyk + Socket. Coverage gated at >98%. |
+| **Auditable & reproducible** | Every release is signed and attested. Every commit triggers CI on Node 22 and 24 + CodeQL + Scorecard + Snyk + Socket. Coverage gated at >98%. |
 | **Open source, MIT** | Anyone can audit. Project continuity documented in [CONTINUITY.md](./CONTINUITY.md). |
 
 ## 4. Common implementation weaknesses countered
