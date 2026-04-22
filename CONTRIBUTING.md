@@ -10,6 +10,10 @@ Issues and PRs welcome. Please open an issue first for substantial changes.
 4. If you add or rename a tool, update the `Tools` section in the README and the `defineTool(server, ...)` call in `src/tools/`
 5. New write tools must be registered in `TOOL_BUCKET` + `DEFAULT_BUCKET_LIMITS` (`src/middleware.ts`) so they are rate-limited
 
+## Developer Certificate of Origin
+
+Every commit must carry a `Signed-off-by:` trailer to certify compliance with [DCO 1.1](https://developercertificate.org/). The trailer is added automatically by `git commit -s` or our prepare-commit-msg hook.
+
 ## Releases (maintainers only)
 
 Do not edit `version` by hand — run `npm version patch|minor|major`. The lifecycle hook calls `scripts/sync-version.mjs` to propagate the bump into `server.json` and `src/server.ts`. Editing `package.json` directly will leave those two files out of sync.
