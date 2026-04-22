@@ -89,6 +89,9 @@ describe("mercury_create_webhook — URL validation", () => {
       "https://127.0.0.1/hook",
       "https://127.0.0.2/hook",
       "https://127.1.2.3/hook",
+      // 0.0.0.0/8 — "this host"/unspecified
+      "https://0.0.0.0/hook",
+      "https://0.1.2.3/hook",
       // 10.0.0.0/8
       "https://10.0.0.5/hook",
       "https://10.255.255.255/hook",
@@ -159,6 +162,10 @@ describe("mercury_create_webhook — URL validation", () => {
     const text = (r.content as Array<{ text: string }>)[0]?.text ?? "";
     expect(text.toLowerCase()).not.toContain("https://");
     expect(text.toLowerCase()).not.toContain("publicly reachable");
+    // Positive mirror of the CIDR-adjacency test: the 401 stub is what
+    // proves we actually reached the MercuryClient instead of silently
+    // passing through on a false-positive validation.
+    expect(text).toContain("401");
   });
 });
 
