@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-04-22
+
+### Changed
+
+Republish of 0.8.5. The CHANGELOG `[0.8.5]` narrative and the GitHub Release body for v0.8.5 originally quoted the maintainer's personal email addresses verbatim, which partly defeated the privacy migration 0.8.5 was meant to enact. `main` has since been corrected in place; 0.8.6 ships the corrected CHANGELOG to npm. No code, schema, or runtime behaviour change — `dist/index.js` is byte-equivalent to what 0.8.5 shipped. 0.8.5 will be withdrawn once 0.8.6 is published: the GitHub Release will be deleted and the npm version will be unpublished (within the 72-hour window).
+
 ## [0.8.5] - 2026-04-22
 
 ### Security & privacy — clean-slate republish
