@@ -152,6 +152,22 @@ DSSE envelope on its own, exposed for tools (like OpenSSF Scorecard's
 Any verification failure means the artifact was not built by the
 official release pipeline — do not install it.
 
+## Software Bill of Materials (SBOM)
+
+Every GitHub Release ships two SBOMs generated from the install-time dependency tree by `anchore/sbom-action` (syft under the hood):
+
+- `sbom.spdx.json` — SPDX 2.3 JSON
+- `sbom.cdx.json` — CycloneDX 1.6 JSON
+
+Each SBOM carries its own Sigstore attestation binding it to the `dist/index.js` of the same release run. Verify with:
+
+```bash
+gh attestation verify dist/sbom.spdx.json --repo klodr/mercury-invoicing-mcp
+gh attestation verify dist/sbom.cdx.json  --repo klodr/mercury-invoicing-mcp
+```
+
+Then feed the SBOMs into `grype`, `trivy`, `dependency-track`, or any SPDX/CDX-aware scanner.
+
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability in `mercury-invoicing-mcp`, please report it **privately** so we can address it before any disclosure.
