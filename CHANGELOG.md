@@ -7,13 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-04-22
+
+### Changed
+
+Republish of 0.8.5 with the CHANGELOG and Release narrative reformulated so they no longer quote the maintainer's personal email addresses verbatim. No code, schema, or runtime behaviour change — `dist/index.js` is byte-equivalent to what 0.8.5 shipped. 0.8.5 is withdrawn: GitHub Release deleted, npm version unpublished within the 72-hour window.
+
 ## [0.8.5] - 2026-04-22
 
 ### Security & privacy — clean-slate republish
 
+**Withdrawn** — superseded by 0.8.6. The CHANGELOG and Release body of this version quoted the maintainer's personal email addresses verbatim, which partly defeated the privacy migration this release was supposed to enact.
+
 This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. The reasons are strictly hygiene, not a change in the wire-level behaviour consumers rely on:
 
-- **Commit-metadata privacy**: `main` was historically authored under two of the maintainer's personal email addresses (`claude@altixia.com`, `claude@perrin.it`). Both are now legitimate on the maintainer's GitHub account but exposed the individual more than necessary. `main` has been rewritten so that every commit, every `Signed-off-by:` trailer, and every `Co-authored-by:` line carries `klodr@users.noreply.github.com` instead. 101 of the 101 commits on the new `main` carry a verified SSH signature; 95 are authored by the maintainer, 6 by Dependabot.
+- **Commit-metadata privacy**: `main` was historically authored under two of the maintainer's personal email addresses. `main` has been rewritten so that every commit, every `Signed-off-by:` trailer, and every `Co-authored-by:` line carries `klodr@users.noreply.github.com` instead. 101 of the 101 commits on the new `main` carry a verified SSH signature; 95 are authored by the maintainer, 6 by Dependabot.
 - **Supply-chain contract actually deliverable**: the `SECURITY.md` of earlier releases advertised SBOM attestations verifiable with `gh attestation verify --predicate-type https://spdx.dev/Document/v2.3`. That was never true on 0.8.4 and earlier — the two `actions/attest` steps lacked `id:` fields, so their signed `.sigstore` bundles were never captured and never uploaded. Starting with 0.8.5 the promise is actually met: the bundles are referenced via `${{ steps.attest_spdx.outputs.bundle-path }}` / `${{ steps.attest_cdx.outputs.bundle-path }}`, copied to `dist/sbom.spdx.sigstore` / `dist/sbom.cdx.sigstore`, and uploaded to the Release alongside the JSON SBOMs.
 - **npm `--ignore-scripts` on publish**: the `prepublishOnly` build hook needs `tsc`/`tsup`, which the earlier `npm prune --omit=dev` step (run before SBOM generation) removes. `npm publish --access public --provenance --ignore-scripts` now skips the redundant re-build — the dist/ artefact produced earlier in the job is what ships, with its own Sigstore signature.
 
