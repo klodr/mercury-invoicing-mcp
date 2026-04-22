@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (BREAKING)
 
-- **Node.js floor: `>=22`** (was `>=20.11`). Node 20 reaches end of Active LTS on 2026-04-30; keeping the floor there would ship 0.9.0-era packages on an unmaintained runtime the day after. Active-LTS Node 22 runs maintenance until 2027-04-30, which gives a year of headroom before the next cadence bump.
+- **Node.js floor: `>=22`** (was `>=20.11`). Node 20 reaches end-of-life on 2026-04-30; keeping the floor there would ship 0.9.0-era packages on an unmaintained runtime the day after. Node 22 is in Maintenance LTS through 2027-04-30, which gives a year of headroom before the next cadence bump.
 - **Compile target: `ES2024`** (was `ES2023`). Node 22 implements the full ES2024 surface (`Object.groupBy`, `Map.groupBy`, `Promise.withResolvers`, iterator helpers, etc.) — the TypeScript `target` and `lib` now match, so stdlib additions don't need polyfills.
 - **Bundle target: `tsup target: node22`** (was `node20`). Without this the bundler kept down-levelling Node 22 intrinsics (WebCrypto globals, `AbortSignal.any`) and the shipped `dist/index.js` wasn't actually exploiting the higher floor we just set.
 
