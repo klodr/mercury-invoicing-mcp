@@ -14,7 +14,14 @@ import { registerWebhookTools } from "../src/tools/webhooks.js";
 // through six public IPs and the `webhooks_create` bucket is only 2/day,
 // so without this toggle the 3rd call would see `mcp_rate_limit_daily_exceeded`
 // instead of reaching the 401 stub that proves validation actually passed.
+let prevRateLimitDisable: string | undefined;
+
 beforeEach(() => {
+  // Snapshot-and-restore instead of blindly deleting — the test runner
+  // may already have MERCURY_MCP_RATE_LIMIT_DISABLE set (e.g. via a
+  // global setup or CI env), and clobbering it on every `afterEach`
+  // would leak a mutation beyond this file.
+  prevRateLimitDisable = process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
   process.env.MERCURY_MCP_RATE_LIMIT_DISABLE = "true";
   vi.stubGlobal(
     "fetch",
@@ -29,7 +36,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
+  if (prevRateLimitDisable === undefined) {
+    delete process.env.MERCURY_MCP_RATE_LIMIT_DISABLE;
+  } else {
+    process.env.MERCURY_MCP_RATE_LIMIT_DISABLE = prevRateLimitDisable;
+  }
   vi.unstubAllGlobals();
 });
 
@@ -206,5 +217,10 @@ describe("mercury_update_webhook — URL validation (same rules)", () => {
     // Validation passed; downstream API call will fail (fake key) but not on schema.
     const text = (r.content as Array<{ text: string }>)[0]?.text ?? "";
     expect(text.toLowerCase()).not.toContain("https://");
+    expect(text.toLowerCase()).not.toContain("publicly reachable");
+    // Positive mirror of the create-webhook acceptance tests: the 401
+    // stub is what proves we reached MercuryClient, not that some other
+    // silent failure let the test pass.
+    expect(text).toContain("401");
   });
 });
