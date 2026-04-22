@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-04-22
+
+### Added
+
+- **External AI review tier** via Qodo Merge (`.github/workflows/qodo-merge.yml`). Every PR now gets three independent AI reviews in parallel: CodeRabbit (GPT lineage), DeepSeek R1 (reasoner, explicit chain-of-thought), and Gemini 3.1 Pro Preview (thinking mode). `qodo-ai/pr-agent@v0.34` pinned by SHA, `/review` only (no auto-description, no commitable suggestions), fork PRs and drafts skipped, 15-min timeout, `persistent_comment=false` so each model lands its own comment. Triangulates findings across three model families — the failure mode of one lineage is rarely the failure mode of the others.
+
+### Security
+
+- **Webhook URL validator tightened** (M-01). `mercury_create_webhook` / `mercury_update_webhook` now require `https://` and reject any hostname that resolves to a loopback, RFC 1918 private, link-local, cloud-metadata, or private-IPv6 range — IPv4 via numeric CIDR match (`127/8`, `10/8`, `169.254/16`, `192.168/16`, `172.16/12`, plus `0.0.0.0/8`), IPv6 via bitmask on the first hextet (`fc00::/7`, `fe80::/10`). The previous `z.string().url()` let `http://`, `file://`, `data:`, `ftp://` through even though the tool description said HTTPS. A prompt-injected agent that reached the webhook API of this MCP would otherwise have registered `http://attacker.tld` and siphoned every subsequent Mercury event (transactions, invoices, balances) in clear. Defense-in-depth: Mercury almost certainly validates upstream too, but validating here keeps the hostile URL out of Mercury's audit trail and surfaces the failure to the operator instead of a generic 400.
+- **LLM ping-pong injection sanitized** (M-02). Every JSON value returned by the Mercury API is walked and stripped of ASCII control characters, zero-width characters (U+200B-U+200F, U+202A-U+202E, U+2060, U+FEFF), BiDi control marks, and the BOM before reaching the LLM. Errors are fenced in a `<untrusted-tool-output>` block so a prompt embedded inside an invoice description, a recipient name, or a transaction memo cannot hijack the tool-calling agent by echoing back crafted instructions. JSON structure is preserved verbatim — no double-wrapping, no lossy re-encoding.
+- **Local write rate limiter** visible in audit: `webhooks_create` caps at 2/day by default. The test suite exercises `MERCURY_MCP_RATE_LIMIT_DISABLE=true` via a snapshot-and-restore pattern so a shared env var set by the test runner survives the run.
+
 ## [0.8.6] - 2026-04-22
 
 ### Changed
