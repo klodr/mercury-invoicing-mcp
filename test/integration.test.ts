@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 34 tools", async () => {
+  it("tools/list returns all 36 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(34);
+    expect(res.tools.length).toBe(36);
   });
 
   // --- Banking accounts ---
@@ -92,6 +92,31 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_list_categories → GET /categories", async () => {
     await client.callTool({ name: "mercury_list_categories", arguments: {} });
     expect(calls[0].url).toContain("/categories");
+  });
+
+  it("mercury_list_credit_accounts → GET /credit (undocumented endpoint)", async () => {
+    await client.callTool({ name: "mercury_list_credit_accounts", arguments: {} });
+    expect(calls[0].method).toBe("GET");
+    expect(calls[0].url).toContain("/credit");
+    // Must not hit the documented `/accounts` path — that filter out
+    // the IO Credit account server-side.
+    expect(calls[0].url).not.toMatch(/\/accounts(\?|$)/);
+  });
+
+  it("mercury_list_credit_transactions → GET /account/{id}/transactions (singular path)", async () => {
+    await client.callTool({
+      name: "mercury_list_credit_transactions",
+      arguments: {
+        accountId: "22222222-2222-4222-8222-222222222222",
+        status: "pending",
+      },
+    });
+    expect(calls[0].method).toBe("GET");
+    // Singular `/account/{id}/transactions` is distinct from the
+    // documented plural `/accounts/{id}/transactions` — the
+    // singular route is what routes IO Credit transactions.
+    expect(calls[0].url).toContain("/account/22222222-2222-4222-8222-222222222222/transactions");
+    expect(calls[0].url).toContain("status=pending");
   });
 
   it("mercury_get_organization → GET /organization", async () => {

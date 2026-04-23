@@ -3,6 +3,7 @@ import { MercuryClient } from "../client.js";
 import { registerAccountTools } from "./accounts.js";
 import { registerCardTools } from "./cards.js";
 import { registerCategoryTools } from "./categories.js";
+import { registerCreditTools } from "./credit.js";
 import { registerOrganizationTools } from "./organization.js";
 import { registerTransactionTools } from "./transactions.js";
 import { registerRecipientTools } from "./recipients.js";
@@ -20,6 +21,7 @@ export function registerAllTools(server: McpServer, client: MercuryClient): void
   // Banking
   registerAccountTools(server, client);
   registerCardTools(server, client);
+  registerCreditTools(server, client);
   registerTransactionTools(server, client);
   registerRecipientTools(server, client);
   registerStatementTools(server, client);
