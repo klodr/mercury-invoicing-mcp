@@ -14,17 +14,11 @@ import { z } from "zod";
  * argument shapes, and confirmation gates — the LLM does not have to
  * re-discover them from the tool catalogue.
  *
- * Each prompt maps to a specific Mercury recipe, plus one adjacent
- * workflow the recipes pattern implies:
- *   - /mercury-send-ach                    → recipes/send-an-ach-payment
- *   - /mercury-create-recipient            → recipes/create-a-new-payment-recipient
- *   - /mercury-accounts-overview           → recipes/retrieve-information-about-all-of-your-accounts
- *   - /mercury-recipients-overview         → recipes/retrieve-information-about-all-of-your-payment-recipients
- *   - /mercury-pending-card-transactions   → (no upstream recipe; lists
- *                                             pending card charges — the
- *                                             "latest unpaid CB transactions"
- *                                             question on Mercury's credit
- *                                             card accounts)
+ * Each prompt maps to a specific Mercury recipe:
+ *   - /mercury-send-ach            → recipes/send-an-ach-payment
+ *   - /mercury-create-recipient    → recipes/create-a-new-payment-recipient
+ *   - /mercury-accounts-overview   → recipes/retrieve-information-about-all-of-your-accounts
+ *   - /mercury-recipients-overview → recipes/retrieve-information-about-all-of-your-payment-recipients
  *
  * The two bulk-upload recipes (`bulk-upload-receipts`,
  * `bulk-upload-tax-docs`) are intentionally NOT exposed here: the
@@ -32,6 +26,13 @@ import { z } from "zod";
  * tools in this server, so a prompt that named them would instruct
  * the LLM to call tools that do not exist. Once the upload tools
  * land, matching prompts can be added alongside.
+ *
+ * Separately, a `/mercury-pending-card-transactions` prompt is
+ * tracked on its own PR alongside the `mercury_list_credit_accounts`
+ * + `mercury_list_credit_transactions` tools it needs (the IO
+ * Credit account lives behind undocumented endpoints that are not
+ * reachable from `mercury_list_accounts` / `mercury_list_cards`).
+ * See ROADMAP.md → "Mercury IO Credit account exposure".
  */
 
 const SendAchArgs = {
@@ -99,22 +100,6 @@ const RecipientsOverviewArgs = {
     .string()
     .optional()
     .describe("Optional name / nickname substring to filter the list before summarising."),
-};
-
-const PendingCardTransactionsArgs = {
-  sinceDays: z
-    .string()
-    .optional()
-    .describe(
-      "How far back to look, in days (e.g. `30`). Defaults to 30. Must be a positive integer " +
-        "as a string so clients without numeric arg types pass through cleanly.",
-    ),
-  cardHint: z
-    .string()
-    .optional()
-    .describe(
-      "Nickname / last-4 of a specific card to scope the query to. Omit to include every card.",
-    ),
 };
 
 export function registerRecipePrompts(server: McpServer): void {
@@ -320,79 +305,5 @@ export function registerRecipePrompts(server: McpServer): void {
         },
       ],
     }),
-  );
-
-  // --- /mercury-pending-card-transactions ---
-  // Not directly one of the six Mercury recipes, but the adjacent
-  // workflow the recipes pattern hints at: "show me my recent card
-  // charges that have not yet settled". Irreversible by nature —
-  // the user asks about state, not a mutation — so no confirmation
-  // gate, but the prompt still reminds the LLM that pending Mercury
-  // transactions can still be auth-reversed upstream of the
-  // Mercury ledger (the status will flip to `cancelled` on its own;
-  // the user does not need to "do" anything about a pending row).
-  server.registerPrompt(
-    "mercury-pending-card-transactions",
-    {
-      title: "Pending card transactions (not yet settled)",
-      description:
-        "List every card transaction with status=pending across your Mercury card accounts, " +
-        'grouped by card and sorted by amount. Answers the "quelles sont mes dernieres ' +
-        'transactions CB non payées?" question.',
-      argsSchema: PendingCardTransactionsArgs,
-    },
-    ({ sinceDays, cardHint }) => {
-      // Require a STRICTLY positive integer. `"0"` is syntactically a
-      // digit-string but semantically would collapse the window to
-      // "today only", producing a near-empty report at odds with the
-      // advertised 30-day default. Reject both `"0"` and anything
-      // non-numeric; fall back to `30`.
-      const daysLabel = sinceDays && /^[1-9]\d*$/.test(sinceDays) ? sinceDays : "30";
-      return {
-        description: cardHint
-          ? `Pending card transactions on "${cardHint}" over the last ${daysLabel} days`
-          : `Pending card transactions across every card over the last ${daysLabel} days`,
-        messages: [
-          {
-            role: "user" as const,
-            content: {
-              type: "text" as const,
-              text:
-                `Produce a read-only report of pending (not-yet-settled) card transactions ` +
-                `using the \`mercury_*\` tools:\n\n` +
-                `1. Call \`mercury_list_cards\` to enumerate every card on the workspace. ` +
-                `Each card carries the \`accountId\` of the credit-card account it belongs ` +
-                `to — transactions are queried per account, not per card, so collect the ` +
-                `unique \`accountId\`s from the response.` +
-                (cardHint
-                  ? ` Scope to cards whose nickname or last-4 matches "${cardHint}" (case-` +
-                    `insensitive). If no card matches, STOP and surface the mismatch — do not ` +
-                    `silently widen back to every card.\n`
-                  : `\n`) +
-                `2. Compute the \`start\` date for the window: ${daysLabel} days ago in ` +
-                `YYYY-MM-DD. Leave \`end\` unset (default = today).\n` +
-                `3. For EACH unique card-account \`accountId\` from step 1, call ` +
-                `\`mercury_list_transactions\` with:\n` +
-                `   - accountId: <from step 1>\n` +
-                `   - status: "pending"\n` +
-                `   - start: <from step 2>\n` +
-                `   - limit: 500\n` +
-                `   Do NOT also page with \`offset\` unless the response has exactly 500 rows ` +
-                `(otherwise a second call is wasted quota).\n` +
-                `4. Merge the results and produce ONE markdown table with columns: ` +
-                `\`postedAt\` | \`card\` (nickname or last-4) | \`counterparty\` | ` +
-                `\`amount (USD)\` | \`memo\`. Sort by \`amount\` descending so the largest ` +
-                `pending charges sit at the top. Format amounts as signed USD with two ` +
-                `decimals (debits negative, any credits / refunds positive).\n` +
-                `5. Below the table, print a one-line total: ` +
-                `"<N> pending transactions, total <±$sum> over ${daysLabel} days".\n` +
-                `6. Close with a single reminder line: "Pending Mercury transactions may ` +
-                `cancel on their own if the merchant reverses the auth — no action needed ` +
-                `unless a row looks fraudulent." Do NOT call any write tool.`,
-            },
-          },
-        ],
-      };
-    },
   );
 }

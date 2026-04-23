@@ -24,14 +24,13 @@ describe("prompts: Mercury recipe slash commands", () => {
     expect(caps?.prompts).toBeDefined();
   });
 
-  it("exposes exactly the 5 documented slash commands", async () => {
+  it("exposes exactly the 4 documented slash commands", async () => {
     const { client } = await connect();
     const { prompts } = await client.listPrompts();
     const names = prompts.map((p) => p.name).sort();
     expect(names).toEqual([
       "mercury-accounts-overview",
       "mercury-create-recipient",
-      "mercury-pending-card-transactions",
       "mercury-recipients-overview",
       "mercury-send-ach",
     ]);
@@ -230,72 +229,6 @@ describe("prompts: Mercury recipe slash commands", () => {
       const text = (result.messages[0].content as { text: string }).text;
       expect(text).toContain("Acme");
       expect(text.toLowerCase()).toContain("filter");
-    });
-  });
-
-  describe("/mercury-pending-card-transactions", () => {
-    it("declares optional args only (read-only query)", async () => {
-      const { client } = await connect();
-      const { prompts } = await client.listPrompts();
-      const p = prompts.find((p) => p.name === "mercury-pending-card-transactions");
-      expect(p).toBeDefined();
-      const required = (p?.arguments ?? []).filter((a) => a.required).map((a) => a.name);
-      expect(required).toEqual([]);
-    });
-
-    it("chains list_cards → list_transactions(status=pending) and stays read-only", async () => {
-      const { client } = await connect();
-      const result = await client.getPrompt({
-        name: "mercury-pending-card-transactions",
-        arguments: {},
-      });
-      const text = (result.messages[0].content as { text: string }).text;
-      expect(text).toContain("mercury_list_cards");
-      expect(text).toContain("mercury_list_transactions");
-      expect(text).toContain('status: "pending"');
-      expect(text).toContain("30");
-      for (const forbidden of [
-        "mercury_send_money",
-        "mercury_add_recipient",
-        "mercury_update_transaction",
-      ]) {
-        expect(text).not.toContain(forbidden);
-      }
-    });
-
-    it("honours sinceDays when a positive integer, falls back to 30 otherwise", async () => {
-      const { client } = await connect();
-      const custom = await client.getPrompt({
-        name: "mercury-pending-card-transactions",
-        arguments: { sinceDays: "90" },
-      });
-      expect((custom.messages[0].content as { text: string }).text).toContain("90 days");
-
-      const garbage = await client.getPrompt({
-        name: "mercury-pending-card-transactions",
-        arguments: { sinceDays: "lots" },
-      });
-      expect((garbage.messages[0].content as { text: string }).text).toContain("30 days");
-
-      // "0" is syntactically digits but semantically non-positive —
-      // would collapse the window to today, so the prompt rejects it
-      // and falls back to the 30-day default (CR finding).
-      const zero = await client.getPrompt({
-        name: "mercury-pending-card-transactions",
-        arguments: { sinceDays: "0" },
-      });
-      expect((zero.messages[0].content as { text: string }).text).toContain("30 days");
-    });
-
-    it("scopes to a specific card when cardHint is passed", async () => {
-      const { client } = await connect();
-      const result = await client.getPrompt({
-        name: "mercury-pending-card-transactions",
-        arguments: { cardHint: "Travel" },
-      });
-      const text = (result.messages[0].content as { text: string }).text;
-      expect(text).toContain("Travel");
-      expect(text.toLowerCase()).toContain("stop");
     });
   });
 });
