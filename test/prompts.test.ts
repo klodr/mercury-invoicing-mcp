@@ -103,6 +103,53 @@ describe("prompts: Mercury recipe slash commands", () => {
       const text = (result.messages[0].content as { text: string }).text;
       expect(text).not.toContain("externalMemo:");
     });
+
+    it("rejects externalMemo over 80 chars (NACHA Addenda limit)", async () => {
+      const { client } = await connect();
+      await expect(
+        client.getPrompt({
+          name: "mercury-send-ach",
+          arguments: { amount: "25", recipientHint: "Bob", externalMemo: "X".repeat(81) },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('rejects externalMemo with non-NACHA symbols (", ,, <, >, etc.)', async () => {
+      const { client } = await connect();
+      for (const bad of ['inv "123"', "inv, 123", "inv<tag>", "inv\\back"]) {
+        await expect(
+          client.getPrompt({
+            name: "mercury-send-ach",
+            arguments: { amount: "25", recipientHint: "Bob", externalMemo: bad },
+          }),
+          `expected "${bad}" to be rejected by the NACHA-allowed-symbols regex`,
+        ).rejects.toThrow();
+      }
+    });
+
+    it("accepts externalMemo with the full NACHA-allowed symbol set", async () => {
+      const { client } = await connect();
+      // Every symbol the NACHA spec permits, stitched together — must
+      // pass. Includes a few alphanumerics to keep the memo realistic.
+      const allowed = "Inv42 ()!#$%&'*+-./:;=?@[]^_{|}";
+      const result = await client.getPrompt({
+        name: "mercury-send-ach",
+        arguments: { amount: "25", recipientHint: "Bob", externalMemo: allowed },
+      });
+      expect((result.messages[0].content as { text: string }).text).toContain(allowed);
+    });
+
+    it("rejects amount with more than 2 fractional digits or non-digits", async () => {
+      const { client } = await connect();
+      for (const bad of ["25.123", "abc", "25.", "-25", "25,00"]) {
+        await expect(
+          client.getPrompt({
+            name: "mercury-send-ach",
+            arguments: { amount: bad, recipientHint: "Bob" },
+          }),
+        ).rejects.toThrow();
+      }
+    });
   });
 
   describe("/mercury-create-recipient", () => {
@@ -166,6 +213,42 @@ describe("prompts: Mercury recipe slash commands", () => {
       const text = (result.messages[0].content as { text: string }).text;
       expect(text).toContain('nickname: "Acme"');
     });
+
+    it("enforces ABA routing-number format (exactly 9 digits)", async () => {
+      const { client } = await connect();
+      for (const bad of ["12345678", "1234567890", "12345678a", "123 456 789"]) {
+        await expect(
+          client.getPrompt({
+            name: "mercury-create-recipient",
+            arguments: {
+              name: "Acme",
+              contactEmail: "a@b.c",
+              routingNumber: bad,
+              accountNumber: "12345678",
+            },
+          }),
+          `routing "${bad}" should be rejected`,
+        ).rejects.toThrow();
+      }
+    });
+
+    it("enforces NACHA account-number width (4–17 digits)", async () => {
+      const { client } = await connect();
+      for (const bad of ["123", "12345678901234567890", "12345a678", ""]) {
+        await expect(
+          client.getPrompt({
+            name: "mercury-create-recipient",
+            arguments: {
+              name: "Acme",
+              contactEmail: "a@b.c",
+              routingNumber: "021000021",
+              accountNumber: bad,
+            },
+          }),
+          `account "${bad}" should be rejected`,
+        ).rejects.toThrow();
+      }
+    });
   });
 
   describe("/mercury-accounts-overview", () => {
@@ -218,8 +301,19 @@ describe("prompts: Mercury recipe slash commands", () => {
       const text = (result.messages[0].content as { text: string }).text;
       expect(text).toContain("mercury_list_recipients");
       expect(text.toLowerCase()).toContain("read-only");
-      for (const forbidden of ["mercury_send_money", "mercury_add_recipient"]) {
-        expect(text).not.toContain(forbidden);
+      // Regression guard aligned with /mercury-accounts-overview so
+      // both read-only overviews forbid the same write surface
+      // (any drift would let a future edit accidentally pull a
+      // write tool into a status-only prompt).
+      for (const forbidden of [
+        "mercury_send_money",
+        "mercury_add_recipient",
+        "mercury_update_recipient",
+        "mercury_create_internal_transfer",
+      ]) {
+        expect(text, `${forbidden} should not appear in a read-only prompt`).not.toContain(
+          forbidden,
+        );
       }
     });
 
