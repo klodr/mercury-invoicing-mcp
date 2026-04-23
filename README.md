@@ -169,6 +169,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 ## Tools (36 total)
 
 ### Banking — Accounts
+
 - `mercury_list_accounts`, `mercury_get_account`
 - `mercury_list_cards`
 - `mercury_get_organization`

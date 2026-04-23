@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { promptSafe } from "./_shared.js";
 
 /**
  * Prompt for the Mercury IO Credit account workflow. Kept separate
@@ -56,9 +57,10 @@ export function registerCreditPrompts(server: McpServer): void {
       // advertised 30-day default. Reject both `"0"` and anything
       // non-numeric; fall back to `30`.
       const daysLabel = sinceDays && /^[1-9]\d*$/.test(sinceDays) ? sinceDays : "30";
+      const hint = creditAccountHint ? promptSafe(creditAccountHint) : undefined;
       return {
-        description: creditAccountHint
-          ? `Pending IO Credit transactions on "${creditAccountHint}" over the last ${daysLabel} days`
+        description: hint
+          ? `Pending IO Credit transactions on "${hint}" over the last ${daysLabel} days`
           : `Pending IO Credit transactions over the last ${daysLabel} days`,
         messages: [
           {
@@ -73,8 +75,8 @@ export function registerCreditPrompts(server: McpServer): void {
                 `IO Credit account out). The response shape is ` +
                 `\`{ accounts: [{ id, status, availableBalance, currentBalance, … }] }\`. ` +
                 `Collect the \`id\` of every account.` +
-                (creditAccountHint
-                  ? ` Scope to accounts whose status or id contains "${creditAccountHint}" ` +
+                (hint
+                  ? ` Scope to accounts whose status or id contains "${hint}" ` +
                     `(case-insensitive). If no account matches, STOP and surface the mismatch — ` +
                     `do not silently widen back to every account.\n`
                   : `\n`) +
