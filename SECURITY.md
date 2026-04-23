@@ -102,7 +102,7 @@ maintainer commits to, and limits that callers must account for.
 
 ## Supported runtimes
 
-`mercury-invoicing-mcp` supports **Node.js ≥ 22** (Maintenance LTS, supported through 2027-04-30). Releases prior to 0.9.1 shipped with a `>=20.11` floor; releases cut from 2026-04-30 onward require Node 22+ because Node 20 reaches end-of-life on 2026-04-30. Older pinned versions of the package remain installable but will not receive back-ported security fixes.
+`mercury-invoicing-mcp` supports **Node.js ≥ 22.11** (the LTS-tagged entry point of the Node 22 "Jod" line, October 2024; in Maintenance LTS through 2027-04-30). Releases prior to 0.9.1 shipped with a `>=20.11` floor; releases cut from 2026-04-30 onward require Node 22.11+ because Node 20 reaches end-of-life on 2026-04-30 and the `>=22.11` floor skips the pre-LTS 22.0–22.10 releases that predate the LTS designation. Older pinned versions of the package remain installable but will not receive back-ported security fixes.
 
 ## Verifying releases
 
