@@ -1,4 +1,4 @@
-# mercury-invoicing-mcp
+# 🏦 mercury-invoicing-mcp
 
 > Mercury Banking MCP server with full **Invoicing API** support — first MCP to expose Mercury's accounts receivable endpoints.
 
@@ -25,7 +25,7 @@
 
 A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Continue, etc.) full programmatic access to your **Mercury** business banking account, including the **Invoicing API** (one-shot + recurring) which is missing from every other Mercury MCP.
 
-## Why this MCP?
+## ✨ Why this MCP?
 
 | Capability | Official Mercury MCP | dragonkhoi/mercury-mcp | **mercury-invoicing-mcp** |
 |---|:---:|:---:|:---:|
@@ -43,7 +43,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm install -g mercury-invoicing-mcp
@@ -55,11 +55,11 @@ Or use directly with `npx`:
 npx mercury-invoicing-mcp
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 The server reads `MERCURY_API_KEY` from the environment. Get your API key at [Mercury Settings → API Tokens](https://app.mercury.com/settings/tokens).
 
-### Right-sizing the token
+### 🔑 Right-sizing the token
 
 Mercury exposes **fine-grained per-resource scopes** at token creation — not a single read/write toggle. Pick exactly what your use case needs and Mercury enforces the rest server-side: a tool called without the right scope returns `403`, which the MCP surfaces as a clean `isError: true` response (with a Mercury Plus hint when relevant).
 
@@ -80,7 +80,7 @@ Common scope recipes for this MCP:
 | Outbound send-money requests | + Write on `send_money` (creates the request — see safety note below) |
 | Webhooks-only ops | Write on `webhooks` only |
 
-### Important: outbound payments depend on YOUR Mercury approval policy
+### ⚠️ Important: outbound payments depend on YOUR Mercury approval policy
 
 Whether an outbound payment created via this MCP executes immediately or waits for human approval is **not controlled by the MCP** — it is enforced by your Mercury workspace's approval policy (Settings → Approvals on app.mercury.com). The MCP can only ever *create* the API call; what Mercury does with it is up to your workspace configuration.
 
@@ -92,7 +92,7 @@ The three money tools behave differently:
 
 → **Set a strict approval policy in Mercury** (e.g. require approval for any outbound payment, regardless of amount) if you intend to expose write tools to an agent. The MCP's per-call rate limits and dry-run mode are useful belt-and-braces, but the authoritative gate is Mercury's approval policy. If a prompt-injected agent calls `send_money`, the safety of that call depends entirely on what Mercury would have done if the same payload arrived from any other API caller.
 
-### Sandbox mode
+### 🧪 Sandbox mode
 
 To test against Mercury's [sandbox environment](https://docs.mercury.com/docs/using-mercury-sandbox) (no real money, pre-populated dummy data), just use a sandbox token:
 
@@ -108,7 +108,7 @@ To override the base URL explicitly (e.g. for a self-hosted proxy):
 MERCURY_API_BASE_URL=https://your-proxy.example.com/api/v1
 ```
 
-### Claude Desktop / Claude Code
+### 🤖 Claude Desktop / Claude Code
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (or `~/.claude.json` for Claude Code):
 
@@ -126,7 +126,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (or `~/
 }
 ```
 
-### Cursor
+### 🖱️ Cursor
 
 Add to `~/.cursor/mcp.json`:
 
@@ -144,7 +144,7 @@ Add to `~/.cursor/mcp.json`:
 }
 ```
 
-### OpenClaw
+### 🦀 OpenClaw
 
 [OpenClaw](https://docs.openclaw.ai) is an open-source self-hosted agent platform that supports MCP via `@modelcontextprotocol/sdk`. Add to `~/.openclaw/openclaw.json`:
 
@@ -166,40 +166,44 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## Tools (36 total)
+## 🛠️ Tools (36 total)
 
-### Banking — Accounts
+### 🏦 Banking — Accounts
 
 - `mercury_list_accounts`, `mercury_get_account`
 - `mercury_list_cards`
 - `mercury_get_organization`
 - `mercury_list_categories`
 
-### Banking — IO Credit (undocumented endpoints)
+### 💳 Banking — IO Credit (undocumented endpoints)
 
 - `mercury_list_credit_accounts` — wraps `GET /credit` (reverse-engineered from the Mercury Dashboard; not in the public API reference). Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
 - `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, distinct from the documented plural `/accounts/{id}/transactions`. This is the path the Dashboard uses for IO Credit transactions, including pending card authorisations.
 
 > ⚠️ The IO Credit endpoints are **not** in the Mercury public API reference. They were reverse-engineered from Dashboard network traffic (2026-04) and are subject to change without notice. A breaking change on Mercury's side will surface as a 404 from the two tools above. If you rely on them in production, open an issue so we can contact Mercury about stabilising them.
 
-### Banking — Transactions
+### 💸 Banking — Transactions
+
 - `mercury_list_transactions`, `mercury_get_transaction`
 - `mercury_update_transaction` (note, category)
 - `mercury_send_money`, `mercury_request_send_money`
 - `mercury_create_internal_transfer` (between your own Mercury accounts)
 
-### Banking — Recipients
+### 👥 Banking — Recipients
+
 - `mercury_list_recipients`, `mercury_add_recipient`, `mercury_update_recipient`
 
-### Banking — Statements
+### 📊 Banking — Statements
+
 - `mercury_list_statements`
 
-### Treasury
+### 🏛️ Treasury
+
 - `mercury_get_treasury`
 - `mercury_list_treasury_transactions`
 - `mercury_list_treasury_statements`
 
-### Invoicing (Accounts Receivable)
+### 🧾 Invoicing (Accounts Receivable)
 
 > ⚠️ **Mercury Plus plan required.** The Invoicing & Customers (AR) APIs are only available on Mercury's [Plus plan](https://mercury.com/pricing) (or higher). Calls to these tools return `403 Forbidden` on Free or Standard plans. The other tools (banking, treasury, webhooks) work on every plan.
 
@@ -208,11 +212,13 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
 
-### Customers (AR) — also requires Mercury Plus
+### 👤 Customers (AR) — also requires Mercury Plus
+
 - `mercury_list_customers`, `mercury_get_customer`
 - `mercury_create_customer`, `mercury_update_customer`, `mercury_delete_customer`
 
-### Webhooks
+### 🔗 Webhooks
+
 - `mercury_list_webhooks`, `mercury_get_webhook`
 - `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
@@ -242,21 +248,21 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 > registers all 34 tools but Mercury will reject unauthorized operations
 > at the API level.
 
-## Roadmap
+## 🗺️ Roadmap
 
 See [ROADMAP.md](./ROADMAP.md).
 
-## Security
+## 🔒 Security
 
 - **Never share your API key.** Use environment variables, never CLI args.
 - Use **read-only or scoped tokens** when you don't need write access.
 - Be aware of **prompt injection** risks when exposing write tools to LLMs that read untrusted content. See [Anthropic's MCP security guidance](https://docs.anthropic.com/en/docs/agents-and-tools/mcp).
 
-### Built-in safeguards
+### 🛡️ Built-in safeguards
 
 This MCP includes three middleware layers that activate automatically on write tools (read tools are unaffected):
 
-#### 1. Rate limiting (dual-window)
+#### 1️⃣ Rate limiting (dual-window)
 
 Each write tool is mapped to a **bucket**. Every bucket enforces **two rolling windows simultaneously** — a daily cap (24 h) and a monthly cap (30-day rolling). A call is rejected as soon as either window is at its cap, so a runaway agent cannot drain accounts even if it stays under the daily limit by pacing itself over weeks.
 
@@ -298,7 +304,7 @@ When exceeded, the tool returns an `isError: true` response with a structured JS
 
 The rate-limit window **survives process restarts**. State is persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`); override the location with `MERCURY_MCP_STATE_DIR=/abs/path` if you need to share state between hosts or pin it to a specific volume. Without persistence, an MCP host that respawns the server per session would silently bypass the limit.
 
-#### 2. Dry-run mode
+#### 2️⃣ Dry-run mode
 
 Inspect what an agent *would* do without actually calling Mercury. Useful for debugging suspected behaviour or staging:
 
@@ -308,7 +314,7 @@ MERCURY_MCP_DRY_RUN=true
 
 Write tools then return a structured payload describing the intended action without hitting the Mercury API.
 
-#### 3. Audit log (opt-in)
+#### 3️⃣ Audit log (opt-in)
 
 Enable structured JSON logging of every write call:
 
@@ -318,7 +324,7 @@ MERCURY_MCP_AUDIT_LOG=/var/log/mercury-mcp-audit.log
 
 Each line is `{ts, tool, result, args}` (one JSON object per line). Result is `ok`, `dry-run`, or `error`. The path must be **absolute**; sensitive fields in `args` (`accountNumber`, `routingNumber`, `apiKey`, `authorization`, `password`, `token`, `secret`, `ssn`) are automatically redacted. The file is created with mode `0600` (owner read/write only).
 
-## Development
+## 🔧 Development
 
 ```bash
 git clone https://github.com/klodr/mercury-invoicing-mcp.git
@@ -328,16 +334,16 @@ npm run build
 npm test
 ```
 
-## Inspiration
+## 💡 Inspiration
 
 - [@stripe/mcp](https://github.com/stripe/ai/tree/main/tools/modelcontextprotocol) — architecture patterns
 - [dragonkhoi/mercury-mcp](https://github.com/dragonkhoi/mercury-mcp) — initial banking tool implementations
 - [Official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp) — read-only reference
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](./LICENSE).
 
-## Contributing
+## 🤝 Contributing
 
 Issues and PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the test/build/coverage checklist and release process.
