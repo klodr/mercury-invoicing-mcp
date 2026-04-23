@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-04-23
+
+### Added
+
+- **MCP slash-command prompts (8 total)** — LLM clients that support the MCP Prompts capability can now invoke high-level workflows as slash commands: `/mercury-send-ach`, `/mercury-create-recipient`, `/mercury-accounts-overview`, `/mercury-recipients-overview`, `/mercury-create-customer`, `/mercury-create-invoice`, `/mercury-unpaid-invoices-overview`, `/mercury-pending-card-transactions`. Each prompt wires the right tools with the right scopes and the right safeguards (confirmation gates, forbidden-tools list, NACHA memo validation, amount floor at $0.01, ACH routing/account co-dependency via `us-bank-account-validator`). All user-supplied arguments go through `promptSafe()` (NACHA allowlist: alphanumerics + `( ) ! # $ % & ' * + - . / : ; = ? @ [ ] ^ _ { | }`) before interpolation, so a crafted slot value can no longer break out with a quote+newline or smuggle a backtick-substitution. Prompt source: `src/prompts/{recipes,invoicing,credit,_shared}.ts`; covered by 41 end-to-end tests. (#82)
+- **Mercury IO Credit account exposure (2 undocumented tools)** — `mercury_list_credit_accounts` wraps `GET /credit` and `mercury_list_credit_transactions` wraps `GET /account/{id}/transactions` (SINGULAR path — distinct from the documented plural used for deposit accounts). These endpoints are **not in the Mercury public API reference**; they were reverse-engineered from Dashboard network traffic (2026-04) and power the "pending card transactions" recipe above. A 404 from either tool indicates Mercury changed the endpoint server-side — tracked as a best-effort surface. README has a dedicated warning section. Tool count: 34 → 36. (#83)
+- **`.strict()` schema wrapping in `defineTool`** — every tool's `inputSchema` is now wrapped in `z.object(shape).strict()` before being registered, so unknown keys in an LLM-generated tool call are rejected at parse time instead of silently dropped. Defense against prompt-injection payloads that smuggle extra fields past validation.
+
 ### Changed
 
+- **Docker MCP Registry-style README polish** — emoji-tagged headings (🏦 ✨ 📦 ⚙️ 🔑 ⚠️ 🧪 🤖 🖱️ 🦀 🛠️ 🗺️ 🔒 🛡️ 🔧 💡 📄 🤝), 1️⃣ 2️⃣ 3️⃣ callouts on the safeguards + PR checklist, per-domain emojis on the tool-list headings (🏦 Banking — Accounts / 💳 IO Credit / 💸 Transactions / 👥 Recipients / 📊 Statements / 🏛️ Treasury / 🧾 Invoicing / 👤 Customers / 🔗 Webhooks). Also CONTRIBUTING.md with matching tone. Zero content change — pure visual alignment with [docker/mcp-registry](https://github.com/docker/mcp-registry). (#84)
 - **Node.js floor pinned to exact `>=22.22.2`** (was `>=22.22`, originally `>=22.11`). The previous `>=22.22` range accepted `22.22.0` and `22.22.1`, which predate the seven CVEs fixed in `22.22.2` (two high-severity: TLS/SNI callback handling and HTTP header validation; three medium, two low). Pinning to the exact patch closes the gap so a fresh `npm install` cannot land on a pre-CVE runtime. Aligned with `klodr/gmail-mcp`, `klodr/faxdrop-mcp` (shipped in PR #71), and the private `klodr/relayfi-mcp`. Also updates `README.md` comparison-table row, `SECURITY.md` "Supported runtimes", `llms-install.md` prerequisite, and `.github/dependabot.yml` `@types/node` major-clamp comment.
 
 ### Fixed
