@@ -48,7 +48,7 @@
     "prepublishOnly": "NODE_ENV=production npm run build"
   },
   "engines": {
-    "node": ">=22.22"
+    "node": ">=22.22.2"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
