@@ -374,7 +374,7 @@ export function wrapToolHandler<TArgs>(
             isError: true,
           };
         }
-        /* istanbul ignore next -- defensive: enforceRateLimit only ever
+        /* v8 ignore next -- defensive: enforceRateLimit only ever
            throws RateLimitError today; this re-throw guards against a
            future regression that would surface as a programming bug, not
            a runtime path we can exercise from a unit test. */
