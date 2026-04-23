@@ -281,6 +281,36 @@ describe("prompts: Mercury recipe slash commands", () => {
       }
     });
 
+    it("rejects routing-only (co-dependency with accountNumber)", async () => {
+      const { client } = await connect();
+      await expect(
+        client.getPrompt({
+          name: "mercury-create-recipient",
+          arguments: {
+            name: "Acme",
+            contactEmail: "ap@acme.test",
+            routingNumber: "121145433",
+            // accountNumber deliberately omitted
+          },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("rejects account-only (co-dependency with routingNumber)", async () => {
+      const { client } = await connect();
+      await expect(
+        client.getPrompt({
+          name: "mercury-create-recipient",
+          arguments: {
+            name: "Acme",
+            contactEmail: "ap@acme.test",
+            accountNumber: "1234567890",
+            // routingNumber deliberately omitted
+          },
+        }),
+      ).rejects.toThrow();
+    });
+
     it("accepts Mercury's own routing number", async () => {
       const { client } = await connect();
       // `121145433` is Mercury Bank's ABA RTN — the canonical happy

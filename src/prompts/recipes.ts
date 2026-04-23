@@ -263,6 +263,19 @@ export function registerRecipePrompts(server: McpServer): void {
       argsSchema: CreateRecipientArgs,
     },
     ({ name, nickname, contactEmail, routingNumber, accountNumber }) => {
+      // Routing + account are ACH co-dependents: the pair enables
+      // electronic transfer, the pair goes in `electronicRoutingInfo`.
+      // Accepting one without the other lets the caller persist a
+      // half-configured recipient that the later /mercury-send-ach
+      // prompt would refuse anyway. Reject the partial state here
+      // so the error surfaces with a useful message, not a generic
+      // Mercury 400 at tool-call time.
+      if (!!routingNumber !== !!accountNumber) {
+        throw new Error(
+          "routingNumber and accountNumber must be supplied together (ACH-eligible " +
+            "recipient) or both omitted (contact-only recipient)",
+        );
+      }
       const n = promptSafe(name);
       const nick = nickname ? promptSafe(nickname) : undefined;
       const email = promptSafe(contactEmail);
