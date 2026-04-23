@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Audit throws no longer mask handler errors** (Qodo finding backported from `klodr/gmail-mcp#48`). A `logAudit(...)` call in the `finally` or `catch` would override the handler's own exception per JS/TS semantics — so a full-disk or a circular-`args` `JSON.stringify` throw inside the audit helper could erase the root cause from the caller. Introduces a local `safeLogAudit` wrapper that swallows any audit-side exception to stderr and applies it to all five terminal audit paths (`rate_limited`, `dry-run`, `ok`, `error` in catch, and the new `error` before a non-`RateLimitError` re-throw — previously missing, see next bullet).
+- **Non-`RateLimitError` re-throw now logs an audit entry**. If `enforceRateLimit` ever throws something other than `RateLimitError` (a future regression in rate-limit state handling, a programming bug), the audit trail now shows the event before the re-throw propagates. The path is marked `v8 ignore` because it is not reachable from the current implementation.
+
 ## [0.9.2] - 2026-04-23
 
 ### Fixed
