@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SECURITY.md` "Supported runtimes" section updated to state `Node.js ≥ 22.11` with the LTS-tag rationale.
 - `README.md` comparison table gained a **Node.js floor** row making the three-way posture explicit (hosted N/A, `dragonkhoi/mercury-mcp` ships without `engines.node` so installs silently on Node 14 EOL, `mercury-invoicing-mcp` enforces `>=22.11` at the manifest level).
 
+### Added
+
+- **Codecov Test Analytics wiring** — vitest emits a `test-results.junit.xml` alongside its default human reporter, and the CI run uploads it to Codecov via `codecov/codecov-action@v6.0.0` (pinned by SHA) invoked with `report_type: test_results` — the standalone `codecov/test-results-action@v1.2.1` is deprecated in favour of the unified action. Gives us the "Tests" dashboard on codecov.io: per-suite flaky-test detection, slowest tests, test failure history. Upload runs only on the Node 22 matrix leg with `!cancelled()` so a test failure still surfaces the report. XML file is in `.gitignore` and excluded from the published tarball (not in `package.json#files`).
+
 ## [0.9.1] - 2026-04-22
 
 Single focus: move the whole toolchain off Node 20 ahead of its 2026-04-30 end-of-life. Not a feature release — `dist/index.js` behaviour is unchanged versus 0.9.0.

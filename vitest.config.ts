@@ -6,6 +6,10 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     setupFiles: ["test/setup.ts"],
     restoreMocks: true,
+    // Keep the default human-readable reporter and ALSO emit a JUnit XML
+    // file for Codecov Test Analytics (flaky / slow test detection over
+    // time). Regenerated every run; gitignored.
+    reporters: ["default", ["junit", { outputFile: "test-results.junit.xml" }]],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
