@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Node.js floor bumped to `>=22.22`** (was `>=22.11`). Node 22.22.2 ships security fixes for seven CVEs, including two high-severity ones (TLS/SNI callback handling and HTTP header validation). The 22.22.x line is the current in-maintenance LTS patch train; pinning the floor there gives users a known-patched runtime instead of the pre-CVE 22.11 baseline. Aligned with the sibling repos `klodr/gmail-mcp`, `klodr/faxdrop-mcp`, and the private `klodr/relayfi-mcp`, all moving to `>=22.22` in the same pass. Also updates `README.md` comparison-table row, `SECURITY.md` "Supported runtimes", `llms-install.md` prerequisite, and `.github/dependabot.yml` `@types/node` major-clamp comment to the new floor.
+
 ### Fixed
 
 - **Audit throws no longer mask handler errors** (Qodo finding backported from `klodr/gmail-mcp#48`). A `logAudit(...)` call in the `finally` or `catch` would override the handler's own exception per JS/TS semantics — so a full-disk or a circular-`args` `JSON.stringify` throw inside the audit helper could erase the root cause from the caller. Introduces a local `safeLogAudit` wrapper that swallows any audit-side exception to stderr and applies it to all five terminal audit-log calls (rate-limit catch → `"error"`, `"dry-run"` early-return, `"ok"` success path, `"error"` catch before the `MercuryError` mapping, and the new `"error"` before a non-`RateLimitError` re-throw — previously missing, see next bullet). The runtime audit-`result` values on mercury are `"ok" | "dry-run" | "error"` (gmail also has a `"rate_limited"` state, mercury doesn't).
