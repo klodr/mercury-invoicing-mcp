@@ -183,18 +183,22 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 > ⚠️ The IO Credit endpoints are **not** in the Mercury public API reference. They were reverse-engineered from Dashboard network traffic (2026-04) and are subject to change without notice. A breaking change on Mercury's side will surface as a 404 from the two tools above. If you rely on them in production, open an issue so we can contact Mercury about stabilising them.
 
 ### 💸 Banking — Transactions
+
 - `mercury_list_transactions`, `mercury_get_transaction`
 - `mercury_update_transaction` (note, category)
 - `mercury_send_money`, `mercury_request_send_money`
 - `mercury_create_internal_transfer` (between your own Mercury accounts)
 
 ### 👥 Banking — Recipients
+
 - `mercury_list_recipients`, `mercury_add_recipient`, `mercury_update_recipient`
 
 ### 📊 Banking — Statements
+
 - `mercury_list_statements`
 
 ### 🏛️ Treasury
+
 - `mercury_get_treasury`
 - `mercury_list_treasury_transactions`
 - `mercury_list_treasury_statements`
@@ -209,10 +213,12 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_invoice_attachments`
 
 ### 👤 Customers (AR) — also requires Mercury Plus
+
 - `mercury_list_customers`, `mercury_get_customer`
 - `mercury_create_customer`, `mercury_update_customer`, `mercury_delete_customer`
 
 ### 🔗 Webhooks
+
 - `mercury_list_webhooks`, `mercury_get_webhook`
 - `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
