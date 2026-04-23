@@ -9,7 +9,7 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/klodr/mercury-invoicing-mcp/badge)](https://scorecard.dev/viewer/?uri=github.com/klodr/mercury-invoicing-mcp)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12575/badge)](https://www.bestpractices.dev/projects/12575)
 [![Socket Security](https://socket.dev/api/badge/npm/package/mercury-invoicing-mcp)](https://socket.dev/npm/package/mercury-invoicing-mcp)
-[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/klodr/mercury-invoicing-mcp?utm_source=oss&utm_medium=github&utm_campaign=klodr%2Fmercury-invoicing-mcp&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/klodr/mercury-invoicing-mcp?labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
 
 [![npm version](https://img.shields.io/npm/v/mercury-invoicing-mcp.svg)](https://www.npmjs.com/package/mercury-invoicing-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/mercury-invoicing-mcp.svg)](https://www.npmjs.com/package/mercury-invoicing-mcp)
