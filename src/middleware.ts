@@ -437,7 +437,12 @@ export function wrapToolHandler<TArgs>(
 
     try {
       const result = await handler(args);
-      if (isWriteOp) safeLogAudit(toolName, args, "ok");
+      // Business errors returned via `isError: true` (vs thrown) are
+      // audited as "error" so the audit log distinguishes a
+      // successful call from one that surfaced a handler-side failure
+      // through the MCP protocol's isError channel (Qodo finding
+      // backported from klodr/gmail-mcp#48).
+      if (isWriteOp) safeLogAudit(toolName, args, result.isError ? "error" : "ok");
       return result;
     } catch (err) {
       safeLogAudit(toolName, args, "error");
