@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerCreditPrompts } from "./credit.js";
 import { registerInvoicingPrompts } from "./invoicing.js";
 import { registerRecipePrompts } from "./recipes.js";
 
@@ -11,4 +12,5 @@ import { registerRecipePrompts } from "./recipes.js";
 export function registerAllPrompts(server: McpServer): void {
   registerRecipePrompts(server);
   registerInvoicingPrompts(server);
+  registerCreditPrompts(server);
 }

@@ -24,7 +24,7 @@ describe("prompts: Mercury recipe slash commands", () => {
     expect(caps?.prompts).toBeDefined();
   });
 
-  it("exposes exactly the 7 documented slash commands", async () => {
+  it("exposes exactly the 8 documented slash commands", async () => {
     const { client } = await connect();
     const { prompts } = await client.listPrompts();
     const names = prompts.map((p) => p.name).sort();
@@ -33,6 +33,7 @@ describe("prompts: Mercury recipe slash commands", () => {
       "mercury-create-customer",
       "mercury-create-invoice",
       "mercury-create-recipient",
+      "mercury-pending-card-transactions",
       "mercury-recipients-overview",
       "mercury-send-ach",
       "mercury-unpaid-invoices-overview",

@@ -166,13 +166,19 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## Tools (34 total)
+## Tools (36 total)
 
 ### Banking — Accounts
 - `mercury_list_accounts`, `mercury_get_account`
 - `mercury_list_cards`
 - `mercury_get_organization`
 - `mercury_list_categories`
+
+### Banking — IO Credit (undocumented endpoints)
+- `mercury_list_credit_accounts` — wraps `GET /credit` (reverse-engineered from the Mercury Dashboard; not in the public API reference). Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
+- `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, distinct from the documented plural `/accounts/{id}/transactions`. This is the path the Dashboard uses for IO Credit transactions, including pending card authorisations.
+
+> ⚠️ The IO Credit endpoints are **not** in the Mercury public API reference. They were reverse-engineered from Dashboard network traffic (2026-04) and are subject to change without notice. A breaking change on Mercury's side will surface as a 404 from the two tools above. If you rely on them in production, open an issue so we can contact Mercury about stabilising them.
 
 ### Banking — Transactions
 - `mercury_list_transactions`, `mercury_get_transaction`
@@ -208,17 +214,16 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_webhooks`, `mercury_get_webhook`
 - `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
-> **Endpoints not yet wrapped** — Mercury exposes ~25 additional endpoints
+> **Endpoints not yet wrapped** — Mercury exposes ~23 additional endpoints
 > that this MCP does not yet cover. They will land in upcoming releases.
 > Tracked: PDF download (`getinvoicepdf`, `getstatementpdf`), attachments
 > (`uploadtransactionattachment`, `uploadrecipientattachment`,
 > `getattachment`, `listrecipientsattachments`), webhook signature
 > verification (`verifywebhook`), webhook events (`getevent`, `getevents`),
 > send-money approvals (`listsendmoneyapprovalrequests`,
-> `getsendmoneyapprovalrequest`), credit lines (`listcredit`),
-> users (`getuser`, `getusers`), Mercury Raise SAFE
-> (`getsaferequest(s)`, `getsaferequestdocument`), and OAuth flow
-> (`obtainaccesstoken`, `startoauth2flow`).
+> `getsendmoneyapprovalrequest`), users (`getuser`, `getusers`),
+> Mercury Raise SAFE (`getsaferequest(s)`, `getsaferequestdocument`),
+> and OAuth flow (`obtainaccesstoken`, `startoauth2flow`).
 
 > Mercury does **not** expose `list_send_money_requests`, COA Templates
 > or Journal Entries via the public API at all — those features are
