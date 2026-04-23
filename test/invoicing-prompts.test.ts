@@ -55,11 +55,14 @@ describe("prompts: Mercury AR invoicing slash commands", () => {
         arguments: {
           name: "Acme Corp",
           email: "billing@acme.test",
-          address: "123 Main St, Austin, TX 78701, USA",
+          // Commas are outside the NACHA allowlist and get stripped
+          // by promptSafe — the slot preserves the other address
+          // tokens, which is enough for the LLM to parse the parts.
+          address: "123 Main St Austin TX 78701 USA",
         },
       });
       const text = (result.messages[0].content as { text: string }).text;
-      expect(text).toContain("123 Main St, Austin, TX 78701, USA");
+      expect(text).toContain("123 Main St Austin TX 78701 USA");
       expect(text).toContain("postalCode");
     });
   });
