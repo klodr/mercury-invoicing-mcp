@@ -69,19 +69,22 @@ const SendAchArgs = {
       "Nickname / last-4 of the Mercury account to debit. Optional — if omitted, the model " +
         "asks the user to pick from the account list before sending.",
     ),
-  // NACHA ACH Addenda Record (PPD / CCD) — Payment Related
-  // Information field:
-  //   - Length: ≤ 80 chars (fixed field width in the ACH file).
-  //   - Character set: ALPHANUMERIC plus the following symbols:
-  //     ( ) ! # $ % & ' * + - . / : ; = ? @ [ ] ^ _ { | }
-  //     (plus space). Anything outside this set gets rejected by
-  //     the ACH network or silently stripped — surface the
-  //     violation client-side so the user fixes it here.
-  // We enforce both bounds in Zod: an 81-char input or a memo with
-  // `"` / `,` / `<` etc. is rejected before the tool call.
+  // Mercury's public API accepts externalMemo up to 140 chars — we
+  // keep that upper bound (the underlying NACHA Addenda "Payment
+  // Related Information" field is 80 chars, but Mercury carries
+  // the extra chars in their own payload and truncates server-
+  // side where appropriate).
+  //
+  // Character set constrained to the NACHA-permitted set so the
+  // memo survives the ACH network intact:
+  //   alphanumeric + space +
+  //   ( ) ! # $ % & ' * + - . / : ; = ? @ [ ] ^ _ { | }
+  // Anything outside this set gets silently dropped by ACH
+  // intermediaries — rejecting here surfaces the violation while
+  // the user can still edit.
   externalMemo: z
     .string()
-    .max(80, { message: "externalMemo must be ≤ 80 chars (NACHA ACH Addenda field width)" })
+    .max(140, { message: "externalMemo must be ≤ 140 chars (Mercury API limit)" })
     .regex(/^[A-Za-z0-9 ()!#$%&'*+\-./:;=?@[\]^_{|}]*$/, {
       message:
         "externalMemo may only contain alphanumerics, spaces, and the NACHA-permitted symbols: " +
@@ -89,9 +92,9 @@ const SendAchArgs = {
     })
     .optional()
     .describe(
-      "Memo shown on the recipient's ACH statement — 80 chars max per the NACHA Addenda " +
-        "record, alphanumeric + `( ) ! # $ % & ' * + - . / : ; = ? @ [ ] ^ _ { | }` only. " +
-        "Use it for invoice numbers / reconciliation references. Optional.",
+      "Memo shown on the recipient's ACH statement — 140 chars max (Mercury API limit), " +
+        "alphanumeric + `( ) ! # $ % & ' * + - . / : ; = ? @ [ ] ^ _ { | }` only. Use it for " +
+        "invoice numbers / reconciliation references. Optional.",
     ),
 };
 

@@ -104,14 +104,23 @@ describe("prompts: Mercury recipe slash commands", () => {
       expect(text).not.toContain("externalMemo:");
     });
 
-    it("rejects externalMemo over 80 chars (NACHA Addenda limit)", async () => {
+    it("rejects externalMemo over 140 chars (Mercury API limit)", async () => {
       const { client } = await connect();
       await expect(
         client.getPrompt({
           name: "mercury-send-ach",
-          arguments: { amount: "25", recipientHint: "Bob", externalMemo: "X".repeat(81) },
+          arguments: { amount: "25", recipientHint: "Bob", externalMemo: "X".repeat(141) },
         }),
       ).rejects.toThrow();
+    });
+
+    it("accepts externalMemo up to 140 chars", async () => {
+      const { client } = await connect();
+      const result = await client.getPrompt({
+        name: "mercury-send-ach",
+        arguments: { amount: "25", recipientHint: "Bob", externalMemo: "X".repeat(140) },
+      });
+      expect(result.messages).toHaveLength(1);
     });
 
     it('rejects externalMemo with non-NACHA symbols (", ,, <, >, etc.)', async () => {
