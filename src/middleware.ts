@@ -312,6 +312,38 @@ export function logAudit(
   }
 }
 
+/**
+ * `logAudit` that never throws — wraps the call in a try/catch and
+ * routes any audit failure to stderr. Used on every code path in
+ * `wrapToolHandler` where a throw from the audit log would override a
+ * more-important exception: the rate-limit catch (whose `return` would
+ * be replaced by the audit throw), the non-`RateLimitError` re-throw
+ * (where the audit event itself must not mask the underlying bug),
+ * the `ok` / `dry-run` success path (a throw would break a successful
+ * MCP call), and the `error` catch before the `MercuryError` mapping.
+ *
+ * `logAudit` already swallows its own `appendFileSync` failures (the
+ * try/catch directly above), so this is defence in depth against the
+ * two remaining failure paths inside `logAudit`: `JSON.stringify` on a
+ * circular `args` shape and the date formatter.
+ *
+ * Mirrors the helper in sibling repos `klodr/gmail-mcp/src/middleware.ts`
+ * and `klodr/faxdrop-mcp/src/middleware.ts`.
+ */
+function safeLogAudit(toolName: string, args: unknown, result: "ok" | "dry-run" | "error"): void {
+  try {
+    logAudit(toolName, args, result);
+  } catch (auditErr) {
+    /* v8 ignore next -- defensive catch: logAudit already swallows
+       appendFileSync failures internally, so this branch only fires on
+       a JSON.stringify / Date format throw — not exercisable from a
+       unit test without mocking the import (which would over-couple
+       the test to implementation detail). The guarantee is the
+       `try/catch` presence itself. */
+    console.error(`[middleware] audit log failed for ${toolName}:`, (auditErr as Error).message);
+  }
+}
+
 export type ToolResult = {
   content: { type: "text"; text: string }[];
   /**
@@ -368,22 +400,28 @@ export function wrapToolHandler<TArgs>(
         enforceRateLimit(toolName);
       } catch (err) {
         if (err instanceof RateLimitError) {
-          logAudit(toolName, args, "error");
+          safeLogAudit(toolName, args, "error");
           return {
             content: [{ type: "text", text: formatRateLimitError(err) }],
             isError: true,
           };
         }
-        /* v8 ignore next -- defensive: enforceRateLimit only ever
-           throws RateLimitError today; this re-throw guards against a
-           future regression that would surface as a programming bug, not
-           a runtime path we can exercise from a unit test. */
+        // Non-RateLimitError: defensive path (enforceRateLimit only
+        // throws RateLimitError today, but if a future regression
+        // surfaces a different error here we still want the audit
+        // trail to show it before the re-throw propagates).
+        /* v8 ignore next 2 -- defensive: enforceRateLimit only throws
+           RateLimitError today; this path guards against a future
+           regression, not a runtime path we can exercise from a unit
+           test. */
+        safeLogAudit(toolName, args, "error");
+        /* v8 ignore next */
         throw err;
       }
     }
 
     if (isWriteOp && isDryRun()) {
-      logAudit(toolName, args, "dry-run");
+      safeLogAudit(toolName, args, "dry-run");
       return {
         content: [
           {
@@ -405,10 +443,15 @@ export function wrapToolHandler<TArgs>(
 
     try {
       const result = await handler(args);
-      if (isWriteOp) logAudit(toolName, args, "ok");
+      // Business errors returned via `isError: true` (vs thrown) are
+      // audited as "error" so the audit log distinguishes a
+      // successful call from one that surfaced a handler-side failure
+      // through the MCP protocol's isError channel (Qodo finding
+      // backported from klodr/gmail-mcp#48).
+      if (isWriteOp) safeLogAudit(toolName, args, result.isError ? "error" : "ok");
       return result;
     } catch (err) {
-      logAudit(toolName, args, "error");
+      safeLogAudit(toolName, args, "error");
       if (err instanceof MercuryError) {
         const isAR = toolName.includes("invoice") || toolName.includes("customer");
         const planHint =
