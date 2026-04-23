@@ -42,8 +42,8 @@ describe("prompts: Mercury IO Credit workflow", () => {
       // The wrong-surface tools (debit cards / documented accounts)
       // must NOT appear — otherwise the LLM would miss the IO Credit
       // charges the user is asking about.
-      expect(text).not.toContain("mercury_list_cards");
-      expect(text).not.toContain("mercury_list_transactions\n");
+      expect(text).not.toMatch(/\bmercury_list_cards\b/);
+      expect(text).not.toMatch(/\bmercury_list_transactions\b/);
       // No write tools — read-only.
       for (const forbidden of [
         "mercury_send_money",
