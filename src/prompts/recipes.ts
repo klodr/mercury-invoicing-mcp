@@ -342,7 +342,12 @@ export function registerRecipePrompts(server: McpServer): void {
       argsSchema: PendingCardTransactionsArgs,
     },
     ({ sinceDays, cardHint }) => {
-      const daysLabel = sinceDays && /^\d+$/.test(sinceDays) ? sinceDays : "30";
+      // Require a STRICTLY positive integer. `"0"` is syntactically a
+      // digit-string but semantically would collapse the window to
+      // "today only", producing a near-empty report at odds with the
+      // advertised 30-day default. Reject both `"0"` and anything
+      // non-numeric; fall back to `30`.
+      const daysLabel = sinceDays && /^[1-9]\d*$/.test(sinceDays) ? sinceDays : "30";
       return {
         description: cardHint
           ? `Pending card transactions on "${cardHint}" over the last ${daysLabel} days`

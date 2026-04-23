@@ -150,6 +150,20 @@ describe("prompts: Mercury recipe slash commands", () => {
       expect(text).not.toContain("electronicRoutingInfo");
       expect(text).toContain("contact-only");
     });
+
+    it("includes the nickname line when nickname is supplied", async () => {
+      const { client } = await connect();
+      const result = await client.getPrompt({
+        name: "mercury-create-recipient",
+        arguments: {
+          name: "Acme Corp",
+          nickname: "Acme",
+          contactEmail: "ap@acme.test",
+        },
+      });
+      const text = (result.messages[0].content as { text: string }).text;
+      expect(text).toContain('nickname: "Acme"');
+    });
   });
 
   describe("/mercury-accounts-overview", () => {
@@ -249,7 +263,7 @@ describe("prompts: Mercury recipe slash commands", () => {
       }
     });
 
-    it("honours sinceDays when numeric, falls back to 30 otherwise", async () => {
+    it("honours sinceDays when a positive integer, falls back to 30 otherwise", async () => {
       const { client } = await connect();
       const custom = await client.getPrompt({
         name: "mercury-pending-card-transactions",
@@ -262,6 +276,15 @@ describe("prompts: Mercury recipe slash commands", () => {
         arguments: { sinceDays: "lots" },
       });
       expect((garbage.messages[0].content as { text: string }).text).toContain("30 days");
+
+      // "0" is syntactically digits but semantically non-positive —
+      // would collapse the window to today, so the prompt rejects it
+      // and falls back to the 30-day default (CR finding).
+      const zero = await client.getPrompt({
+        name: "mercury-pending-card-transactions",
+        arguments: { sinceDays: "0" },
+      });
+      expect((zero.messages[0].content as { text: string }).text).toContain("30 days");
     });
 
     it("scopes to a specific card when cardHint is passed", async () => {
