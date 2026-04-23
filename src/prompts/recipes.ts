@@ -1,5 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import {
+  accountNumber as validateAccountNumber,
+  routingNumber as validateRoutingNumber,
+} from "us-bank-account-validator";
 import { promptSafe } from "./_shared.js";
 
 /**
@@ -129,33 +133,25 @@ const CreateRecipientArgs = {
       "Primary contact email (RFC 5321 254-char max) — required for the recipient-side " +
         "payment notification.",
     ),
-  // ABA RTN (Routing Transit Number): EXACTLY 9 numeric digits.
-  // See FRB §229.35. The same 9-digit ABA RTN is used as the ACH
-  // routing number for electronic transfers; distinct routing
-  // numbers for wire/check exist at some banks, but Mercury's
-  // ACH surface takes the ABA number. Enforcing the length
-  // client-side turns a copy-paste with stray characters into a
-  // useful error rather than a Mercury 400.
   routingNumber: z
     .string()
-    .regex(/^\d{9}$/, { message: "routingNumber must be exactly 9 digits (ABA RTN)" })
+    .refine((v) => validateRoutingNumber(v).isValid, {
+      message: "routingNumber must be a valid US ABA routing number",
+    })
     .optional()
     .describe(
-      "ABA routing number (9 digits) — the same number is used for ACH electronic " +
-        "transfers on US domestic accounts. Required alongside accountNumber for ACH " +
-        "eligibility.",
+      "ABA routing number of the recipient bank. Required alongside accountNumber for " +
+        "ACH-eligible recipients.",
     ),
-  // US account numbers top out at 17 digits per the NACHA
-  // Operating Rules (Individual Identification Number field width
-  // on PPD/CCD entries). Floor at 4 because shorter is essentially
-  // always a typo.
   accountNumber: z
     .string()
-    .regex(/^\d{4,17}$/, { message: "accountNumber must be 4-17 digits (NACHA field width)" })
+    .refine((v) => validateAccountNumber(v).isValid, {
+      message: "accountNumber must be a valid US bank account number",
+    })
     .optional()
     .describe(
-      "Bank account number — 4-17 digits per NACHA Operating Rules. Required alongside " +
-        "routingNumber for ACH-eligible recipients.",
+      "Bank account number of the recipient. Required alongside routingNumber for " +
+        "ACH-eligible recipients.",
     ),
 };
 

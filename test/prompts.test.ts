@@ -245,7 +245,7 @@ describe("prompts: Mercury recipe slash commands", () => {
       expect(text).toContain('nickname: "Acme"');
     });
 
-    it("enforces ABA routing-number format (exactly 9 digits)", async () => {
+    it("rejects routing numbers that fail the US ABA validator", async () => {
       const { client } = await connect();
       for (const bad of ["12345678", "1234567890", "12345678a", "123 456 789"]) {
         await expect(
@@ -253,7 +253,7 @@ describe("prompts: Mercury recipe slash commands", () => {
             name: "mercury-create-recipient",
             arguments: {
               name: "Acme",
-              contactEmail: "a@b.c",
+              contactEmail: "ap@acme.test",
               routingNumber: bad,
               accountNumber: "12345678",
             },
@@ -263,16 +263,33 @@ describe("prompts: Mercury recipe slash commands", () => {
       }
     });
 
-    it("enforces NACHA account-number width (4–17 digits)", async () => {
+    it("accepts Mercury's own routing number", async () => {
       const { client } = await connect();
-      for (const bad of ["123", "12345678901234567890", "12345a678", ""]) {
+      // `121145433` is Mercury Bank's ABA RTN — the canonical happy
+      // path for this MCP.
+      const result = await client.getPrompt({
+        name: "mercury-create-recipient",
+        arguments: {
+          name: "Acme",
+          contactEmail: "ap@acme.test",
+          routingNumber: "121145433",
+          accountNumber: "1234567890",
+        },
+      });
+      const text = (result.messages[0].content as { text: string }).text;
+      expect(text).toContain("121145433");
+    });
+
+    it("rejects out-of-range account numbers", async () => {
+      const { client } = await connect();
+      for (const bad of ["123", "12345678901234567890", ""]) {
         await expect(
           client.getPrompt({
             name: "mercury-create-recipient",
             arguments: {
               name: "Acme",
-              contactEmail: "a@b.c",
-              routingNumber: "021000021",
+              contactEmail: "ap@acme.test",
+              routingNumber: "121145433",
               accountNumber: bad,
             },
           }),
