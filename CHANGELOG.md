@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.2] - 2026-04-23
+
+### Fixed
+
+- **CodeQL Code Scanning alert #28** (`src/sanitize.ts`) — the control-character stripping regex is now spelled with explicit `\uXXXX` escapes instead of literal C0/C1 characters embedded in the source. Functionally identical, but the literal form tripped CodeQL's "invisible Unicode" rule. No runtime behaviour change.
+- **CI `Upload test results to Codecov` guard** — the step now reads `if: ${{ always() && matrix.node == '22' && !cancelled() }}`. The prior `if: matrix.node == '22' && !cancelled()` was ambiguous: `!cancelled()` alone does replace the implicit `success()` check in GitHub Actions expression semantics, but the ambiguity is enough that failed test runs were at risk of being filtered out of Test Analytics — defeating the entire point of the upload (seeing flaky-test patterns on red builds). Explicit `always()` makes the "upload on failure" behaviour load-bearing in the YAML itself.
+- **README CodeRabbit badge URL** — dropped the `utm_source=oss&utm_medium=github&utm_campaign=klodr%2Fmercury-invoicing-mcp&` prefix from the `img.shields.io/coderabbit/prs/...` badge URL. Those params are what CodeRabbit's "embed this badge" snippet proposes by default, but shields.io doesn't interpret them — they only serve to give the URL a unique signature from the other sibling-repo badges, which means GitHub's camo image proxy caches each variant independently. When the upstream CodeRabbit endpoint returned a transient `provider or repo not found` at camo's initial fetch, that error SVG got cached and kept rendering while the sibling-repo badge (with a different URL) rendered fine. Dropping the utm params aligns the badge URL with the form used on `klodr/gmail-mcp` and invalidates the stale camo cache on the next README render.
 
 ### Changed
 
@@ -14,10 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `llms-install.md` prerequisite updated to **Node.js ≥ 22.11**.
 - `SECURITY.md` "Supported runtimes" section updated to state `Node.js ≥ 22.11` with the LTS-tag rationale.
 - `README.md` comparison table gained a **Node.js floor** row making the three-way posture explicit (hosted N/A, `dragonkhoi/mercury-mcp` ships without `engines.node` so installs silently on Node 14 EOL, `mercury-invoicing-mcp` enforces `>=22.11` at the manifest level).
+- **Coverage ignore comments renamed from `/* istanbul ignore next */` to `/* v8 ignore next */`** to match the V8 coverage provider actually used under vitest. Functionally identical; aligns the syntax with the tool doing the work.
 
 ### Added
 
 - **Codecov Test Analytics wiring** — vitest emits a `test-results.junit.xml` alongside its default human reporter, and the CI run uploads it to Codecov via `codecov/codecov-action@v6.0.0` (pinned by SHA) invoked with `report_type: test_results` — the standalone `codecov/test-results-action@v1.2.1` is deprecated in favour of the unified action. Gives us the "Tests" dashboard on codecov.io: per-suite flaky-test detection, slowest tests, test failure history. Upload runs only on the Node 22 matrix leg with `!cancelled()` so a test failure still surfaces the report. XML file is in `.gitignore` and excluded from the published tarball (not in `package.json#files`).
+- **`glama.json` at the repo root** — claims ownership of the `klodr/mercury-invoicing-mcp` listing on glama.ai (MCP server registry), so the automated scanner pairs the listing with this repo rather than an unclaimed fork.
 
 ## [0.9.1] - 2026-04-22
 
