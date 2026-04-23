@@ -334,6 +334,12 @@ function safeLogAudit(toolName: string, args: unknown, result: "ok" | "dry-run" 
   try {
     logAudit(toolName, args, result);
   } catch (auditErr) {
+    /* v8 ignore next -- defensive catch: logAudit already swallows
+       appendFileSync failures internally, so this branch only fires on
+       a JSON.stringify / Date format throw — not exercisable from a
+       unit test without mocking the import (which would over-couple
+       the test to implementation detail). The guarantee is the
+       `try/catch` presence itself. */
     console.error(`[middleware] audit log failed for ${toolName}:`, (auditErr as Error).message);
   }
 }
