@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Codecov Test Analytics wiring** — vitest emits a `test-results.junit.xml` alongside its default human reporter, and the CI run uploads it to Codecov via `codecov/test-results-action@v1.2.1` (pinned by SHA). Gives us the "Tests" dashboard on codecov.io: per-suite flaky-test detection, slowest tests, test failure history. Upload runs only on the Node 22 matrix leg with `!cancelled()` so a test failure still surfaces the report. XML file is in `.gitignore` and excluded from the published tarball (not in `package.json#files`).
+
 ## [0.9.1] - 2026-04-22
 
 Single focus: move the whole toolchain off Node 20 ahead of its 2026-04-30 end-of-life. Not a feature release — `dist/index.js` behaviour is unchanged versus 0.9.0.

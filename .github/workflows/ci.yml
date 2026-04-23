@@ -69,3 +69,11 @@ jobs:
           fail_ci_if_error: false
           slug: klodr/mercury-invoicing-mcp
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov (Test Analytics)
+        if: matrix.node == '22' && !cancelled()
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+        with:
+          files: ./test-results.junit.xml
+          slug: klodr/mercury-invoicing-mcp
+          token: ${{ secrets.CODECOV_TOKEN }}
