@@ -35,5 +35,5 @@ export function defineTool<S extends ZodRawShape>(
 ): void {
   const wrapped = wrapToolHandler(name, handler);
   const strictSchema = z.object(inputSchema).strict();
-  server.registerTool(name, { description, inputSchema: strictSchema }, wrapped as never);
+  server.registerTool(name, { description, inputSchema: strictSchema }, wrapped);
 }
