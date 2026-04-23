@@ -73,17 +73,22 @@ const CreateInvoiceArgs = {
         "land. Optional — if omitted, the model asks the user to pick from the account list.",
     ),
   // Decimal-dollar literal, max 2 fractional digits, 12 integer
-  // digits — same shape as /mercury-send-ach.
+  // digits — same shape as /mercury-send-ach. Must be ≥ 0.01 (a
+  // zero-dollar invoice is either an error or an attempt to send
+  // a silent notification, both of which should stop here).
   amount: z
     .string()
     .regex(/^\d{1,12}(\.\d{1,2})?$/, {
       message:
         "amount must be a decimal dollar string with at most 2 fractional digits (e.g. `1250.00`)",
     })
+    .refine((v) => parseFloat(v) >= 0.01, {
+      message: "amount must be at least 0.01 USD",
+    })
     .describe(
-      "Single-line-item total in USD, as a decimal string (e.g. `1250.00`). Max 12 integer " +
-        "digits + 2 decimals. If the user wants multiple line items, they pass a free-form " +
-        "description and the model splits.",
+      "Single-line-item total in USD, as a decimal string (e.g. `1250.00`). Min 0.01, max 12 " +
+        "integer digits + 2 decimals. If the user wants multiple line items, they pass a " +
+        "free-form description and the model splits.",
     ),
   description: z
     .string()

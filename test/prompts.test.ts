@@ -159,6 +159,28 @@ describe("prompts: Mercury recipe slash commands", () => {
         ).rejects.toThrow();
       }
     });
+
+    it("rejects zero-dollar amounts (minimum is 0.01)", async () => {
+      const { client } = await connect();
+      for (const zero of ["0", "0.00", "00", "0.0"]) {
+        await expect(
+          client.getPrompt({
+            name: "mercury-send-ach",
+            arguments: { amount: zero, recipientHint: "Bob" },
+          }),
+          `amount "${zero}" must be rejected as below 0.01 minimum`,
+        ).rejects.toThrow();
+      }
+    });
+
+    it("accepts 0.01 as the minimum valid amount", async () => {
+      const { client } = await connect();
+      const result = await client.getPrompt({
+        name: "mercury-send-ach",
+        arguments: { amount: "0.01", recipientHint: "Bob" },
+      });
+      expect((result.messages[0].content as { text: string }).text).toContain("0.01");
+    });
   });
 
   describe("/mercury-create-recipient", () => {

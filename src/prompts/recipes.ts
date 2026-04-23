@@ -40,16 +40,22 @@ const SendAchArgs = {
   // Decimal-dollar literal, max 2 fractional digits, max 12 integer
   // digits (covers every plausible per-call transfer; anything
   // larger is a data-entry slip the user should re-type).
+  // Must be ≥ 0.01 — a zero-dollar ACH is either a data-entry
+  // error or an attempt to probe the transfer path without
+  // consequence, both of which should stop here.
   amount: z
     .string()
     .regex(/^\d{1,12}(\.\d{1,2})?$/, {
       message:
         "amount must be a decimal dollar string with at most 2 fractional digits (e.g. `150.00`)",
     })
+    .refine((v) => parseFloat(v) >= 0.01, {
+      message: "amount must be at least 0.01 USD",
+    })
     .describe(
-      "Amount to send in USD, as a decimal string (e.g. `150.00`). Max 12 integer digits + " +
-        "2 decimals — Mercury's own transfer cap sits well below that but we validate the " +
-        "format, not the policy.",
+      "Amount to send in USD, as a decimal string (e.g. `150.00`). Min 0.01, max 12 integer " +
+        "digits + 2 decimals — Mercury's own transfer cap sits well below that but we " +
+        "validate the format, not the policy.",
     ),
   // Mercury's recipient list holds names (≤200) + nicknames (≤50);
   // a hint longer than either is guaranteed not to match anything.
