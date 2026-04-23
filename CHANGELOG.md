@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Node.js floor tightened to `>=22.11`** (was `>=22`). `22.11.0` is the LTS-tagged entry point for the Node 22 "Jod" line (October 2024); the previous `>=22` would have accepted the pre-LTS `22.0`–`22.10` releases which predate the LTS designation. Aligned with the sibling repos `klodr/faxdrop-mcp` and `klodr/gmail-mcp`, all moving to the same floor.
+- `.github/dependabot.yml` `@types/node` major-version-clamp comment aligned to the new `>=22.11` floor.
+- `llms-install.md` prerequisite updated to **Node.js ≥ 22.11**.
+- `SECURITY.md` "Supported runtimes" section updated to state `Node.js ≥ 22.11` with the LTS-tag rationale.
+- `README.md` comparison table gained a **Node.js floor** row making the three-way posture explicit (hosted N/A, `dragonkhoi/mercury-mcp` ships without `engines.node` so installs silently on Node 14 EOL, `mercury-invoicing-mcp` enforces `>=22.11` at the manifest level).
+
 ## [0.9.1] - 2026-04-22
 
 Single focus: move the whole toolchain off Node 20 ahead of its 2026-04-30 end-of-life. Not a feature release — `dist/index.js` behaviour is unchanged versus 0.9.0.
