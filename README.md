@@ -38,6 +38,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | Built-in safeguards (rate limit, dry-run, redacted audit log) | ❌ | ❌ | ✅ |
 | Hosted (no token to manage) | ✅ | ❌ | ❌ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
+| Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Active LTS (`>=22.11`) |
 | Total tools exposed | ~10 | ~11 | **34** |
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
