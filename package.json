@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "us-bank-account-validator": "^1.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
