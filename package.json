@@ -55,6 +55,7 @@
   "packageManager": "npm@10.9.7",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "ipaddr.js": "^2.3.0",
     "us-bank-account-validator": "^1.1.0",
     "zod": "^4.3.6"
   },
