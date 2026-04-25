@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-04-25 — Tool descriptions polish
+
+A documentation-quality release. Every one of the 36 tool definitions across 12 modules is rewritten in a structured TDQS form (USE WHEN / DO NOT USE / SIDE EFFECTS / RETURNS), driven by an LLM-agent-orientation review and cross-validated against [Anthropic — Writing Tools for Agents](https://www.anthropic.com/engineering/writing-tools-for-agents), the [MCP Tools Specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), and [SEP-1382](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1382). One technical-accuracy fix: the previously-claimed singular-vs-plural path distinction between `mercury_list_transactions` and `mercury_list_credit_transactions` was inaccurate (both hit the SINGULAR `/account/{id}/transactions` path) — corrected. Two small dependency-hygiene fixes ride along (`packageManager` and `pnpm.onlyBuiltDependencies` pinned for reproducibility on pnpm-based registries). No runtime change. No schema change. No contract change.
+
+### Changed
+
+- **Tool descriptions adopt the TDQS pattern** — every one of the 36 tool definitions across 12 modules (`accounts`, `cards`, `categories`, `credit`, `customers`, `invoices`, `organization`, `recipients`, `statements`, `transactions`, `treasury`, `webhooks`) is restructured into explicit USE WHEN / DO NOT USE / SIDE EFFECTS / RETURNS sections. Read-only tools (21) drop the trivial `SIDE EFFECTS` line — the `list_/get_` prefix already encodes the property. Write tools (10) surface persistence, idempotency keys, and email side-effects (`create_invoice` with `sendEmailOption: "SendNow"`). Destructive + money-moving tools (5) carry explicit `REAL FUNDS` / `irrecoverable` / `ALWAYS confirm with user` warnings: `send_money`, `request_send_money`, `delete_customer`, `cancel_invoice` (with the customer-facing email notice), `delete_webhook`. `mercury_send_money` documents the workspace approval policy semantics (immediate execution depends on Mercury's own Settings → Approvals, not on the MCP).
+- **Disambiguation of overlapping account / transaction surfaces** — `mercury_list_accounts` (deposit) vs `mercury_list_credit_accounts` (IO Credit) vs `mercury_get_treasury` (Treasury cash); `mercury_list_transactions` vs `mercury_list_credit_transactions` vs `mercury_list_treasury_transactions`; `mercury_create_customer` (AR billable) vs `mercury_add_recipient` (payment counterparty); `mercury_send_money` vs `mercury_request_send_money` vs `mercury_create_internal_transfer` (workspace-policy-dependent immediate execution vs always-pending-approval vs no-recipient internal sweep). All cross-referenced in the `DO NOT USE` of each pairing.
+- **Drop misleading singular-vs-plural path claim** — both `mercury_list_transactions` and `mercury_list_credit_transactions` hit the SINGULAR `/account/{id}/transactions` path. The previous "PLURAL `/accounts/{id}/transactions`" comparison in `credit.ts`'s header comment and in the inline description was inaccurate; the plural path is never invoked anywhere in the codebase. Caught by CodeRabbit on the TDQS PR.
+- **`packageManager` field pinned to `npm@10.9.7`** — matches the npm version bundled with Node 22.22.2 (our `engines.node` floor), so Corepack stays a no-op for default Node 22 installs and a no-cost pin elsewhere. Stops a contributor or CI runner with an older npm from regenerating a lockfileVersion 2 lockfile.
+- **`pnpm.onlyBuiltDependencies: ["esbuild"]`** — pnpm-based registries (Glama, Smithery, etc.) can now build cleanly without operator-prompt for esbuild's post-install hook. Other transitive post-install scripts stay blocked.
+- **README MIT badge dropped** — license is already surfaced by GitHub (sidebar, auto-detected from `LICENSE`) and npm (right rail, parsed from `package.json` `license`). The third copy in the README was noise without information.
+
+### Added
+
+- **`docs/ROADMAP.md` — MCP `outputSchema` per tool item** — extend `defineTool()` with an optional `outputSchema?: ZodRawShape` and write a Zod schema for each of the ~36 tools so clients can validate `structuredContent` per MCP spec 2025-06-18+. Lets us drop the textual `RETURNS:` block from tool descriptions and rely on a machine-readable contract instead.
+
 ## [0.11.0] - 2026-04-25
 
 ### Added
@@ -501,7 +518,8 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 - Smithery + Official MCP Registry manifests
 - Examples and publishing checklist
 
-[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.2...v0.10.0
 [0.9.2]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.1...v0.9.2
