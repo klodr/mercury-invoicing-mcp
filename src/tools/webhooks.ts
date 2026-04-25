@@ -125,7 +125,15 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_list_webhooks",
-    "List all webhook endpoints configured for your Mercury account.",
+    [
+      "List all webhook endpoints configured for your Mercury workspace.",
+      "",
+      "USE WHEN: enumerating registered webhook endpoints — for audit, finding a webhook ID before update/delete, or to confirm a delivery target is registered.",
+      "",
+      "DO NOT USE: to inspect webhook delivery history (Mercury exposes that only via the dashboard, not the API).",
+      "",
+      "RETURNS: `{ webhooks: [{ id, url, status, events, ... }] }`.",
+    ].join("\n"),
     {},
     async () => {
       const data = await client.get("/webhooks");
@@ -136,7 +144,15 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_get_webhook",
-    "Retrieve a specific webhook endpoint by ID.",
+    [
+      "Retrieve a specific webhook endpoint by ID.",
+      "",
+      "USE WHEN: fetching the full detail of one webhook (URL, current status, subscribed events) whose ID is already known.",
+      "",
+      "DO NOT USE: to enumerate webhooks (use `mercury_list_webhooks`).",
+      "",
+      "RETURNS: `{ id, url, status, events, ... }`.",
+    ].join("\n"),
     {
       webhookId: z.string().uuid().describe("The webhook endpoint ID"),
     },
@@ -149,7 +165,17 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_create_webhook",
-    "Register a new webhook endpoint. Mercury will POST events as JSON to the provided URL. URL MUST use https:// on a publicly reachable host.",
+    [
+      "Register a new webhook endpoint. Mercury will POST events as JSON to the provided URL.",
+      "",
+      "USE WHEN: subscribing an external system to Mercury events (transaction.posted, invoice.paid, etc.) so you can react in near real-time without polling.",
+      "",
+      "DO NOT USE: with non-HTTPS URLs, loopback / RFC 1918 / link-local / cloud-metadata IPs — the MCP enforces a defense-in-depth gate on top of Mercury's own validation to block accidental SSRF or exfiltration via prompt injection.",
+      "",
+      "SIDE EFFECTS: writes a new webhook subscription to Mercury. Persistent. Once registered, Mercury immediately starts delivering matching events to your URL — make sure the endpoint is ready to receive (and ideally verify Mercury's signature). NOT idempotent at the API level — calling twice creates two subscriptions firing duplicate events.",
+      "",
+      "RETURNS: `{ id, url, status, events, ... }` — keep `id` for `mercury_update_webhook` / `mercury_delete_webhook`.",
+    ].join("\n"),
     {
       url: HttpsWebhookUrl.describe(
         "Publicly reachable HTTPS URL that will receive webhook events (POST). Must not be a loopback, private, or link-local address.",
@@ -165,7 +191,17 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_update_webhook",
-    "Update an existing webhook endpoint (URL, status, or events). Mercury endpoint is POST /webhooks/{id}. A webhook disabled after consecutive failures can be reactivated by setting status to 'active'.",
+    [
+      "Update an existing webhook endpoint (URL, status, or subscribed events).",
+      "",
+      'USE WHEN: rotating a webhook\'s destination URL, changing the event subscription, or reactivating a webhook Mercury auto-disabled after consecutive delivery failures (set `status: "active"`).',
+      "",
+      "DO NOT USE: to inspect delivery history. Same SSRF / non-HTTPS URL guard as `mercury_create_webhook` applies to the new URL.",
+      "",
+      "SIDE EFFECTS: overwrites the webhook record. Persistent. If `status` flips to `active`, Mercury resumes delivery on the next matching event. The new URL takes effect immediately for future events.",
+      "",
+      "RETURNS: `{ id, url, status, events, ... }` — the updated webhook.",
+    ].join("\n"),
     {
       webhookId: z.string().uuid().describe("The webhook endpoint ID"),
       url: HttpsWebhookUrl.optional().describe(
@@ -183,7 +219,17 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_delete_webhook",
-    "Delete a webhook endpoint.",
+    [
+      "Delete a webhook endpoint. **DESTRUCTIVE — Mercury stops delivering events to that URL.**",
+      "",
+      "USE WHEN: decommissioning a webhook (URL no longer reachable, integration retired, accidental duplicate). ALWAYS confirm with the user — there is no undo, and any downstream system that depended on the events stops being notified.",
+      "",
+      'DO NOT USE: to temporarily silence a webhook (use `mercury_update_webhook` with `status: "paused"` instead — reversible).',
+      "",
+      "SIDE EFFECTS: **permanent deletion** on Mercury's side. Future events that would have fired this webhook are silently dropped — no replay. Past delivery history is also lost from the Mercury dashboard.",
+      "",
+      "RETURNS: confirmation payload (`{ deleted: true, ... }` or similar).",
+    ].join("\n"),
     {
       webhookId: z.string().uuid().describe("The webhook endpoint ID"),
     },
