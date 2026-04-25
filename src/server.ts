@@ -96,8 +96,17 @@ export function validateBaseUrl(raw: string): void {
   if (ipaddr.isValid(host)) {
     const range = ipaddr.process(host).range();
     if (range !== "unicast") {
+      // Stable user-facing message — explicitly do NOT interpolate the
+      // raw `range` value from `ipaddr.js`. The library's classification
+      // taxonomy is an internal implementation detail; coupling the
+      // contract to those exact label strings would force a release
+      // every time upstream renames a label (uniqueLocal → ULA, etc.)
+      // and would force test fixtures to track those renames too.
+      // Log the raw range to stderr for debug-level diagnosis instead.
+      // (Caught by CodeRabbit on this PR.)
+      console.error(`[validateBaseUrl] rejected host=${host} ipaddr.js-range=${range}`);
       throw new Error(
-        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which falls in the "${range}" range.`,
+        `MERCURY_API_BASE_URL must point at a publicly reachable IP — ${host} is in a non-public range (loopback / private / link-local / carrier-grade NAT / reserved / IPv6 ULA / ...).`,
       );
     }
   }
