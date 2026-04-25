@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import ipaddr from "ipaddr.js";
 import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
 import { registerAllPrompts } from "./prompts/index.js";
@@ -26,17 +27,19 @@ export interface ServerOptions {
  * prompt-injected content reach env composition) could redirect traffic to
  * `http://attacker.tld` and silently exfiltrate credentials.
  *
- * Rules mirror `HttpsWebhookUrl` in `src/tools/webhooks.ts` for symmetry:
+ * Rules:
  *
  *   - HTTPS required: a plaintext or non-HTTP scheme would leak the bearer
  *     token + every payload in clear. The official Mercury API + sandbox are
  *     both HTTPS, so this rule costs the legitimate caller nothing.
- *   - Loopback / RFC 1918 / link-local / cloud-metadata / IPv6 ULA blocked:
- *     guards against accidental misconfiguration (e.g. a base URL pointing at
- *     `https://169.254.169.254/latest/meta-data` or a private corporate IP)
- *     and against prompt injections that try to bounce through an internal
- *     service. Mercury's own API is on a public hostname, so this rule costs
- *     the legitimate caller nothing.
+ *   - RFC 6761 `.localhost` namespace blocked (covers `localhost`,
+ *     `localhost.`, `foo.localhost`, `foo.localhost.`). DNS-level loopback.
+ *   - IP-literal classification delegated to `ipaddr.js` — accept only the
+ *     `unicast` range. Everything else (loopback / private / linkLocal /
+ *     carrierGradeNat / benchmarking / documentation / multicast /
+ *     uniqueLocal / etc.) is rejected. This pulls in the IANA-tracked range
+ *     set so we do not have to maintain a hand-written CIDR list and do not
+ *     drift when IANA reserves new ranges.
  *
  * Throws on invalid input. The thrown message is logged at boot and never
  * leaked to the LLM channel.
@@ -58,23 +61,17 @@ export function validateBaseUrl(raw: string): void {
   }
 
   // `URL().hostname` returns IPv6 literals bracketed ([::1], [fe80::1]).
-  // DNS names and IPv4 dotted-quads come back unbracketed. The brackets
-  // are how we distinguish "this host is an IPv6 literal" from "this is
-  // a DNS name that happens to contain a hex prefix" — without that
-  // gate, a hostname like `fc00-proxy.example.com` would be wrongly
-  // rejected as ULA because `parseInt("fc00-proxy", 16)` returns 0xfc00.
-  // (Caught by CodeRabbit on this PR.)
+  // DNS names and IPv4 dotted-quads come back unbracketed. Brackets are
+  // also how we tell "this is an IPv6 literal" from "this is a DNS name
+  // that happens to contain a hex-shaped substring" — `fc00-proxy.example.com`
+  // is a perfectly valid DNS name and must pass.
   const rawHost = url.hostname.toLowerCase();
   const isIPv6Literal = rawHost.startsWith("[") && rawHost.endsWith("]");
   const host = isIPv6Literal ? rawHost.slice(1, -1) : rawHost;
 
-  // RFC 6761 reserves the entire `.localhost` namespace as loopback —
-  // not just the bare label. `localhost.`, `foo.localhost`, and
-  // `foo.localhost.` all resolve to a loopback target on stacks that
-  // honor the spec, so a bearer token sent to any of them leaks the
-  // same way as `https://127.0.0.1/`. Reject the namespace as a
-  // whole, before the non-IPv6 fast path. (Caught by CodeRabbit on
-  // this PR.)
+  // RFC 6761: the entire `.localhost` namespace resolves to a loopback
+  // target on conforming stacks. Reject it at the DNS level before any
+  // IP-literal classification.
   if (
     host === "localhost" ||
     host === "localhost." ||
@@ -86,85 +83,27 @@ export function validateBaseUrl(raw: string): void {
     );
   }
 
-  // IPv4: match literal a.b.c.d and reject loopback, link-local, RFC 1918.
-  const ipv4Match = (raw: string): null | { a: number; b: number } => {
-    const m = raw.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-    if (!m) return null;
-    return { a: Number(m[1]), b: Number(m[2]) };
-  };
-
-  const isPrivateIPv4 = ({ a, b }: { a: number; b: number }): boolean =>
-    a === 0 || //                              0.0.0.0/8      "this host"/unspecified
-    a === 127 || //                            127.0.0.0/8    loopback
-    a === 10 || //                             10.0.0.0/8     RFC 1918
-    (a === 169 && b === 254) || //             169.254.0.0/16 link-local + cloud metadata
-    (a === 192 && b === 168) || //             192.168.0.0/16 RFC 1918
-    (a === 172 && b >= 16 && b <= 31); //      172.16.0.0/12  RFC 1918
-
-  if (!isIPv6Literal) {
-    const ipv4 = ipv4Match(host);
-    if (ipv4 && isPrivateIPv4(ipv4)) {
+  // If the host parses as an IP literal, classify it via `ipaddr.js` and
+  // accept only the `unicast` range. The library covers every IANA-tracked
+  // reserved range — loopback (RFC 5735), private (RFC 1918), linkLocal
+  // (RFC 3927 + IPv6 fe80::/10), carrierGradeNat (RFC 6598),
+  // benchmarking (RFC 2544), documentation (RFC 5737 + RFC 3849), multicast,
+  // uniqueLocal (IPv6 fc00::/7), reserved, etc. — without us having to
+  // maintain a hand-rolled CIDR list. IPv4-mapped IPv6 (`::ffff:a.b.c.d`,
+  // `::ffff:7f00:1`) is normalised by ipaddr.js into the underlying IPv4
+  // range, so a mapped private address is rejected the same way as the
+  // bare IPv4 form.
+  if (ipaddr.isValid(host)) {
+    const range = ipaddr.process(host).range();
+    if (range !== "unicast") {
       throw new Error(
-        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which is loopback/RFC 1918/link-local/cloud-metadata.`,
-      );
-    }
-    return; // DNS names that aren't loopback / IPv4-private get a pass.
-  }
-
-  // From here, `host` is an IPv6 literal (brackets stripped).
-
-  // Loopback in any form: ::1, 0:0:0:0:0:0:0:1, etc.
-  // Easy invariant: collapse runs of zero hextets and check for `::1` or `0::1`.
-  const collapsedZeros = host.replace(/(?:^|:)(?:0+:)+/g, "::").replace(/::+/g, "::");
-  if (collapsedZeros === "::1" || collapsedZeros === "0::1") {
-    throw new Error(
-      "MERCURY_API_BASE_URL must be publicly reachable. Loopback hosts are rejected.",
-    );
-  }
-
-  // IPv4-mapped IPv6: re-run the IPv4 private-range check on the embedded
-  // address, otherwise `[::ffff:127.0.0.1]` would slip past. Two shapes:
-  //   - dotted-quad: `::ffff:127.0.0.1` (untouched by some parsers)
-  //   - hex pair: `::ffff:7f00:1` (Node's `URL().hostname` canonicalises to this)
-  const ipv4MappedDotted = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
-  if (ipv4MappedDotted) {
-    const inner = ipv4Match(ipv4MappedDotted[1]);
-    if (inner && isPrivateIPv4(inner)) {
-      throw new Error(
-        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which embeds a private IPv4 address.`,
-      );
-    }
-    return;
-  }
-  const ipv4MappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-  if (ipv4MappedHex) {
-    // Only the high 16 bits decide the private-range outcome — the
-    // `isPrivateIPv4` predicate inspects octets a + b, none of c + d.
-    // Skip parsing the low pair to avoid an unused-variable lint flag
-    // (caught by CodeRabbit on the IPv6 follow-up commit).
-    const high = Number.parseInt(ipv4MappedHex[1], 16);
-    const a = (high >> 8) & 0xff;
-    const b = high & 0xff;
-    if (isPrivateIPv4({ a, b })) {
-      throw new Error(
-        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which embeds a private IPv4 address.`,
-      );
-    }
-    return;
-  }
-
-  // IPv6 CIDR bitmask check on the first hextet of an actual IPv6 literal.
-  //   fc00::/7  → first 7 bits = 0b1111110 → mask 0xfe00, match 0xfc00 (ULA)
-  //   fe80::/10 → first 10 bits = 0b1111111010 → mask 0xffc0, match 0xfe80 (link-local)
-  // Safe to parseInt here because we already know the host is bracketed IPv6.
-  const firstHextet = Number.parseInt(host.split(":")[0] || "0", 16);
-  if (!Number.isNaN(firstHextet)) {
-    if ((firstHextet & 0xfe00) === 0xfc00 || (firstHextet & 0xffc0) === 0xfe80) {
-      throw new Error(
-        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which is in a private IPv6 range (fc00::/7 ULA or fe80::/10 link-local).`,
+        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which falls in the "${range}" range.`,
       );
     }
   }
+  // Hostnames that don't parse as an IP literal are treated as DNS — accepted
+  // here. The Mercury client will reject them at request time if they don't
+  // resolve to a usable target.
 }
 
 /**

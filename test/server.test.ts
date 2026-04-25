@@ -59,19 +59,41 @@ describe("resolveBaseUrl", () => {
   });
 
   it("throws on IPv6 ULA / link-local override", () => {
-    expect(() => resolveBaseUrl("any-key", "https://[fc00::1]/api")).toThrow(/private IPv6/);
-    expect(() => resolveBaseUrl("any-key", "https://[fe80::1]/api")).toThrow(/private IPv6/);
-    expect(() => resolveBaseUrl("any-key", "https://[::1]/api")).toThrow(/Loopback/);
+    // `ipaddr.js` classifies fc00::/7 as `uniqueLocal`, fe80::/10 as
+    // `linkLocal`, ::1 as `loopback` — all rejected as non-`unicast`.
+    expect(() => resolveBaseUrl("any-key", "https://[fc00::1]/api")).toThrow(/uniqueLocal/);
+    expect(() => resolveBaseUrl("any-key", "https://[fe80::1]/api")).toThrow(/linkLocal/);
+    expect(() => resolveBaseUrl("any-key", "https://[::1]/api")).toThrow(/loopback/);
   });
 
   it("throws on IPv4-mapped IPv6 loopback (::ffff:127.0.0.1)", () => {
-    expect(() => resolveBaseUrl("any-key", "https://[::ffff:127.0.0.1]/api")).toThrow(
-      /private IPv4/,
-    );
+    // ipaddr.js normalises the mapped form into the underlying IPv4 range
+    // so the same loopback classification applies as for bare 127.0.0.1.
+    expect(() => resolveBaseUrl("any-key", "https://[::ffff:127.0.0.1]/api")).toThrow(/loopback/);
+  });
+
+  it("throws on hex-pair IPv4-mapped loopback (::ffff:7f00:1)", () => {
+    // Node's URL.hostname canonicalises `::ffff:127.0.0.1` to `::ffff:7f00:1`.
+    // Verify the hex-pair form is also caught.
+    expect(() => resolveBaseUrl("any-key", "https://[::ffff:7f00:1]/api")).toThrow(/loopback/);
   });
 
   it("throws on expanded IPv6 loopback form (0:0:0:0:0:0:0:1)", () => {
-    expect(() => resolveBaseUrl("any-key", "https://[0:0:0:0:0:0:0:1]/api")).toThrow(/Loopback/);
+    expect(() => resolveBaseUrl("any-key", "https://[0:0:0:0:0:0:0:1]/api")).toThrow(/loopback/);
+  });
+
+  it("throws on RFC 6598 carrier-grade NAT range (100.64/10)", () => {
+    expect(() => resolveBaseUrl("any-key", "https://100.64.0.5/api")).toThrow(/carrierGradeNat/);
+  });
+
+  it("throws on RFC 2544 benchmarking range (198.18/15)", () => {
+    // ipaddr.js groups the RFC 2544 benchmarking range under the catch-all
+    // `reserved` classification — it is still rejected as non-`unicast`.
+    expect(() => resolveBaseUrl("any-key", "https://198.18.0.5/api")).toThrow(/reserved/);
+  });
+
+  it("throws on RFC 5737 documentation ranges (TEST-NET)", () => {
+    expect(() => resolveBaseUrl("any-key", "https://192.0.2.5/api")).toThrow(/reserved/);
   });
 
   it("does NOT misclassify DNS hostnames that contain hex-prefix substrings as IPv6", () => {
