@@ -13,9 +13,9 @@ import { MercuryClient } from "../client.js";
  *     in the Mercury API reference (https://docs.mercury.com/reference/credit).
  *     Returns IO Credit card accounts. Complement to `GET /accounts`,
  *     which only returns deposit accounts (`kind: checking|savings|treasury|…`).
- *   - `GET /account/{id}/transactions` — SINGULAR path used for IO Credit
- *     transactions. Distinct from the plural `/accounts/{id}/transactions`
- *     used for deposit accounts. Same response shape.
+ *   - `GET /account/{id}/transactions` — SINGULAR-`account` path. Same
+ *     path Mercury exposes for deposit-account transactions, which the
+ *     `mercury_list_transactions` helper also calls. Same response shape.
  *
  * Both helpers are read-only. See docs/ROADMAP.md → "Mercury IO Credit
  * account exposure" for the tracking context.
@@ -47,7 +47,7 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
     [
       "List transactions on a Mercury IO Credit card account, including pending (not-yet-settled) card authorisations.",
       "",
-      "USE WHEN: auditing IO Credit card spend, reconciling a statement, or building a card-level transaction view. Wraps `GET /account/{id}/transactions` (SINGULAR path used for IO Credit, distinct from the plural `/accounts/{id}/transactions` used for deposit accounts). Supports the same filters as `mercury_list_transactions`.",
+      "USE WHEN: auditing IO Credit card spend, reconciling a statement, or building a card-level transaction view. Wraps `GET /account/{id}/transactions` — same path Mercury exposes for deposit-account transactions; both this tool and `mercury_list_transactions` hit it. Supports the same filters.",
       "",
       'DO NOT USE: for deposit-account transactions (use `mercury_list_transactions`). For posted transactions only, filter by `status: "sent"`.',
       "",

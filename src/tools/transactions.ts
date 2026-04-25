@@ -13,7 +13,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "USE WHEN: auditing deposit-account activity, reconciling a statement, or building a per-account ledger view. Filters server-side: `status`, `start`, `end`, `search`, `limit`, `offset`.",
       "",
-      "DO NOT USE: for IO Credit transactions (use `mercury_list_credit_transactions` — different path: SINGULAR `/account/{id}/transactions` vs PLURAL `/accounts/{id}/transactions`). For Treasury, use `mercury_list_treasury_transactions`.",
+      "DO NOT USE: for IO Credit transactions (use `mercury_list_credit_transactions`, which targets the IO Credit account surface). For Treasury, use `mercury_list_treasury_transactions`.",
       "",
       "RETURNS: `{ transactions: [{ id, amount, status, postedAt, counterpartyName, ... }] }`.",
     ].join("\n"),
