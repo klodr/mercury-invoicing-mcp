@@ -18,6 +18,7 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -240,6 +241,34 @@ describe("Middleware", () => {
         chmodSync(stateDir, 0o700);
       }
       expect(errSpy).toHaveBeenCalledWith(expect.stringMatching(/failed to persist state to/));
+    });
+
+    it("releases the lockfile after a successful enforce", () => {
+      enforceRateLimit("mercury_send_money");
+      // The lockfile lives next to ratelimit.json; once enforce
+      // returns, no lock should remain.
+      expect(() => statSync(join(stateDir, "ratelimit.json.lock"))).toThrow();
+    });
+
+    it("releases the lockfile after a denied enforce (RateLimitError)", () => {
+      process.env.MERCURY_MCP_RATE_LIMIT_payments = "1/day,5/month";
+      enforceRateLimit("mercury_send_money");
+      expect(() => enforceRateLimit("mercury_send_money")).toThrow(RateLimitError);
+      // Even on the throwing path the finally clause must remove the lock.
+      expect(() => statSync(join(stateDir, "ratelimit.json.lock"))).toThrow();
+    });
+
+    it("reclaims a stale lockfile (pre-existing, mtime older than the grace window)", () => {
+      mkdirSync(stateDir, { recursive: true });
+      const lockPath = join(stateDir, "ratelimit.json.lock");
+      writeFileSync(lockPath, "");
+      // Backdate mtime well past the 5 s stale window so the next
+      // enforce reclaims the lock instead of timing out.
+      const oneMinuteAgoMs = Date.now() - 60_000;
+      utimesSync(lockPath, oneMinuteAgoMs / 1000, oneMinuteAgoMs / 1000);
+      expect(() => enforceRateLimit("mercury_send_money")).not.toThrow();
+      // After reclaim + release, the lockfile is gone again.
+      expect(() => statSync(lockPath)).toThrow();
     });
   });
 
@@ -486,6 +515,80 @@ describe("Middleware", () => {
         expect.stringContaining("failed to write"),
         expect.any(String),
       );
+    });
+
+    it("pre-creates the audit-log parent dir at mode 0o700", () => {
+      const nestedDir = join(tmpDir, "nested-audit");
+      const nestedAudit = join(nestedDir, "audit.log");
+      process.env.MERCURY_MCP_AUDIT_LOG = nestedAudit;
+      logAudit("mercury_send_money", { amount: 1 }, "ok");
+      expect(statSync(nestedDir).mode & 0o777).toBe(0o700);
+      expect(readFileSync(nestedAudit, "utf8")).toContain("mercury_send_money");
+    });
+
+    it("does not narrow the mode of a pre-existing parent dir", () => {
+      // mkdir { mode: 0o700 } only applies the mode to dirs the call
+      // creates. A pre-existing 0o755 dir keeps its original mode.
+      chmodSync(tmpDir, 0o755);
+      process.env.MERCURY_MCP_AUDIT_LOG = auditPath;
+      try {
+        logAudit("mercury_send_money", {}, "ok");
+        expect(statSync(tmpDir).mode & 0o777).toBe(0o755);
+      } finally {
+        chmodSync(tmpDir, 0o700);
+      }
+    });
+
+    it("rotates the audit log to .1 once it exceeds the byte cap", () => {
+      process.env.MERCURY_MCP_AUDIT_LOG = auditPath;
+      process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES = "200";
+      try {
+        // Write enough entries to push the live log past 200 bytes.
+        for (let i = 0; i < 5; i++) {
+          logAudit("mercury_send_money", { padding: "x".repeat(80), seq: i }, "ok");
+        }
+        // After enough writes, .1 must exist and the live log must be
+        // smaller than the cumulative content.
+        expect(statSync(`${auditPath}.1`).size).toBeGreaterThan(0);
+        expect(statSync(auditPath).size).toBeGreaterThan(0);
+      } finally {
+        delete process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES;
+      }
+    });
+
+    it("overwrites .1 on a second rotation (single-generation chain)", () => {
+      process.env.MERCURY_MCP_AUDIT_LOG = auditPath;
+      process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES = "200";
+      try {
+        for (let i = 0; i < 5; i++) {
+          logAudit("mercury_send_money", { padding: "x".repeat(80), seq: i }, "ok");
+        }
+        const firstRotationContent = readFileSync(`${auditPath}.1`, "utf8");
+        for (let i = 5; i < 10; i++) {
+          logAudit("mercury_send_money", { padding: "y".repeat(80), seq: i }, "ok");
+        }
+        const secondRotationContent = readFileSync(`${auditPath}.1`, "utf8");
+        // The second rotation overwrites .1 — old "x" payload is gone.
+        expect(secondRotationContent).not.toBe(firstRotationContent);
+      } finally {
+        delete process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES;
+      }
+    });
+
+    it("falls back to default cap when MERCURY_MCP_AUDIT_LOG_MAX_BYTES is malformed", () => {
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      process.env.MERCURY_MCP_AUDIT_LOG = auditPath;
+      process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES = "not-a-number";
+      try {
+        // Default cap is 50 MB, far above one tiny entry — no rotation.
+        logAudit("mercury_send_money", { ok: true }, "ok");
+        expect(() => statSync(`${auditPath}.1`)).toThrow();
+        expect(errSpy).toHaveBeenCalledWith(
+          expect.stringContaining("invalid MERCURY_MCP_AUDIT_LOG_MAX_BYTES"),
+        );
+      } finally {
+        delete process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES;
+      }
     });
   });
 });

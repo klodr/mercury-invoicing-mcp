@@ -1,4 +1,4 @@
-import { MercuryClient, MercuryError } from "../src/client.js";
+import { MercuryClient, MercuryError, MERCURY_ERROR_MESSAGE_MAX } from "../src/client.js";
 
 const ORIGINAL_FETCH = global.fetch;
 
@@ -149,5 +149,34 @@ describe("MercuryError", () => {
   it("body remains accessible on the property for callers that need it", () => {
     const err = new MercuryError("boom", 400, { field: "amount", reason: "missing" });
     expect(err.body).toEqual({ field: "amount", reason: "missing" });
+  });
+
+  it("preserves messages at or below the byte cap unchanged", () => {
+    const justBelow = "x".repeat(MERCURY_ERROR_MESSAGE_MAX);
+    const err = new MercuryError(justBelow, 400);
+    expect(err.message).toBe(justBelow);
+    expect(err.message).not.toContain("[truncated]");
+  });
+
+  it("caps over-budget messages with a truncation marker (head + tail)", () => {
+    const oversized = "A".repeat(2000) + "MIDDLE-PADDING".repeat(500) + "B".repeat(2000);
+    const err = new MercuryError(oversized, 400);
+    // Net length is bounded — generous upper bound for the marker.
+    expect(err.message.length).toBeLessThanOrEqual(MERCURY_ERROR_MESSAGE_MAX + 64);
+    // Both ends are preserved so a reader still sees opening and
+    // closing context of the upstream payload.
+    expect(err.message.startsWith("A")).toBe(true);
+    expect(err.message.endsWith("B")).toBe(true);
+    expect(err.message).toContain("[truncated]");
+    // The middle padding must be gone — that's the whole point.
+    expect(err.message).not.toContain("MIDDLE-PADDING");
+  });
+
+  it("caps from the source so toString/toJSON consumers see the bounded value", () => {
+    const oversized = "Z".repeat(MERCURY_ERROR_MESSAGE_MAX * 4);
+    const err = new MercuryError(oversized, 500, { secret: "leak" });
+    expect(err.message.length).toBeLessThan(oversized.length);
+    expect(err.toString()).toContain("[truncated]");
+    expect((err.toJSON() as { message: string }).message).toContain("[truncated]");
   });
 });
