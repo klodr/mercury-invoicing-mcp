@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Community-health files** — `.github/SUPPORT.md` (issue-redirection page surfaced by GitHub on issue creation, with best-effort response SLOs) and `CITATION.cff` (Citation File Format metadata enabling the GitHub "Cite this repository" button on the repo page).
+
 ### Changed
 
 - **Repository structure cleanup** — community-health files (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) moved to `.github/`, and general documentation (`ROADMAP.md`, `ASSURANCE_CASE.md`, `CONTINUITY.md`) moved to `docs/`. Internal links updated across `README.md`, `llms-install.md`, `docs/ASSURANCE_CASE.md`, `docs/CONTINUITY.md`, `docs/ROADMAP.md`, `src/{sanitize,middleware}.ts`, `src/tools/credit.ts`, `src/prompts/recipes.ts`, and `.github/workflows/verify-release.yml`. The repository root now keeps only `README.md`, `LICENSE`, `CHANGELOG.md`, `llms-install.md`, and project-config files. No behaviour change; GitHub still resolves the community files at their new canonical locations.
