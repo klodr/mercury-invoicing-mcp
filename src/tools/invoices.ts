@@ -20,7 +20,15 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_list_invoices",
-    "List invoices in your Mercury workspace, with cursor-based pagination.",
+    [
+      "List invoices in your Mercury workspace, with cursor-based pagination.",
+      "",
+      "USE WHEN: enumerating invoices for an AR audit, finding the ID of an invoice to update/cancel, or building a dunning report. Use `startAfter` / `endBefore` to page beyond the limit.",
+      "",
+      "DO NOT USE: for one invoice whose ID is known (prefer `mercury_get_invoice`). Mercury does not currently support filtering by status or customer at the API level — filter client-side after listing.",
+      "",
+      "RETURNS: `{ invoices: [{ id, status, amount, customerId, dueDate, ... }] }`.",
+    ].join("\n"),
     {
       limit: z
         .number()
@@ -56,7 +64,15 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_get_invoice",
-    "Retrieve a specific invoice by ID.",
+    [
+      "Retrieve a specific invoice by ID, including line items, status, and the payment URL.",
+      "",
+      "USE WHEN: fetching the full detail of one invoice (line items, current status, balance due, payment URL) whose ID is already known.",
+      "",
+      "DO NOT USE: to enumerate invoices (use `mercury_list_invoices`). For attachments use `mercury_list_invoice_attachments`.",
+      "",
+      "RETURNS: `{ id, status, amount, customerId, lineItems, paymentUrl, dueDate, ... }`.",
+    ].join("\n"),
     {
       invoiceId: z.string().uuid().describe("The invoice ID (UUID)"),
     },
@@ -69,7 +85,17 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_create_invoice",
-    "Create a new invoice (one-shot or to be sent recurrently). Requires AR write scope.",
+    [
+      "Create a new invoice (one-shot or to be sent recurrently). Requires AR write scope.",
+      "",
+      'USE WHEN: billing a customer that already exists in Mercury (`customerId` from `mercury_create_customer` or `mercury_list_customers`). Set `sendEmailOption: "SendNow"` to email the invoice immediately to the customer\'s contact email.',
+      "",
+      "DO NOT USE: when the customer does not exist yet (call `mercury_create_customer` first). To attach a file to the invoice, use the Mercury web app at creation time — the API attachment-upload endpoint is not exposed by this MCP currently.",
+      "",
+      'SIDE EFFECTS: writes a new invoice to Mercury. Persistent. With `sendEmailOption: "SendNow"` (the default), Mercury also sends a real email with a payment link to the customer — confirm the customer\'s email and the line items before calling. Mercury Plus tier required for the AR write scope.',
+      "",
+      "RETURNS: `{ id, status, amount, paymentUrl, ... }` — `paymentUrl` is the Mercury-hosted page where the customer pays.",
+    ].join("\n"),
     {
       customerId: z.string().uuid().describe("Customer ID (created via mercury_create_customer)"),
       destinationAccountId: z
@@ -122,7 +148,17 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_update_invoice",
-    "Update an existing invoice. Pass only the fields you want to change; the MCP fetches the current invoice and merges your changes before submitting (Mercury's update endpoint requires the full payload, even though the API documents it as PATCH-style).",
+    [
+      "Update an existing invoice. Pass only the fields you want to change.",
+      "",
+      "USE WHEN: amending an outstanding invoice (line items, due date, memo, PO number) before the customer pays. The MCP fetches the current invoice and merges your changes before submitting — Mercury's update endpoint requires the full payload despite the API docs implying PATCH.",
+      "",
+      "DO NOT USE: to cancel an invoice (use `mercury_cancel_invoice`). To change the customer or the destination account, cancel + recreate. Once an invoice is paid, updates are likely rejected by Mercury — fetch first to confirm status.",
+      "",
+      "SIDE EFFECTS: overwrites the invoice on Mercury's side. The customer-facing payment URL stays the same. If the invoice was already emailed, the customer is NOT re-notified of the change — communicate the change out-of-band if needed.",
+      "",
+      "RETURNS: `{ id, status, amount, ... }` — the updated invoice.",
+    ].join("\n"),
     {
       invoiceId: z.string().uuid().describe("Invoice ID"),
       invoiceDate: z.iso.date().optional().describe("Invoice date (YYYY-MM-DD)"),
@@ -166,7 +202,17 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_cancel_invoice",
-    "Cancel an outstanding invoice.",
+    [
+      "Cancel an outstanding invoice. **Mercury sends a cancellation notice to the customer if the invoice was already emailed.**",
+      "",
+      "USE WHEN: voiding an invoice that was issued in error, that the customer disputes, or that needs to be re-issued under a corrected line-item set. ALWAYS confirm with the user before calling — the customer-facing notification is automatic.",
+      "",
+      "DO NOT USE: on an invoice already paid (Mercury rejects cancellation). To refund a paid invoice, refund out-of-band via the bank, then optionally update the internal note.",
+      "",
+      "SIDE EFFECTS: marks the invoice as `cancelled` on Mercury. The customer-facing payment URL stops accepting payments. If the invoice was emailed, **Mercury notifies the customer of the cancellation by email** — confirm with the user before calling. The action is logged in Mercury's audit trail. Cancellation is final from the API perspective.",
+      "",
+      'RETURNS: `{ id, status: "cancelled", ... }`.',
+    ].join("\n"),
     {
       invoiceId: z.string().uuid().describe("Invoice ID"),
     },
@@ -179,7 +225,15 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
   defineTool(
     server,
     "mercury_list_invoice_attachments",
-    "List attachments associated with an invoice.",
+    [
+      "List attachments associated with an invoice (PDF copies, supporting documents).",
+      "",
+      "USE WHEN: discovering which files were attached to an invoice — for archival, audit, or to share with a customer. The download URL is short-lived; refetch shortly before download.",
+      "",
+      "DO NOT USE: to upload an attachment — this MCP currently exposes only the read side. Mercury's API does support attachment upload (`POST /ar/invoices/{id}/attachments`); a write tool can be added if needed.",
+      "",
+      "RETURNS: `{ attachments: [{ id, filename, downloadUrl, ... }] }`.",
+    ].join("\n"),
     {
       invoiceId: z.string().uuid().describe("Invoice ID"),
     },
