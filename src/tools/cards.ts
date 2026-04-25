@@ -14,8 +14,6 @@ export function registerCardTools(server: McpServer, client: MercuryClient): voi
       "",
       "DO NOT USE: to list IO Credit transactions (use `mercury_list_credit_transactions`). Card creation, freezing, and PIN ops are not exposed by this MCP — the Mercury API does not currently support them.",
       "",
-      "SIDE EFFECTS: read-only. Counts toward Mercury's per-token rate limit.",
-      "",
       "RETURNS: `{ cards: [{ id, last4, type, status, holderName, expiry, ... }] }`.",
     ].join("\n"),
     {

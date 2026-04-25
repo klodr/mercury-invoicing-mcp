@@ -13,8 +13,6 @@ export function registerOrganizationTools(server: McpServer, client: MercuryClie
       "",
       "DO NOT USE: for per-account info (use `mercury_get_account`). The Mercury API exposes only one organization per token, so there is no list variant.",
       "",
-      "SIDE EFFECTS: read-only. Counts toward Mercury's per-token rate limit.",
-      "",
       "RETURNS: `{ id, legalName, ein, address, ... }`.",
     ].join("\n"),
     {},

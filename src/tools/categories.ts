@@ -13,8 +13,6 @@ export function registerCategoryTools(server: McpServer, client: MercuryClient):
       "",
       "DO NOT USE: to list transactions in a category (use `mercury_list_transactions` and filter client-side). Category creation/edit is not exposed by this MCP — the Mercury API does not currently support it.",
       "",
-      "SIDE EFFECTS: read-only. Counts toward Mercury's per-token rate limit.",
-      "",
       "RETURNS: `{ categories: [{ id, name, ... }] }`.",
     ].join("\n"),
     {},

@@ -14,8 +14,6 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
       "",
       "DO NOT USE: for IO Credit account statements (Mercury exposes them only via the dashboard, not the API). For Treasury statements use `mercury_list_treasury_statements`.",
       "",
-      "SIDE EFFECTS: read-only. Counts toward Mercury's per-token rate limit. The PDF URL itself is not fetched — that download is a separate action and does not count toward the API rate limit.",
-      "",
       "RETURNS: `{ statements: [{ id, periodStart, periodEnd, downloadUrl, ... }] }`.",
     ].join("\n"),
     {
