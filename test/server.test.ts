@@ -9,6 +9,16 @@ import {
 } from "../src/server.js";
 
 describe("resolveBaseUrl", () => {
+  // Most tests exercise non-Mercury hostnames; opt them in via the
+  // explicit env-var so the validator's Mercury-only default doesn't
+  // mask the property under test.
+  beforeEach(() => {
+    process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST = "true";
+  });
+  afterEach(() => {
+    delete process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST;
+  });
+
   it("returns explicit baseUrl when provided", () => {
     expect(resolveBaseUrl("any-key", "https://custom.example.com/v1")).toBe(
       "https://custom.example.com/v1",
@@ -109,12 +119,52 @@ describe("resolveBaseUrl", () => {
 });
 
 describe("validateBaseUrl (direct)", () => {
+  afterEach(() => {
+    delete process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST;
+  });
+
   it("accepts the official Mercury production URL", () => {
     expect(() => validateBaseUrl("https://api.mercury.com/api/v1")).not.toThrow();
   });
 
   it("accepts the official Mercury sandbox URL", () => {
     expect(() => validateBaseUrl(SANDBOX_BASE_URL)).not.toThrow();
+  });
+
+  it("accepts other *.mercury.com subdomains by default", () => {
+    expect(() => validateBaseUrl("https://internal.mercury.com/api/v1")).not.toThrow();
+  });
+
+  it("rejects non-Mercury hosts by default (no opt-in)", () => {
+    expect(() => validateBaseUrl("https://attacker.example.com/api")).toThrow(
+      /not a Mercury hostname/,
+    );
+    expect(() => validateBaseUrl("https://my-proxy.example.com/api")).toThrow(
+      /not a Mercury hostname/,
+    );
+  });
+
+  it("accepts non-Mercury hosts when MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true", () => {
+    process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST = "true";
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(() => validateBaseUrl("https://my-proxy.example.com/api")).not.toThrow();
+      // Loud warning surfaced.
+      expect(errSpy).toHaveBeenCalledWith(expect.stringContaining("non-Mercury host"));
+    } finally {
+      errSpy.mockRestore();
+    }
+  });
+
+  it("does NOT accept other truthy values for the opt-in (only the literal 'true')", () => {
+    process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST = "1";
+    expect(() => validateBaseUrl("https://my-proxy.example.com/api")).toThrow(
+      /not a Mercury hostname/,
+    );
+    process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST = "yes";
+    expect(() => validateBaseUrl("https://my-proxy.example.com/api")).toThrow(
+      /not a Mercury hostname/,
+    );
   });
 });
 
@@ -141,13 +191,20 @@ describe("createServer", () => {
   });
 
   it("does NOT log sandbox when explicit baseUrl overrides", () => {
+    process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST = "true";
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const logs: string[] = [];
-    createServer({
-      apiKey: "secret-token:mercury_sandbox_abc",
-      baseUrl: "https://my-proxy.example.com/v1",
-      log: (m) => logs.push(m),
-    });
-    expect(logs.some((l) => l.includes("sandbox"))).toBe(false);
+    try {
+      createServer({
+        apiKey: "secret-token:mercury_sandbox_abc",
+        baseUrl: "https://my-proxy.example.com/v1",
+        log: (m) => logs.push(m),
+      });
+      expect(logs.some((l) => l.includes("sandbox"))).toBe(false);
+    } finally {
+      errSpy.mockRestore();
+      delete process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST;
+    }
   });
 
   it("does NOT log sandbox for production tokens", () => {

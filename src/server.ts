@@ -110,9 +110,30 @@ export function validateBaseUrl(raw: string): void {
       );
     }
   }
-  // Hostnames that don't parse as an IP literal are treated as DNS — accepted
-  // here. The Mercury client will reject them at request time if they don't
-  // resolve to a usable target.
+
+  // Default-allow only the official Mercury hostnames. The previous rules
+  // (HTTPS-only + non-public-range gate) keep an attacker-controlled env
+  // var like `MERCURY_API_BASE_URL=https://attacker.example.com` from
+  // pointing at a private host, but they still let it route the bearer
+  // token to *any* public host. Lock to `api.mercury.com` and
+  // `api-sandbox.mercury.com` by default; legitimate self-hosted
+  // proxies / observability shims have to opt in explicitly via
+  // `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true`, which surfaces a loud
+  // stderr warning so the deviation is visible at boot.
+  const isMercuryHost =
+    host === "api.mercury.com" ||
+    host === "api-sandbox.mercury.com" ||
+    host.endsWith(".mercury.com");
+  if (!isMercuryHost) {
+    if (process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST !== "true") {
+      throw new Error(
+        `MERCURY_API_BASE_URL=${host} is not a Mercury hostname. Set MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true to opt in to a custom proxy / observability shim — be aware the bearer token + every API payload will be sent to that host.`,
+      );
+    }
+    console.error(
+      `[validateBaseUrl] WARNING: MERCURY_API_BASE_URL points at a non-Mercury host (${host}). Bearer token + every API payload will be sent there. Opted in via MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true.`,
+    );
+  }
 }
 
 /**
