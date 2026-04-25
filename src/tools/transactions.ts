@@ -90,7 +90,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
         .string()
         .optional()
         .describe(
-          "Unique key to prevent duplicate transfers. If not provided, a UUID is generated.",
+          "Unique key to prevent duplicate transfers. Auto-generated if omitted; pass an explicit one to make retries safe.",
         ),
     },
     async ({ accountId, idempotencyKey, ...body }) => {
