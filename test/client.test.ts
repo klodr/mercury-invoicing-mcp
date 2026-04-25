@@ -93,6 +93,28 @@ describe("MercuryClient", () => {
     });
   });
 
+  it('passes redirect: "manual" to fetch (fail-closed against SSRF redirect chains)', async () => {
+    let capturedInit: RequestInit | undefined;
+    global.fetch = (async (_url: URL | string, init?: RequestInit) => {
+      capturedInit = init;
+      return { ok: true, status: 200, statusText: "OK", text: async () => "{}" };
+    }) as unknown as typeof fetch;
+
+    const client = new MercuryClient({ apiKey: "key" });
+    await client.get("/accounts");
+
+    expect(capturedInit?.redirect).toBe("manual");
+  });
+
+  it("throws MercuryError on a 30x redirect response (does not leak bearer)", async () => {
+    mockFetch({ ok: false, status: 302, statusText: "Found", body: "" });
+    const client = new MercuryClient({ apiKey: "key" });
+    await expect(client.get("/accounts")).rejects.toMatchObject({
+      status: 302,
+      message: expect.stringMatching(/unexpected redirect/i),
+    });
+  });
+
   it("coerces empty response body to { ok: true }", async () => {
     mockFetch({ ok: true, status: 204, body: "" });
     const client = new MercuryClient({ apiKey: "key" });

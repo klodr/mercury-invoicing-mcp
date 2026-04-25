@@ -106,11 +106,22 @@ export class MercuryClient {
       headers,
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
       signal: AbortSignal.timeout(30_000),
-      // `redirect: "manual"` would let us re-classify each Location hop,
-      // but Mercury's API does not redirect — keep `follow` (default) and
-      // rely on the boot + assertSafeUrl coverage. If a future endpoint
-      // ever sends a 30x, the response status surfaces it.
+      // Fail closed on any 30x. The default `redirect: "follow"` would
+      // let undici chase a Location header transparently — bouncing the
+      // bearer token to whatever host the redirect points at, which
+      // `assertSafeUrl()` never re-classifies because the redirect is
+      // handled below the public fetch surface. Mercury's API does not
+      // redirect today; if it ever does, the explicit throw below
+      // catches it instead of leaking the token.
+      redirect: "manual",
     });
+
+    if (res.status >= 300 && res.status < 400) {
+      throw new MercuryError(
+        `Mercury API ${method} ${path} returned an unexpected redirect (HTTP ${res.status}); refusing to follow to avoid SSRF / token leak.`,
+        res.status,
+      );
+    }
 
     const text = await res.text();
     let json: unknown;
