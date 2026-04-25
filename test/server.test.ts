@@ -131,8 +131,14 @@ describe("validateBaseUrl (direct)", () => {
     expect(() => validateBaseUrl(SANDBOX_BASE_URL)).not.toThrow();
   });
 
-  it("accepts other *.mercury.com subdomains by default", () => {
-    expect(() => validateBaseUrl("https://internal.mercury.com/api/v1")).not.toThrow();
+  it("rejects other *.mercury.com subdomains by default (strict allowlist)", () => {
+    // No wildcard: any future Mercury subdomain that should ship needs an
+    // explicit code-review pass before it inherits write access to the
+    // bearer token.
+    expect(() => validateBaseUrl("https://internal.mercury.com/api/v1")).toThrow(
+      /not a Mercury hostname/,
+    );
+    expect(() => validateBaseUrl("https://docs.mercury.com")).toThrow(/not a Mercury hostname/);
   });
 
   it("rejects non-Mercury hosts by default (no opt-in)", () => {

@@ -111,19 +111,20 @@ export function validateBaseUrl(raw: string): void {
     }
   }
 
-  // Default-allow only the official Mercury hostnames. The previous rules
-  // (HTTPS-only + non-public-range gate) keep an attacker-controlled env
-  // var like `MERCURY_API_BASE_URL=https://attacker.example.com` from
-  // pointing at a private host, but they still let it route the bearer
-  // token to *any* public host. Lock to `api.mercury.com` and
-  // `api-sandbox.mercury.com` by default; legitimate self-hosted
-  // proxies / observability shims have to opt in explicitly via
+  // Default-allow only the two official Mercury API hostnames. The
+  // previous rules (HTTPS-only + non-public-range gate) keep an
+  // attacker-controlled env var like
+  // `MERCURY_API_BASE_URL=https://attacker.example.com` from pointing
+  // at a private host, but they still let it route the bearer token
+  // to *any* public host. Lock the allowlist to the exact strings
+  // Mercury actually exposes — no `*.mercury.com` wildcard, because
+  // any subdomain Mercury adds in the future would also need code
+  // review before it inherits write access to the bearer token.
+  // Legitimate self-hosted proxies / observability shims opt in via
   // `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true`, which surfaces a loud
   // stderr warning so the deviation is visible at boot.
-  const isMercuryHost =
-    host === "api.mercury.com" ||
-    host === "api-sandbox.mercury.com" ||
-    host.endsWith(".mercury.com");
+  const MERCURY_HOSTS = ["api.mercury.com", "api-sandbox.mercury.com"];
+  const isMercuryHost = MERCURY_HOSTS.includes(host);
   if (!isMercuryHost) {
     if (process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST !== "true") {
       throw new Error(
