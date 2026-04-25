@@ -38,7 +38,7 @@ import { promptSafe } from "./_shared.js";
  * Credit account is exposed via the dedicated `/credit` endpoint
  * and the singular `/account/{id}/transactions` path, neither
  * reachable from `mercury_list_accounts` / `mercury_list_cards`).
- * See ROADMAP.md → "Mercury IO Credit account exposure".
+ * See docs/ROADMAP.md → "Mercury IO Credit account exposure".
  */
 
 const SendAchArgs = {

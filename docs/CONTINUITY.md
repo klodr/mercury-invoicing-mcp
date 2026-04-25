@@ -15,7 +15,7 @@ interruption (≤1 week) if I become unavailable.
   original repo or npm scope becomes unmaintained.
 - **Build & release pipeline** is fully automated in
   [`.github/workflows/release.yml`](./.github/workflows/release.yml) and
-  documented in [`CHANGELOG.md`](./CHANGELOG.md). A fork can reproduce
+  documented in [`CHANGELOG.md`](../CHANGELOG.md). A fork can reproduce
   releases by configuring `NPM_TOKEN` and pushing a tag.
 - **No proprietary infrastructure**: no private dashboards, no
   unmanageable accounts. All third-party integrations (CodeQL, Scorecard,
@@ -44,7 +44,7 @@ maintainer should:
 - [ ] Tag with a signed tag: `git tag -s vX.Y.Z -m "..." && git push origin vX.Y.Z`
 - [ ] Confirm the `Release & npm publish` workflow ran green and uploaded **all three** assets to the GitHub Release: `dist/index.js`, `dist/index.js.sigstore`, `dist/index.js.intoto.jsonl`
 - [ ] Verify npm provenance: `npm view <fork-package>@<version> dist.attestations` returns a non-empty array
-- [ ] Verify the Sigstore signature using the procedure in [SECURITY.md → Verifying releases](./SECURITY.md#verifying-releases)
+- [ ] Verify the Sigstore signature using the procedure in [SECURITY.md → Verifying releases](../.github/SECURITY.md#verifying-releases)
 - [ ] Update the README badges and `CONTINUITY.md` references to point at the fork's GitHub repository and npm package
 
 There is no organisational lock-in: every secret and every external

@@ -33,7 +33,7 @@
  *     parser contract, so the extra boundary is free.
  *
  * This is NOT a substitute for the read-then-write-confirmation
- * discipline documented in SECURITY.md under "Prompt injection
+ * discipline documented in .github/SECURITY.md under "Prompt injection
  * through Mercury response data" — just defense in depth.
  */
 

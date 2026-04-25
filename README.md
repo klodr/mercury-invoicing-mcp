@@ -36,7 +36,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | **Customers AR + recurring invoices** | ❌ | ❌ | ✅ |
 | Webhooks full CRUD (incl. `update_webhook`) | ❌ | ❌ | ✅ |
 | Built-in safeguards (rate limit, dry-run, redacted audit log) | ❌ | ❌ | ✅ |
-| Hosted (no token to manage) | ✅ | ❌ | ❌ |
+| Stable token (no frequent re-auth, IP-allowlistable) | ❌ | ✅ | ✅ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
 | Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Active LTS (`>=22.22.2`) |
 | Total tools exposed | ~10 | ~11 | **34** |
@@ -248,7 +248,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 ## 🗺️ Roadmap
 
-See [ROADMAP.md](./ROADMAP.md).
+See [ROADMAP.md](docs/ROADMAP.md).
 
 ## 🔒 Security
 
@@ -344,4 +344,4 @@ MIT — see [LICENSE](./LICENSE).
 
 ## 🤝 Contributing
 
-Issues and PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the test/build/coverage checklist and release process.
+Issues and PRs welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the test/build/coverage checklist and release process.

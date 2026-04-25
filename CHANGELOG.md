@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Repository structure cleanup** — community-health files (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) moved to `.github/`, and general documentation (`ROADMAP.md`, `ASSURANCE_CASE.md`, `CONTINUITY.md`) moved to `docs/`. Internal links updated across `README.md`, `llms-install.md`, `docs/ASSURANCE_CASE.md`, `docs/CONTINUITY.md`, `docs/ROADMAP.md`, `src/{sanitize,middleware}.ts`, `src/tools/credit.ts`, `src/prompts/recipes.ts`, and `.github/workflows/verify-release.yml`. The repository root now keeps only `README.md`, `LICENSE`, `CHANGELOG.md`, `llms-install.md`, and project-config files. No behaviour change; GitHub still resolves the community files at their new canonical locations.
+- **README "Why this MCP?" comparison row reworded** — the prior `Hosted (no token to manage)` line implied the hosted Mercury MCP's lack of token was a feature klodr lacked. In practice, the hosted MCP requires frequent OAuth re-authentication, while a long-lived, IP-allowlistable token (used by both `dragonkhoi/mercury-mcp` and this server) is the more operational option. The row is now `Stable token (no frequent re-auth, IP-allowlistable)` to describe each MCP factually.
+
 ## [0.10.0] - 2026-04-23
 
 ### Added
