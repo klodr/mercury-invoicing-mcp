@@ -17,7 +17,8 @@ import { MercuryClient } from "../client.js";
  *     transactions. Distinct from the plural `/accounts/{id}/transactions`
  *     used for deposit accounts. Same response shape.
  *
- * Both helpers are read-only.
+ * Both helpers are read-only. See docs/ROADMAP.md → "Mercury IO Credit
+ * account exposure" for the tracking context.
  */
 
 export function registerCreditTools(server: McpServer, client: MercuryClient): void {

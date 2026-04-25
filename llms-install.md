@@ -114,4 +114,4 @@ If a tool returns `403`, the user's token lacks the corresponding scope
 ## Documentation
 
 Full README: <https://github.com/klodr/mercury-invoicing-mcp#readme>
-Security policy: <https://github.com/klodr/mercury-invoicing-mcp/blob/main/SECURITY.md>
+Security policy: <https://github.com/klodr/mercury-invoicing-mcp/blob/main/.github/SECURITY.md>

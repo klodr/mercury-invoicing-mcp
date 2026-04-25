@@ -15,6 +15,7 @@
     "anthropic"
   ],
   "homepage": "https://github.com/klodr/mercury-invoicing-mcp",
+  "funding": "https://github.com/sponsors/klodr",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/klodr/mercury-invoicing-mcp.git"
@@ -32,7 +33,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsup",

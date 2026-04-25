@@ -168,7 +168,7 @@ function persistCallHistory(): void {
   // persistCallHistory at the same instant cannot clobber each other's
   // tmp file before either rename completes. The rename itself is atomic.
   // Caveat: this still does not give us inter-process serialization of the
-  // read-modify-write cycle — see SECURITY.md "single-process state" entry.
+  // read-modify-write cycle — see .github/SECURITY.md "single-process state" entry.
   const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
     mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
