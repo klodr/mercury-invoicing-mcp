@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-25
+
 ### Added
 
 - **Community-health files** — `.github/SUPPORT.md` (issue-redirection page surfaced by GitHub on issue creation, with best-effort response SLOs) and `CITATION.cff` (Citation File Format metadata enabling the GitHub "Cite this repository" button on the repo page).
@@ -498,3 +500,31 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 - npm publish workflow with provenance attestation
 - Smithery + Official MCP Registry manifests
 - Examples and publishing checklist
+
+[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.2...v0.10.0
+[0.9.2]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.6...v0.9.0
+[0.8.6]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.5...v0.8.6
+[0.8.5]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.4...v0.8.5
+[0.8.4]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.2...v0.8.4
+[0.8.2]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.9...v0.8.0
+[0.7.9]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.8...v0.7.9
+[0.7.8]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.7...v0.7.8
+[0.7.7]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.6...v0.7.7
+[0.7.6]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.5...v0.7.6
+[0.7.5]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.4...v0.7.5
+[0.7.4]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.3...v0.7.4
+[0.7.3]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.2...v0.7.3
+[0.7.2]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.6.2...v0.7.0
+[0.6.2]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.2.0...v0.6.0
+[0.2.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/klodr/mercury-invoicing-mcp/releases/tag/v0.1.0
