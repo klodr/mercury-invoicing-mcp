@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-04-26 — Layered SSRF defense + MCP annotations + LOW/INFO security findings
+
+A minor release shipping three independently-developed lines of work
+that all landed against `0.12.0` in the same week: machine-readable
+MCP tool annotations on every one of the 36 tools (#97), a layered
+SSRF defense gate on the `MERCURY_API_BASE_URL` env override (#98),
+and the LOW/INFO findings raised by the `docker/mcp-registry`
+security-reviewer audit on `0.12.0` (#99).
+
+The `validateBaseUrl()` startup gate is rebuilt on top of `ipaddr.js`
+(RFC-based range classification: loopback / RFC 1918 / RFC 3927
+link-local / RFC 6598 carrier-grade NAT / RFC 2544 benchmarking /
+RFC 5737 documentation / multicast / IPv6 ULA / IPv6 link-local) and
+a new exact-match Mercury hostname allowlist (`MERCURY_HOSTS =
+["api.mercury.com", "api-sandbox.mercury.com"]`) with an opt-out
+(`MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true`) for advanced operators
+running a forward proxy or a self-hosted gateway. A runtime
+counterpart `assertSafeUrl()` (`src/safe-url.ts`) re-resolves and
+re-classifies every outbound URL's IPs before each `fetch`, closing
+the DNS-rebinding window left open by a one-shot startup check. The
+`MercuryClient.request` fetch now passes `redirect: "manual"` and
+throws on any 30x to fail closed against redirect-chain SSRF.
+
+No breaking change for legacy users (the Mercury hostname allowlist
+is opt-in via env var; the runtime SSRF gate is transparent for
+clients already pointing at `api.mercury.com`). New runtime
+dependency: `ipaddr.js` (BSD-3-Clause, ~10 KB minified, used by every
+major SSRF-defense library in the Node ecosystem).
+
+### Added
+
+- **MCP tool annotations on every one of the 36 tools** (#97) — `readOnlyHint`, `destructiveHint`, `idempotentHint` declared in each tool's `registerTool` config. Read-only tools (21) carry `readOnlyHint: true`; non-destructive write tools (10) carry `destructiveHint: false` (and `idempotentHint: true` where the API accepts an `idempotencyKey`); destructive + money-moving tools (5 — `mercury_delete_customer`, `mercury_cancel_invoice`, `mercury_send_money`, `mercury_request_send_money`, `mercury_delete_webhook`) carry `destructiveHint: true`. MCP hosts and rubrics (notably the Glama TDQS Behavior dimension) can now detect tool semantics machine-readably instead of grepping the prose description. Mirrors the pattern already in place on `klodr/gmail-mcp`.
+- **`MERCURY_HOSTS` exact-match allowlist** (#98) — strictly accepts `api.mercury.com` and `api-sandbox.mercury.com` as base URLs. Opt-out via `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true` for self-hosted proxies; the opt-out path emits a loud stderr warning that makes the trust-radius widening obvious in operator logs. Constant exposed for tests so the assertion contract does not duplicate the literal hostnames.
+- **`assertSafeUrl()` runtime SSRF gate** (#98, `src/safe-url.ts`) — called before every outbound `fetch`. Resolves the URL's hostname via `node:dns/promises.lookup` and rejects if any A/AAAA record falls outside `ipaddr.js` `unicast` range. Closes the DNS-rebinding window left open by `validateBaseUrl()` (which only inspects the URL string at boot). Six dedicated test cases cover IP literals (loopback, RFC 1918, link-local, CGNAT, IPv6 loopback / ULA / link-local) and DNS-resolved hostnames (mocked `node:dns` returning private / cloud-metadata / mixed / ULA / public records), reaching 100% lines / 100% branches on the new module.
+- **Audit-log rotation env knob** (#99) — `MERCURY_MCP_AUDIT_LOG_MAX_BYTES` triggers an in-place `.1` rotation when the live log exceeds the threshold. Default: unbounded (operator preserves prior behaviour). Documented in `.github/SECURITY.md` alongside the existing `logrotate(8)` recipe.
+
+### Changed
+
+- **`validateBaseUrl()` rebuilt on `ipaddr.js`** (#98) — single RFC-based range classification covers loopback, RFC 1918, RFC 3927 link-local, RFC 6598 CGNAT, RFC 2544 benchmarking, RFC 5737 documentation, multicast, IPv6 ULA, IPv6 link-local — replacing the hand-rolled per-range bitmask checks. Decouples the public error message from the library's internal taxonomy: callers see a stable "non-public range" wording, raw range value goes to stderr only.
+- **`MercuryClient.request` passes `redirect: "manual"` and throws on 30x** (#98, `src/client.ts`) — the default `redirect: "follow"` would let undici chase a `Location` header transparently, bouncing the bearer token to whatever host the redirect points at, which `assertSafeUrl()` never re-classifies because the redirect is handled below the public fetch surface. Now fails closed with an explicit `MercuryError("…unexpected redirect…")`. Mirrors the same gate landed on `klodr/faxdrop-mcp` `src/client.ts`.
+- **Audit-log directory pre-created at `0o700`** (#99, `src/middleware.ts`) — mirrors the state-file pattern; the log no longer sits inside a world-readable directory on a multi-tenant host. Mode applies only to dirs the call creates, so a pre-existing parent keeps its original mode.
+- **`MercuryError.message` capped at 2 KB at the source** (#99) — structured head/tail truncation (`… [truncated] …`) preserves both ends of the upstream payload while bounding context-window saturation. The existing fence + `stripControl` stack is unchanged. New `MERCURY_ERROR_MESSAGE_MAX` constant exposed for tests.
+- **Rate-limit RMW now under an `O_EXCL` lockfile** (#99) — wraps the load → check → append → persist cycle in a sibling lockfile to `ratelimit.json`. Stale locks reclaimed after a 5 s grace window; sustained contention beyond a 2 s timeout falls through with a stderr warning rather than blocking the tool call. `Atomics.wait` on a tiny `SharedArrayBuffer` keeps the retry sync without burning CPU. No new dependency.
+
+### Fixed
+
+- **Idempotency docs on the money tools** (#99) — `mercury_request_send_money` and `mercury_create_internal_transfer` now mirror `mercury_send_money` ("auto-generated if omitted; pass an explicit one to make retries safe"). No code change to the call path.
+
 ## [0.12.0] - 2026-04-25 — Tool descriptions polish
 
 A documentation-quality release. Every one of the 36 tool definitions across 12 modules is rewritten in a structured TDQS form (USE WHEN / DO NOT USE / SIDE EFFECTS / RETURNS), driven by an LLM-agent-orientation review and cross-validated against [Anthropic — Writing Tools for Agents](https://www.anthropic.com/engineering/writing-tools-for-agents), the [MCP Tools Specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), and [SEP-1382](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1382). One technical-accuracy fix: the previously-claimed singular-vs-plural path distinction between `mercury_list_transactions` and `mercury_list_credit_transactions` was inaccurate (both hit the SINGULAR `/account/{id}/transactions` path) — corrected. Two small dependency-hygiene fixes ride along (`packageManager` and `pnpm.onlyBuiltDependencies` pinned for reproducibility on pnpm-based registries). No runtime, schema, or contract changes.
@@ -518,7 +566,8 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 - Smithery + Official MCP Registry manifests
 - Examples and publishing checklist
 
-[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.9.2...v0.10.0
