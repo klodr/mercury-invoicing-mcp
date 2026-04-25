@@ -52,6 +52,7 @@
   "engines": {
     "node": ">=22.22.2"
   },
+  "packageManager": "npm@10.9.7",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "us-bank-account-validator": "^1.1.0",
@@ -69,5 +70,8 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }
