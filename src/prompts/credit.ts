@@ -5,9 +5,9 @@ import { promptSafe } from "./_shared.js";
 /**
  * Prompt for the Mercury IO Credit account workflow. Kept separate
  * from `recipes.ts` (which maps 1:1 to docs.mercury.com/recipes) —
- * this workflow has no upstream recipe because the IO Credit
- * endpoints are not in the public API reference (see
- * `src/tools/credit.ts` for the endpoint archaeology).
+ * this workflow has no upstream recipe yet because Mercury hasn't
+ * published one; the underlying IO Credit endpoints are however
+ * documented in the API reference (see `src/tools/credit.ts`).
  */
 
 const PendingCardTransactionsArgs = {
@@ -46,8 +46,8 @@ export function registerCreditPrompts(server: McpServer): void {
       description:
         "List pending (not-yet-settled) transactions on every Mercury IO Credit account. " +
         'Answers the "quelles sont mes dernieres transactions CB non payées?" question. ' +
-        "Uses the undocumented `/credit` + `/account/{id}/transactions` endpoints the " +
-        "Mercury Dashboard exercises.",
+        "Uses the IO Credit endpoints (`/credit` + singular `/account/{id}/transactions`) " +
+        "documented in the Mercury API reference.",
       argsSchema: PendingCardTransactionsArgs,
     },
     ({ sinceDays, creditAccountHint }) => {
@@ -70,8 +70,8 @@ export function registerCreditPrompts(server: McpServer): void {
               text:
                 `Produce a read-only report of pending (not-yet-settled) Mercury IO Credit ` +
                 `card transactions using the \`mercury_*\` tools:\n\n` +
-                `1. Call \`mercury_list_credit_accounts\` (wraps the UNDOCUMENTED \`/credit\` ` +
-                `endpoint — do NOT substitute \`mercury_list_accounts\`, which filters the ` +
+                `1. Call \`mercury_list_credit_accounts\` (wraps the \`/credit\` endpoint — ` +
+                `do NOT substitute \`mercury_list_accounts\`, which filters the ` +
                 `IO Credit account out). The response shape is ` +
                 `\`{ accounts: [{ id, status, availableBalance, currentBalance, … }] }\`. ` +
                 `Collect the \`id\` of every account.` +

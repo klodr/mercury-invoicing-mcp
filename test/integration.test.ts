@@ -94,12 +94,12 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].url).toContain("/categories");
   });
 
-  it("mercury_list_credit_accounts → GET /credit (undocumented endpoint)", async () => {
+  it("mercury_list_credit_accounts → GET /credit", async () => {
     await client.callTool({ name: "mercury_list_credit_accounts", arguments: {} });
     expect(calls[0].method).toBe("GET");
     expect(calls[0].url).toContain("/credit");
-    // Must not hit the documented `/accounts` path — that filter out
-    // the IO Credit account server-side.
+    // Must not hit the `/accounts` path — that filters the IO Credit
+    // account out server-side.
     expect(calls[0].url).not.toMatch(/\/accounts(\?|$)/);
   });
 

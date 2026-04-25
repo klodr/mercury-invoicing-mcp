@@ -175,12 +175,10 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_get_organization`
 - `mercury_list_categories`
 
-### 💳 Banking — IO Credit (undocumented endpoints)
+### 💳 Banking — IO Credit
 
-- `mercury_list_credit_accounts` — wraps `GET /credit` (reverse-engineered from the Mercury Dashboard; not in the public API reference). Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
-- `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, distinct from the documented plural `/accounts/{id}/transactions`. This is the path the Dashboard uses for IO Credit transactions, including pending card authorisations.
-
-> ⚠️ The IO Credit endpoints are **not** in the Mercury public API reference. They were reverse-engineered from Dashboard network traffic (2026-04) and are subject to change without notice. A breaking change on Mercury's side will surface as a 404 from the two tools above. If you rely on them in production, open an issue so we can contact Mercury about stabilising them.
+- `mercury_list_credit_accounts` — wraps `GET /credit`, documented under [Credit › List all credit accounts](https://docs.mercury.com/reference/credit) in the Mercury API reference. Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
+- `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, the path used for IO Credit transactions including pending card authorisations. Note: distinct from the plural `/accounts/{id}/transactions` used for deposit accounts.
 
 ### 💸 Banking — Transactions
 
