@@ -12,13 +12,41 @@ export interface MercuryClientOptions {
   baseUrl?: string;
 }
 
+/**
+ * Cap on `MercuryError.message` length. Mercury error messages can
+ * legitimately echo upstream content (an invoice memo, a counterparty
+ * name, a rejected field) that an attacker may have influenced. The
+ * fence + control-char strip in `sanitizeForLlm` already neutralise
+ * the structural risk; the cap is a *budget* control to stop a
+ * pathological 1 MB error from saturating the LLM context window.
+ *
+ * The cut is structured: keep the first ~half of the budget and the
+ * last ~half, with a clearly labelled marker in between, so a reader
+ * (human or model) sees both the leading and trailing context. Net
+ * length is bounded by `MERCURY_ERROR_MESSAGE_MAX` plus the marker.
+ */
+export const MERCURY_ERROR_MESSAGE_MAX = 2048;
+const TRUNCATION_MARKER = " ... [truncated] ... ";
+
+function capErrorMessage(message: string, max: number = MERCURY_ERROR_MESSAGE_MAX): string {
+  if (message.length <= max) return message;
+  // Reserve the marker length out of the budget so the final string is
+  // always ≤ max + marker (predictable upper bound for callers).
+  const headLen = Math.ceil((max - TRUNCATION_MARKER.length) / 2);
+  const tailLen = Math.floor((max - TRUNCATION_MARKER.length) / 2);
+  return message.slice(0, headLen) + TRUNCATION_MARKER + message.slice(-tailLen);
+}
+
 export class MercuryError extends Error {
   constructor(
     message: string,
     public status: number,
     public body?: unknown,
   ) {
-    super(message);
+    // Cap upstream-influenced bytes at the source so every consumer of
+    // `err.message` (the LLM error channel, logs, debuggers) sees the
+    // same bounded value.
+    super(capErrorMessage(message));
     this.name = "MercuryError";
   }
 
