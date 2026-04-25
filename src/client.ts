@@ -3,6 +3,8 @@
  * Docs: https://docs.mercury.com/reference/getting-started-with-your-api
  */
 
+import { assertSafeUrl } from "./safe-url.js";
+
 const BASE_URL = "https://api.mercury.com/api/v1";
 
 export interface MercuryClientOptions {
@@ -65,11 +67,21 @@ export class MercuryClient {
     };
     if (init.body !== undefined) headers["Content-Type"] = "application/json";
 
+    // Runtime SSRF defense: re-resolve the URL hostname and reject if any
+    // record points at a non-`unicast` range. Combined with the boot-time
+    // `validateBaseUrl()` check this closes DNS-rebinding + redirect-into-
+    // private-host gaps without migrating off the native fetch API.
+    await assertSafeUrl(url);
+
     const res = await fetch(url, {
       method,
       headers,
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
       signal: AbortSignal.timeout(30_000),
+      // `redirect: "manual"` would let us re-classify each Location hop,
+      // but Mercury's API does not redirect — keep `follow` (default) and
+      // rely on the boot + assertSafeUrl coverage. If a future endpoint
+      // ever sends a 30x, the response status surfaces it.
     });
 
     const text = await res.text();
