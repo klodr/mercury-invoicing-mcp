@@ -6,34 +6,26 @@ import { MercuryClient } from "../client.js";
 /**
  * Mercury IO Credit Card facility.
  *
- * The IO Credit account is first-class in the Mercury Dashboard but
- * does NOT surface through the documented endpoints:
+ * The IO Credit account is first-class in the Mercury Dashboard and
+ * exposed via two routes:
  *
- *   - `GET /accounts` (used by `mercury_list_accounts`) only returns
- *     deposit accounts (`kind: checking|savings|treasury|…`); the IO
- *     Credit account is filtered out server-side.
- *   - `GET /account/{id}/transactions` — the DOCUMENTED path is
- *     plural `/accounts/{id}/transactions` and returns deposit-side
- *     activity. The SINGULAR path `/account/{id}/transactions`
- *     (distinct route, same shape) is what the Dashboard hits for
- *     an IO Credit account. Same shape as deposit transactions but
- *     reachable only via the singular path for credit accounts.
+ *   - `GET /credit` — listed under "Credit › List all credit accounts"
+ *     in the Mercury API reference (https://docs.mercury.com/reference/credit).
+ *     Returns IO Credit card accounts. Complement to `GET /accounts`,
+ *     which only returns deposit accounts (`kind: checking|savings|treasury|…`).
+ *   - `GET /account/{id}/transactions` — SINGULAR path used for IO Credit
+ *     transactions. Distinct from the plural `/accounts/{id}/transactions`
+ *     used for deposit accounts. Same response shape.
  *
- * Endpoints are reverse-engineered from the Dashboard network
- * traffic (2026-04). They're not promised in the public API spec,
- * so treat them as best-effort: a breaking change on Mercury's
- * side will surface as a 404 from the two helpers below.
- *
- * Both helpers are read-only. See ROADMAP.md → "Mercury IO Credit
- * account exposure" for the tracking context.
+ * Both helpers are read-only.
  */
 
 export function registerCreditTools(server: McpServer, client: MercuryClient): void {
   defineTool(
     server,
     "mercury_list_credit_accounts",
-    "List Mercury IO Credit card accounts. Wraps the UNDOCUMENTED `GET /credit` endpoint " +
-      "(not in the public API reference — reverse-engineered from the Mercury Dashboard). " +
+    "List Mercury IO Credit card accounts. Wraps `GET /credit` (documented under " +
+      "Credit › List all credit accounts in the Mercury API reference). " +
       "Returns `{ accounts: [{ id, status, availableBalance, currentBalance, … }] }`. " +
       "Complement to `mercury_list_accounts`, which only returns deposit accounts.",
     {},
@@ -47,9 +39,10 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
     server,
     "mercury_list_credit_transactions",
     "List transactions on a Mercury IO Credit card account, including pending (not-yet- " +
-      "settled) card authorisations. Wraps the UNDOCUMENTED `GET /account/{id}/transactions` " +
-      "(SINGULAR path — distinct from the documented plural `/accounts/{id}/transactions` used " +
-      "for deposit accounts). Supports the same filters as `mercury_list_transactions`.",
+      "settled) card authorisations. Wraps `GET /account/{id}/transactions` " +
+      "(SINGULAR path used for IO Credit transactions, distinct from the plural " +
+      "`/accounts/{id}/transactions` used for deposit accounts). Supports the same filters " +
+      "as `mercury_list_transactions`.",
     {
       accountId: z
         .string()
