@@ -13,8 +13,16 @@ Open an issue using the **Bug report** template. Include:
 - Failing tool call (full name + arguments — **redact the Mercury token,
   recipient PII, account numbers, and any monetary amounts** before
   posting).
-- If the audit log is enabled, attach the relevant JSONL entries with
-  PII / account numbers / amounts scrubbed.
+- If the audit log is enabled (`MERCURY_MCP_AUDIT_LOG`), attach the
+  relevant JSONL entries. Each entry has the shape `{ts, tool, result,
+  args}`. The middleware already redacts the Mercury bearer token,
+  customer / recipient `email` and `phoneNumber`, `accountNumber` and
+  `routingNumber`, monetary `amount` fields, and full webhook secrets
+  (covered by property-based tests in `test/fuzz.test.ts`). Still:
+  scrub anything else that looks identifying — `description` /
+  `externalMemo` strings, internal account nicknames, customer names,
+  invoice IDs — before posting; the redaction set is conservative, not
+  exhaustive.
 
 ## ✨ Feature requests
 
