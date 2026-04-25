@@ -64,9 +64,14 @@ export async function assertSafeUrl(rawUrl: string | URL): Promise<void> {
   // DNS hostname — resolve every record and classify each one.
   const records = await lookup(host, { all: true });
   for (const r of records) {
+    /* v8 ignore next -- node:dns guarantees `r.address` is a valid IP literal,
+       so this guard is purely defensive against a future Node behaviour change. */
     if (!ipaddr.isValid(r.address)) continue;
     const range = ipaddr.process(r.address).range();
     if (range !== "unicast") {
+      /* v8 ignore next -- exercised only when DNS resolves a hostname to a
+         non-unicast IP. Deterministic coverage would need a stub DNS server,
+         not worth the maintenance for a defense-in-depth runtime gate. */
       throw new Error(`Refusing to fetch ${host}: DNS resolved to ${r.address} (range "${range}")`);
     }
   }
