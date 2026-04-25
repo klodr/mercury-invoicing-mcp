@@ -126,8 +126,11 @@ export function validateBaseUrl(raw: string): void {
   }
   const ipv4MappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
   if (ipv4MappedHex) {
+    // Only the high 16 bits decide the private-range outcome — the
+    // `isPrivateIPv4` predicate inspects octets a + b, none of c + d.
+    // Skip parsing the low pair to avoid an unused-variable lint flag
+    // (caught by CodeRabbit on the IPv6 follow-up commit).
     const high = Number.parseInt(ipv4MappedHex[1], 16);
-    const low = Number.parseInt(ipv4MappedHex[2], 16);
     const a = (high >> 8) & 0xff;
     const b = high & 0xff;
     if (isPrivateIPv4({ a, b })) {
