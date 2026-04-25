@@ -226,11 +226,15 @@ function getLockFile(): string {
  * fixed wall-clock duration (no `child_process.execSync('sleep')` cost,
  * no busy loop burning CPU).
  */
+/* v8 ignore start -- only reached when EEXIST contention triggers a retry;
+   exercising it deterministically would need a multi-process test harness
+   that isn't worth the maintenance cost for a 3-line sleep helper */
 function sleepSync(ms: number): void {
   const buf = new SharedArrayBuffer(4);
   const view = new Int32Array(buf);
   Atomics.wait(view, 0, 0, ms);
 }
+/* v8 ignore stop */
 
 function withRateLimitLock<T>(fn: () => T): T {
   const lockPath = getLockFile();
@@ -269,9 +273,16 @@ function withRateLimitLock<T>(fn: () => T): T {
           continue;
         }
       } catch {
-        /* lock disappeared between EEXIST and stat — retry immediately */
+        /* v8 ignore next -- TOCTOU race: lock disappeared between EEXIST
+           and stat. Reaches this branch only when another process unlinks
+           the lockfile in a sub-millisecond window — not deterministically
+           testable in a unit-test harness. */
         continue;
       }
+      /* v8 ignore start -- LOCK_TIMEOUT_MS is 2 seconds in production; a
+         deterministic test would either force a 2 s sleep on every CI
+         run or stub Date.now() across the whole module. Both are worse
+         trades than leaving this defense-in-depth fallback uncovered. */
       if (Date.now() - start > LOCK_TIMEOUT_MS) {
         // Best-effort: never block the tool call indefinitely on a busy
         // lock. Fall through without a lock; the worst case is the
@@ -283,6 +294,7 @@ function withRateLimitLock<T>(fn: () => T): T {
       }
       sleepSync(LOCK_RETRY_MS);
       continue;
+      /* v8 ignore stop */
     }
     try {
       return fn();
@@ -460,13 +472,19 @@ function rotateAuditLogIfNeeded(path: string, maxBytes: number): void {
     if (code === "ENOENT") return; // not yet created — nothing to rotate
     // EACCES / EIO / etc.: refuse to rotate; the next appendFileSync
     // will surface the same problem with a clearer message.
+    /* v8 ignore start -- statSync error path other than ENOENT (EACCES,
+       EIO, ELOOP, …) needs a hostile filesystem state we don't simulate
+       in unit tests. */
     console.error(`[audit] cannot stat ${path} for rotation: ${(err as Error).message}`);
     return;
+    /* v8 ignore stop */
   }
   if (size < maxBytes) return;
   try {
     renameSync(path, `${path}.1`);
   } catch (err) {
+    /* v8 ignore next -- renameSync error path: same reason as the
+       statSync fallback above. */
     console.error(`[audit] failed to rotate ${path}: ${(err as Error).message}`);
   }
 }
