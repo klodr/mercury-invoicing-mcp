@@ -55,6 +55,28 @@ describe("resolveBaseUrl", () => {
     expect(() => resolveBaseUrl("any-key", "https://[::1]/api")).toThrow(/Loopback/);
   });
 
+  it("throws on IPv4-mapped IPv6 loopback (::ffff:127.0.0.1)", () => {
+    expect(() => resolveBaseUrl("any-key", "https://[::ffff:127.0.0.1]/api")).toThrow(
+      /private IPv4/,
+    );
+  });
+
+  it("throws on expanded IPv6 loopback form (0:0:0:0:0:0:0:1)", () => {
+    expect(() => resolveBaseUrl("any-key", "https://[0:0:0:0:0:0:0:1]/api")).toThrow(/Loopback/);
+  });
+
+  it("does NOT misclassify DNS hostnames that contain hex-prefix substrings as IPv6", () => {
+    // `fc00-proxy.example.com` is a perfectly valid DNS name — the previous
+    // code wrongly rejected it because parseInt("fc00-proxy", 16) === 0xfc00
+    // tripped the ULA bitmask. Bracketed-IPv6 gating fixes it.
+    expect(() => resolveBaseUrl("any-key", "https://fc00-proxy.example.com/api")).not.toThrow();
+    expect(() => resolveBaseUrl("any-key", "https://fe80-host.example.com/api")).not.toThrow();
+  });
+
+  it("treats empty string override as invalid (fail-closed)", () => {
+    expect(() => resolveBaseUrl("any-key", "")).toThrow(/not a valid URL/);
+  });
+
   it("throws on malformed override URL", () => {
     expect(() => resolveBaseUrl("any-key", "not-a-url")).toThrow(/not a valid URL/);
   });

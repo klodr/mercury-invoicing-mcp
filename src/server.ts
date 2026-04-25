@@ -57,40 +57,92 @@ export function validateBaseUrl(raw: string): void {
     );
   }
 
-  // Unwrap bracketed IPv6 literals — `URL().hostname` keeps the brackets for
-  // IPv6 ([::1], [fe80::1]) — strip before range checks.
+  // `URL().hostname` returns IPv6 literals bracketed ([::1], [fe80::1]).
+  // DNS names and IPv4 dotted-quads come back unbracketed. The brackets
+  // are how we distinguish "this host is an IPv6 literal" from "this is
+  // a DNS name that happens to contain a hex prefix" — without that
+  // gate, a hostname like `fc00-proxy.example.com` would be wrongly
+  // rejected as ULA because `parseInt("fc00-proxy", 16)` returns 0xfc00.
+  // (Caught by CodeRabbit on this PR.)
   const rawHost = url.hostname.toLowerCase();
-  const host = rawHost.startsWith("[") && rawHost.endsWith("]") ? rawHost.slice(1, -1) : rawHost;
+  const isIPv6Literal = rawHost.startsWith("[") && rawHost.endsWith("]");
+  const host = isIPv6Literal ? rawHost.slice(1, -1) : rawHost;
 
-  if (host === "localhost" || host === "::1") {
+  if (host === "localhost") {
     throw new Error(
       "MERCURY_API_BASE_URL must be publicly reachable. Loopback hosts are rejected.",
     );
   }
 
   // IPv4: match literal a.b.c.d and reject loopback, link-local, RFC 1918.
-  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4) {
-    const a = Number(ipv4[1]);
-    const b = Number(ipv4[2]);
-    if (
-      a === 0 || //                              0.0.0.0/8      "this host"/unspecified
-      a === 127 || //                            127.0.0.0/8    loopback
-      a === 10 || //                             10.0.0.0/8     RFC 1918
-      (a === 169 && b === 254) || //             169.254.0.0/16 link-local + cloud metadata
-      (a === 192 && b === 168) || //             192.168.0.0/16 RFC 1918
-      (a === 172 && b >= 16 && b <= 31) //       172.16.0.0/12  RFC 1918
-    ) {
+  const ipv4Match = (raw: string): null | { a: number; b: number } => {
+    const m = raw.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (!m) return null;
+    return { a: Number(m[1]), b: Number(m[2]) };
+  };
+
+  const isPrivateIPv4 = ({ a, b }: { a: number; b: number }): boolean =>
+    a === 0 || //                              0.0.0.0/8      "this host"/unspecified
+    a === 127 || //                            127.0.0.0/8    loopback
+    a === 10 || //                             10.0.0.0/8     RFC 1918
+    (a === 169 && b === 254) || //             169.254.0.0/16 link-local + cloud metadata
+    (a === 192 && b === 168) || //             192.168.0.0/16 RFC 1918
+    (a === 172 && b >= 16 && b <= 31); //      172.16.0.0/12  RFC 1918
+
+  if (!isIPv6Literal) {
+    const ipv4 = ipv4Match(host);
+    if (ipv4 && isPrivateIPv4(ipv4)) {
       throw new Error(
         `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which is loopback/RFC 1918/link-local/cloud-metadata.`,
       );
     }
+    return; // DNS names that aren't loopback / IPv4-private get a pass.
   }
 
-  // IPv6 CIDR bitmask check on the first hextet:
+  // From here, `host` is an IPv6 literal (brackets stripped).
+
+  // Loopback in any form: ::1, 0:0:0:0:0:0:0:1, etc.
+  // Easy invariant: collapse runs of zero hextets and check for `::1` or `0::1`.
+  const collapsedZeros = host.replace(/(?:^|:)(?:0+:)+/g, "::").replace(/::+/g, "::");
+  if (collapsedZeros === "::1" || collapsedZeros === "0::1") {
+    throw new Error(
+      "MERCURY_API_BASE_URL must be publicly reachable. Loopback hosts are rejected.",
+    );
+  }
+
+  // IPv4-mapped IPv6: re-run the IPv4 private-range check on the embedded
+  // address, otherwise `[::ffff:127.0.0.1]` would slip past. Two shapes:
+  //   - dotted-quad: `::ffff:127.0.0.1` (untouched by some parsers)
+  //   - hex pair: `::ffff:7f00:1` (Node's `URL().hostname` canonicalises to this)
+  const ipv4MappedDotted = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+  if (ipv4MappedDotted) {
+    const inner = ipv4Match(ipv4MappedDotted[1]);
+    if (inner && isPrivateIPv4(inner)) {
+      throw new Error(
+        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which embeds a private IPv4 address.`,
+      );
+    }
+    return;
+  }
+  const ipv4MappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (ipv4MappedHex) {
+    const high = Number.parseInt(ipv4MappedHex[1], 16);
+    const low = Number.parseInt(ipv4MappedHex[2], 16);
+    const a = (high >> 8) & 0xff;
+    const b = high & 0xff;
+    if (isPrivateIPv4({ a, b })) {
+      throw new Error(
+        `MERCURY_API_BASE_URL must be publicly reachable. Got ${host} which embeds a private IPv4 address.`,
+      );
+    }
+    return;
+  }
+
+  // IPv6 CIDR bitmask check on the first hextet of an actual IPv6 literal.
   //   fc00::/7  → first 7 bits = 0b1111110 → mask 0xfe00, match 0xfc00 (ULA)
   //   fe80::/10 → first 10 bits = 0b1111111010 → mask 0xffc0, match 0xfe80 (link-local)
-  const firstHextet = Number.parseInt(host.split(":")[0], 16);
+  // Safe to parseInt here because we already know the host is bracketed IPv6.
+  const firstHextet = Number.parseInt(host.split(":")[0] || "0", 16);
   if (!Number.isNaN(firstHextet)) {
     if ((firstHextet & 0xfe00) === 0xfc00 || (firstHextet & 0xffc0) === 0xfe80) {
       throw new Error(
@@ -108,7 +160,12 @@ export function validateBaseUrl(raw: string): void {
  * for the rule set.
  */
 export function resolveBaseUrl(apiKey: string, explicitBaseUrl?: string): string | undefined {
-  if (explicitBaseUrl) {
+  // Treat `MERCURY_API_BASE_URL=""` as a provided-but-invalid override
+  // rather than as "unset" — otherwise an operator who exports the env
+  // variable and then forgets to fill it would silently fall back to
+  // sandbox-or-prod auto-detection, defeating the fail-closed posture
+  // (caught by CodeRabbit on this PR).
+  if (explicitBaseUrl !== undefined) {
     validateBaseUrl(explicitBaseUrl);
     return explicitBaseUrl;
   }
