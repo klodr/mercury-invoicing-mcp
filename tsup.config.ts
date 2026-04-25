@@ -5,10 +5,12 @@ export default defineConfig({
   format: ["esm"],
   target: "node22",
   dts: false,
-  // Sourcemaps in dev (npm run dev / npm test); never in published artifacts
-  // because they would expose the full TS source under dist/index.js.map.
-  sourcemap: process.env.NODE_ENV !== "production",
+  // Sourcemaps are opt-in only (MERCURY_MCP_SOURCEMAP=true). Every other
+  // invocation — including local `npm publish`, `npm run build`, CI, and
+  // the release workflow — produces a map-less bundle, so a forgotten
+  // NODE_ENV cannot accidentally ship TS sources under dist/index.js.map.
+  sourcemap: process.env.MERCURY_MCP_SOURCEMAP === "true",
   clean: true,
   shims: true,
-  banner: { js: "#!/usr/bin/env node" }
+  banner: { js: "#!/usr/bin/env node" },
 });
