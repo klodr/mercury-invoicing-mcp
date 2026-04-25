@@ -18,7 +18,7 @@ Loose planning horizon of ~12 months. The MCP follows Mercury's own API surface 
 
 ## Discoverability
 
-- **MCP registries** — publish to the public MCP indexes: [official MCP Registry](https://github.com/modelcontextprotocol/registry), [mcp.so](https://mcp.so), [glama.ai](https://glama.ai/mcp), [smithery.ai](https://smithery.ai).
+- **MCP registries** — publish to the public MCP indexes: [official MCP Registry](https://github.com/modelcontextprotocol/registry), [Docker MCP Registry](https://github.com/docker/mcp-registry), [mcp.so](https://mcp.so), [glama.ai](https://glama.ai/mcp), [smithery.ai](https://smithery.ai). The Docker MCP Registry submission `server.yaml` is drafted (validates against the registry's `task validate`); the open dependency is a sandbox API key to share with the registry maintainer via the secure submission form.
 
 ## Compliance / governance
 
