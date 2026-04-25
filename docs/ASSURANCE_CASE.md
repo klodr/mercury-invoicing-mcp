@@ -58,7 +58,7 @@ weaknesses have been countered.
    Mitigations: `MercuryError.toString()` and `toJSON()` are sealed
    (status + message only); the audit log redacts a list of sensitive
    keys at any depth (covered by property-based tests in
-   [`test/fuzz.test.ts`](./test/fuzz.test.ts)).
+   [`test/fuzz.test.ts`](../test/fuzz.test.ts)).
 7. **Hung Mercury endpoint** — DoS-by-stall: the MCP awaits forever
    and blocks the calling agent. Mitigation: `AbortSignal.timeout(30_000)`
    on every fetch.

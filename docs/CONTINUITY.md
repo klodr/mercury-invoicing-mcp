@@ -6,7 +6,7 @@ interruption (≤1 week) if I become unavailable.
 
 ## Built-in resilience (FLOSS guarantees)
 
-- **Source code**: public on GitHub under [MIT](./LICENSE). Anyone can fork
+- **Source code**: public on GitHub under [MIT](../LICENSE). Anyone can fork
   and continue development, including bug fixes and feature work.
 - **Release artifacts**: every published version is signed with Sigstore
   (`dist/index.js.sigstore`) and ships an SLSA in-toto attestation
@@ -14,7 +14,7 @@ interruption (≤1 week) if I become unavailable.
   can verify the chain of custody of any past release even if the
   original repo or npm scope becomes unmaintained.
 - **Build & release pipeline** is fully automated in
-  [`.github/workflows/release.yml`](./.github/workflows/release.yml) and
+  [`.github/workflows/release.yml`](../.github/workflows/release.yml) and
   documented in [`CHANGELOG.md`](../CHANGELOG.md). A fork can reproduce
   releases by configuring `NPM_TOKEN` and pushing a tag.
 - **No proprietary infrastructure**: no private dashboards, no
@@ -55,7 +55,7 @@ hours, depending on third-party account approval and token issuance times.
 
 - Adding a second maintainer is welcomed. Contributors with multiple
   merged PRs may propose adding their handle to
-  [`.github/CODEOWNERS`](./.github/CODEOWNERS).
+  [`.github/CODEOWNERS`](../.github/CODEOWNERS).
 - The maintainer's contact is on the
   [GitHub profile](https://github.com/klodr) for emergency hand-off
   coordination.
