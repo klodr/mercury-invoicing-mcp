@@ -1,4 +1,4 @@
-// ESLint v9 flat config.
+// ESLint v10 flat config.
 // Type-aware rules: requires `parserOptions.projectService: true` (TS 5+).
 
 import js from "@eslint/js";
@@ -31,7 +31,7 @@ export default tseslint.config(
     },
     rules: {
       // High-value additions over `recommendedTypeChecked`:
-      "eqeqeq": ["error", "always"],
+      eqeqeq: ["error", "always"],
       "no-console": ["warn", { allow: ["error", "warn"] }],
       // The recommendedTypeChecked preset already enables:
       // - @typescript-eslint/no-floating-promises
