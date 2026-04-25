@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Community-health files** — `.github/SUPPORT.md` (issue-redirection page surfaced by GitHub on issue creation, with best-effort response SLOs) and `CITATION.cff` (Citation File Format metadata enabling the GitHub "Cite this repository" button on the repo page).
+- **`package.json` discoverability** — `funding` field now points at `https://github.com/sponsors/klodr` (renders as the ❤️ Sponsor button on `npmjs.com`). `CHANGELOG.md` added to the `files` allowlist so it stays in the published tarball — npm v11 dropped `CHANGELOG.md` from the always-included list, so consumers who read changelog from `node_modules/` would otherwise see it disappear silently.
 
 ### Changed
 
