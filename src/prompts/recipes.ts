@@ -35,7 +35,8 @@ import { promptSafe } from "./_shared.js";
  * Separately, a `/mercury-pending-card-transactions` prompt is
  * tracked on its own PR alongside the `mercury_list_credit_accounts`
  * + `mercury_list_credit_transactions` tools it needs (the IO
- * Credit account lives behind undocumented endpoints that are not
+ * Credit account is exposed via the dedicated `/credit` endpoint
+ * and the singular `/account/{id}/transactions` path, neither
  * reachable from `mercury_list_accounts` / `mercury_list_cards`).
  * See ROADMAP.md → "Mercury IO Credit account exposure".
  */
