@@ -163,7 +163,9 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       idempotencyKey: z
         .string()
         .optional()
-        .describe("Unique key to prevent duplicate transfers. Auto-generated if omitted."),
+        .describe(
+          "Unique key to prevent duplicate transfers. Auto-generated if omitted; pass an explicit one to make retries safe.",
+        ),
     },
     async ({ idempotencyKey, ...body }) => {
       const idem = idempotencyKey ?? randomUUID();
@@ -183,7 +185,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "DO NOT USE: when you intend to transfer between your own accounts (use `mercury_create_internal_transfer` — no external recipient). For payments that may execute immediately under workspace policy, use `mercury_send_money` (different surface).",
       "",
-      "SIDE EFFECTS: creates a **pending approval request** on Mercury — no money has moved at this point. A human approver must sign off in the Mercury web/mobile app. Once approved, Mercury executes the underlying ACH / wire / check. **Idempotent via `idempotencyKey`** — auto-generated if not passed. Audit log entry on Mercury for the request itself.",
+      "SIDE EFFECTS: creates a **pending approval request** on Mercury — no money has moved at this point. A human approver must sign off in the Mercury web/mobile app. Once approved, Mercury executes the underlying ACH / wire / check. **Idempotent via `idempotencyKey`** — auto-generated if not passed; pass an explicit one to make retries safe. Audit log entry on Mercury for the request itself.",
       "",
       'RETURNS: `{ id, status: "pendingApproval", amount, ... }` — track via `mercury_get_transaction` once executed.',
     ].join("\n"),
@@ -194,7 +196,12 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       paymentMethod: z.enum(["ach", "wire", "check"]).describe("Payment method"),
       note: z.string().optional(),
       externalMemo: z.string().optional(),
-      idempotencyKey: z.string().optional(),
+      idempotencyKey: z
+        .string()
+        .optional()
+        .describe(
+          "Unique key to prevent duplicate transfers. Auto-generated if omitted; pass an explicit one to make retries safe.",
+        ),
     },
     async ({ accountId, idempotencyKey, ...body }) => {
       const idem = idempotencyKey ?? randomUUID();

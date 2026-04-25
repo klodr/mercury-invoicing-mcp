@@ -22,6 +22,10 @@ githubApp:
   pullRequestAlertsEnabled: true
   secretAlertsEnabled: true
 
+# REVIEW BY 2027-04 — annual audit checkpoint for the suppressions below.
+# Each entry is intentional today; drift over time (new transitive deps,
+# changed Socket categorisation) could turn a justified suppression into
+# a blind spot. Re-read every `false` and re-confirm before extending.
 issueRules:
   # Silence the alerts that are intrinsic to what this MCP does (read env,
   # read local rate-limit state, call the Mercury Banking API, hardcode the

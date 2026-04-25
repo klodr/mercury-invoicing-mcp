@@ -18,7 +18,17 @@
  *   MERCURY_MCP_RATE_LIMIT_DISABLE=true    # disable all limits
  */
 
-import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  closeSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
@@ -167,8 +177,8 @@ function persistCallHistory(): void {
   // Per-write unique tmp filename so two MCP processes that both call
   // persistCallHistory at the same instant cannot clobber each other's
   // tmp file before either rename completes. The rename itself is atomic.
-  // Caveat: this still does not give us inter-process serialization of the
-  // read-modify-write cycle — see .github/SECURITY.md "single-process state" entry.
+  // Inter-process serialization of the read-modify-write cycle is provided
+  // by the O_EXCL lockfile around the call site — see withRateLimitLock.
   const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   try {
     mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
@@ -178,6 +188,118 @@ function persistCallHistory(): void {
     renameSync(tmp, path);
   } catch (err) {
     console.error(`[ratelimit] failed to persist state to ${path}: ${(err as Error).message}`);
+  }
+}
+
+/**
+ * Inter-process lock for the rate-limit read-modify-write cycle.
+ *
+ * Two MCP hosts (Claude Desktop + Cursor on the same user account) can
+ * both invoke a write tool at the same instant. Each independently does
+ * load → check → append → persist. Without serialization the second
+ * process can clobber the first — under-counting against the per-day
+ * limit by 1-2 entries in a worst-case race.
+ *
+ * `O_EXCL` on a lockfile sibling to `ratelimit.json` gives us a
+ * filesystem-level mutex. The lock window covers the in-memory reload
+ * plus the persist. Same `MERCURY_MCP_STATE_DIR` precondition as the
+ * state file itself (already pre-created at `0o700`).
+ *
+ * Stale-lock recovery: if a prior process crashed between `openSync`
+ * and `rmSync`, the lockfile remains. We treat any lock older than
+ * `LOCK_STALE_MS` as abandoned and reclaim it. The wall-clock comparison
+ * is loose-by-design — a 5s window is comfortably longer than any
+ * legitimate RMW (a few ms) but short enough that recovery on
+ * crash/SIGKILL is automatic on the next call.
+ */
+const LOCK_TIMEOUT_MS = 2_000;
+const LOCK_STALE_MS = 5_000;
+const LOCK_RETRY_MS = 25;
+
+function getLockFile(): string {
+  return `${getStateFile()}.lock`;
+}
+
+/**
+ * Synchronous sleep for sync rate-limit retry. `Atomics.wait` on a tiny
+ * SharedArrayBuffer is the cleanest way to block a sync function for a
+ * fixed wall-clock duration (no `child_process.execSync('sleep')` cost,
+ * no busy loop burning CPU).
+ */
+function sleepSync(ms: number): void {
+  const buf = new SharedArrayBuffer(4);
+  const view = new Int32Array(buf);
+  Atomics.wait(view, 0, 0, ms);
+}
+
+function withRateLimitLock<T>(fn: () => T): T {
+  const lockPath = getLockFile();
+  // Best-effort: ensure the parent dir exists. mkdirSync is idempotent,
+  // and persistCallHistory does this too — but if we fail to acquire
+  // the lock here we still want a meaningful error path.
+  try {
+    mkdirSync(dirname(lockPath), { recursive: true, mode: 0o700 });
+  } catch {
+    /* fall through: openSync below will surface the real error */
+  }
+  const start = Date.now();
+  while (true) {
+    let fd: number | undefined;
+    try {
+      // O_WRONLY | O_CREAT | O_EXCL — fails with EEXIST if already held.
+      fd = openSync(lockPath, "wx", 0o600);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "EEXIST") {
+        // Anything other than EEXIST (EACCES on a read-only state dir,
+        // ENOENT on a vanished mount, etc.) means we cannot hold the
+        // lock at all. Fall through without it; the documented worst
+        // case is an under-count by 1-2 entries.
+        console.error(
+          `[ratelimit] cannot create lockfile ${lockPath}: ${(err as Error).message}; proceeding without inter-process lock`,
+        );
+        return fn();
+      }
+      // Stale-lock detection: reclaim a lockfile whose mtime is older
+      // than LOCK_STALE_MS (process crashed between open and unlink).
+      try {
+        const stat = statSync(lockPath);
+        if (Date.now() - stat.mtimeMs > LOCK_STALE_MS) {
+          rmSync(lockPath, { force: true });
+          continue;
+        }
+      } catch {
+        /* lock disappeared between EEXIST and stat — retry immediately */
+        continue;
+      }
+      if (Date.now() - start > LOCK_TIMEOUT_MS) {
+        // Best-effort: never block the tool call indefinitely on a busy
+        // lock. Fall through without a lock; the worst case is the
+        // documented under-count by 1-2 entries.
+        console.error(
+          `[ratelimit] lock contention on ${lockPath} after ${LOCK_TIMEOUT_MS}ms; proceeding without inter-process lock`,
+        );
+        return fn();
+      }
+      sleepSync(LOCK_RETRY_MS);
+      continue;
+    }
+    try {
+      return fn();
+    } finally {
+      // Order matters: close before rm so we don't unlink a file we
+      // still hold an fd on (POSIX is fine with it, but Windows isn't).
+      try {
+        closeSync(fd);
+      } catch {
+        /* already closed */
+      }
+      try {
+        rmSync(lockPath, { force: true });
+      } catch {
+        /* lock already gone */
+      }
+    }
   }
 }
 
@@ -228,28 +350,37 @@ export function enforceRateLimit(toolName: string): void {
   const limits = getBucketLimit(bucket);
   if (!limits) return;
 
-  loadCallHistory();
+  // The whole load → check → append → persist cycle runs under an
+  // O_EXCL lockfile so concurrent MCP hosts on the same state dir
+  // serialise their RMW. `loadCallHistory` is re-run inside the lock
+  // (after resetting `stateLoaded`) to pick up writes from any peer
+  // that held the lock immediately before us — otherwise we would
+  // count against a stale in-memory snapshot.
+  withRateLimitLock(() => {
+    stateLoaded = false;
+    loadCallHistory();
 
-  const now = Date.now();
-  // Prune: keep only records within the monthly window
-  const records = (callHistory.get(bucket) ?? []).filter((ts) => now - ts < MONTH_MS);
+    const now = Date.now();
+    // Prune: keep only records within the monthly window
+    const records = (callHistory.get(bucket) ?? []).filter((ts) => now - ts < MONTH_MS);
 
-  // Daily window: records within the last 24h
-  const dailyRecords = records.filter((ts) => now - ts < DAY_MS);
-  if (dailyRecords.length >= limits.daily) {
-    const retryAfterMs = DAY_MS - (now - dailyRecords[0]);
-    throw new RateLimitError(toolName, bucket, "daily", limits.daily, retryAfterMs);
-  }
+    // Daily window: records within the last 24h
+    const dailyRecords = records.filter((ts) => now - ts < DAY_MS);
+    if (dailyRecords.length >= limits.daily) {
+      const retryAfterMs = DAY_MS - (now - dailyRecords[0]);
+      throw new RateLimitError(toolName, bucket, "daily", limits.daily, retryAfterMs);
+    }
 
-  // Monthly window: records is already pruned to 30 days
-  if (records.length >= limits.monthly) {
-    const retryAfterMs = MONTH_MS - (now - records[0]);
-    throw new RateLimitError(toolName, bucket, "monthly", limits.monthly, retryAfterMs);
-  }
+    // Monthly window: records is already pruned to 30 days
+    if (records.length >= limits.monthly) {
+      const retryAfterMs = MONTH_MS - (now - records[0]);
+      throw new RateLimitError(toolName, bucket, "monthly", limits.monthly, retryAfterMs);
+    }
 
-  records.push(now);
-  callHistory.set(bucket, records);
-  persistCallHistory();
+    records.push(now);
+    callHistory.set(bucket, records);
+    persistCallHistory();
+  });
 }
 
 export function isDryRun(): boolean {
@@ -288,6 +419,58 @@ export function redactSensitive(value: unknown): unknown {
   return out;
 }
 
+/**
+ * Default audit-log rotation threshold: 50 MB. Matches the in-line
+ * default surfaced in `getAuditLogMaxBytes` so callers reading the
+ * source see the same number twice.
+ */
+const DEFAULT_AUDIT_LOG_MAX_BYTES = 50 * 1024 * 1024;
+
+/**
+ * Parse `MERCURY_MCP_AUDIT_LOG_MAX_BYTES` if set. Falls back to the
+ * default when the env var is missing, malformed, zero, or negative.
+ * Logs a single warning on bad input so an operator can fix the typo
+ * without auditing breaking entirely.
+ */
+function getAuditLogMaxBytes(): number {
+  const raw = process.env.MERCURY_MCP_AUDIT_LOG_MAX_BYTES;
+  if (!raw) return DEFAULT_AUDIT_LOG_MAX_BYTES;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    console.error(
+      `[audit] invalid MERCURY_MCP_AUDIT_LOG_MAX_BYTES=${raw}; falling back to default ${DEFAULT_AUDIT_LOG_MAX_BYTES} bytes`,
+    );
+    return DEFAULT_AUDIT_LOG_MAX_BYTES;
+  }
+  return parsed;
+}
+
+/**
+ * Rotate the audit log if it exceeds the byte cap. Single-generation
+ * rotation: `<path>` becomes `<path>.1`, overwriting any previous `.1`.
+ * Operators who want a longer retention chain should still run their
+ * own `logrotate` recipe.
+ */
+function rotateAuditLogIfNeeded(path: string, maxBytes: number): void {
+  let size: number;
+  try {
+    size = statSync(path).size;
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") return; // not yet created — nothing to rotate
+    // EACCES / EIO / etc.: refuse to rotate; the next appendFileSync
+    // will surface the same problem with a clearer message.
+    console.error(`[audit] cannot stat ${path} for rotation: ${(err as Error).message}`);
+    return;
+  }
+  if (size < maxBytes) return;
+  try {
+    renameSync(path, `${path}.1`);
+  } catch (err) {
+    console.error(`[audit] failed to rotate ${path}: ${(err as Error).message}`);
+  }
+}
+
 export function logAudit(
   toolName: string,
   args: unknown,
@@ -299,6 +482,19 @@ export function logAudit(
     console.error(`[audit] MERCURY_MCP_AUDIT_LOG must be an absolute path; got: ${path}`);
     return;
   }
+  // Mirror the state-file pattern: pre-create the parent dir at 0o700
+  // so the audit log doesn't sit inside a world-readable directory on
+  // a multi-tenant host where the operator forgot to chmod the parent.
+  // mkdirSync is idempotent on { recursive: true }; the mode is only
+  // applied to dirs the call actually creates, so a pre-existing dir
+  // keeps its original mode (don't widen, don't narrow).
+  try {
+    mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+  } catch (err) {
+    console.error(`[audit] failed to create dir for ${path}: ${(err as Error).message}`);
+    // fall through: appendFileSync below will surface the real error
+  }
+  rotateAuditLogIfNeeded(path, getAuditLogMaxBytes());
   const entry = JSON.stringify({
     ts: new Date().toISOString(),
     tool: toolName,

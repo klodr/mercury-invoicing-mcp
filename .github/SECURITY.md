@@ -42,21 +42,28 @@ maintainer commits to, and limits that callers must account for.
   `"Mercury API error 429: …"` via the `MercuryError` branch.
 - **Optional audit trail**: `MERCURY_MCP_AUDIT_LOG=/abs/path/audit.log` writes
   an append-only JSON Lines record (file mode `0o600`, sensitive fields
-  redacted) of every write call.
+  redacted) of every write call. The parent directory is pre-created at
+  mode `0o700` so the log does not sit inside a world-readable directory.
+  Single-generation rotation kicks in at
+  `MERCURY_MCP_AUDIT_LOG_MAX_BYTES` (default 50 MB): the live log is renamed
+  to `<path>.1` (overwriting any previous `.1`) and a fresh log is opened.
+  Operators who need a longer retention chain should compose this with their
+  own `logrotate` recipe.
 - **Persistent rate-limit state**: the rate-limit window survives MCP process
   restarts. State is written to `~/.mercury-mcp/ratelimit.json` (mode `0o600`,
   atomic `rename` of a per-write tmp file with PID+UUID suffix) by default;
   override with `MERCURY_MCP_STATE_DIR=/abs/path`. Without persistence, an MCP
   host that respawns the server per session would reset the counter and
-  silently bypass the limit. **Single-process semantics**: this MCP assumes
-  one process per `MERCURY_MCP_STATE_DIR` at a time. If you run two MCP hosts
-  concurrently against the same state directory (e.g. Claude Desktop and
-  Cursor on the same user account), the read-modify-write cycle is not
-  inter-process locked — the last writer wins and an in-flight call recorded
-  by the other process can be dropped, slightly under-counting against the
-  per-day limit. Mercury's own server-side limits remain authoritative; for
-  this MCP's local cap, treat the local rate-limit as best-effort under
-  concurrent-host conditions. **Persistent unreadable state**: if the state
+  silently bypass the limit. **Inter-process serialisation**: the
+  load → check → append → persist cycle runs under a sibling
+  `ratelimit.json.lock` lockfile created with `O_EXCL`. Two MCP hosts on the
+  same state dir (Claude Desktop and Cursor on the same user account)
+  serialise their writes through the lock, eliminating the previous
+  under-count race. Stale locks (process killed between open and unlink)
+  are reclaimed automatically after a short grace window. Under sustained
+  contention beyond a 2 s timeout, the middleware falls through without the
+  lock — the documented worst case is a small under-count that Mercury's
+  server-side limits still bound. **Persistent unreadable state**: if the state
   file becomes chronically unreadable mid-session (`EACCES`, `EIO`, broken
   mount, container respawn without the volume), the middleware logs a
   warning, refuses to overwrite the file (so the prior counter is
