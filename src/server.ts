@@ -68,9 +68,21 @@ export function validateBaseUrl(raw: string): void {
   const isIPv6Literal = rawHost.startsWith("[") && rawHost.endsWith("]");
   const host = isIPv6Literal ? rawHost.slice(1, -1) : rawHost;
 
-  if (host === "localhost") {
+  // RFC 6761 reserves the entire `.localhost` namespace as loopback —
+  // not just the bare label. `localhost.`, `foo.localhost`, and
+  // `foo.localhost.` all resolve to a loopback target on stacks that
+  // honor the spec, so a bearer token sent to any of them leaks the
+  // same way as `https://127.0.0.1/`. Reject the namespace as a
+  // whole, before the non-IPv6 fast path. (Caught by CodeRabbit on
+  // this PR.)
+  if (
+    host === "localhost" ||
+    host === "localhost." ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".localhost.")
+  ) {
     throw new Error(
-      "MERCURY_API_BASE_URL must be publicly reachable. Loopback hosts are rejected.",
+      "MERCURY_API_BASE_URL must be publicly reachable. Loopback hosts (the entire .localhost namespace per RFC 6761) are rejected.",
     );
   }
 

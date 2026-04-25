@@ -38,6 +38,15 @@ describe("resolveBaseUrl", () => {
     expect(() => resolveBaseUrl("any-key", "https://localhost/api")).toThrow(/Loopback/);
   });
 
+  it("rejects the full .localhost namespace (RFC 6761)", () => {
+    // `localhost.` (trailing dot), `foo.localhost`, and `foo.localhost.`
+    // are all reserved as loopback in RFC 6761 — sending a bearer to any
+    // of them leaks the same way as `https://127.0.0.1/`.
+    expect(() => resolveBaseUrl("any-key", "https://localhost./api")).toThrow(/Loopback/);
+    expect(() => resolveBaseUrl("any-key", "https://foo.localhost/api")).toThrow(/Loopback/);
+    expect(() => resolveBaseUrl("any-key", "https://foo.bar.localhost./api")).toThrow(/Loopback/);
+  });
+
   it("throws on RFC 1918 / link-local / cloud-metadata override", () => {
     expect(() => resolveBaseUrl("any-key", "https://10.0.0.5/api")).toThrow(/publicly reachable/);
     expect(() => resolveBaseUrl("any-key", "https://192.168.1.5/api")).toThrow(
