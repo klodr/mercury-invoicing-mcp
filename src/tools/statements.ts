@@ -25,5 +25,6 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
       const data = await client.get(`/account/${accountId}/statements`, query);
       return textResult(data);
     },
+    { title: "List Statements", readOnlyHint: true },
   );
 }

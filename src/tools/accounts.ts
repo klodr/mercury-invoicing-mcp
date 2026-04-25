@@ -21,6 +21,7 @@ export function registerAccountTools(server: McpServer, client: MercuryClient): 
       const data = await client.get("/accounts");
       return textResult(data);
     },
+    { title: "List Accounts", readOnlyHint: true },
   );
 
   defineTool(
@@ -42,5 +43,6 @@ export function registerAccountTools(server: McpServer, client: MercuryClient): 
       const data = await client.get(`/account/${accountId}`);
       return textResult(data);
     },
+    { title: "Get Account", readOnlyHint: true },
   );
 }
