@@ -338,6 +338,14 @@ npm test
 - [dragonkhoi/mercury-mcp](https://github.com/dragonkhoi/mercury-mcp) — initial banking tool implementations
 - [Official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp) — read-only reference
 
+## 🌐 Ecosystem
+
+Other MCP servers in the klodr family:
+
+- 📧 [klodr/gmail-mcp](https://github.com/klodr/gmail-mcp) — Gmail
+- 📠 [klodr/faxdrop-mcp](https://github.com/klodr/faxdrop-mcp) — Send real faxes via FaxDrop
+- 🏦 [klodr/mercury-invoicing-mcp](https://github.com/klodr/mercury-invoicing-mcp) — Mercury banking + invoicing (you are here)
+
 ## 📄 License
 
 MIT — see [LICENSE](./LICENSE).
