@@ -1,9 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import { z, ZodRawShape } from "zod";
 import { wrapToolHandler, type ToolResult } from "../middleware.js";
 import { sanitizeJsonValues } from "../sanitize.js";
 
 export type { ToolResult };
+export type { ToolAnnotations };
 
 /**
  * Build a ToolResult from a JSON-shaped response. The LLM-display
@@ -32,8 +34,19 @@ export function defineTool<S extends ZodRawShape>(
   description: string,
   inputSchema: S,
   handler: (args: z.infer<z.ZodObject<S>>) => Promise<ToolResult>,
+  annotations?: ToolAnnotations,
 ): void {
   const wrapped = wrapToolHandler(name, handler);
   const strictSchema = z.object(inputSchema).strict();
-  server.registerTool(name, { description, inputSchema: strictSchema }, wrapped);
+  // MCP behavioral annotations (readOnlyHint / destructiveHint /
+  // idempotentHint / openWorldHint) — declared machine-readable so
+  // hosts and rubrics (TDQS / Glama Behavior dimension) can detect
+  // tool semantics without scraping the prose description.
+  server.registerTool(
+    name,
+    annotations
+      ? { description, inputSchema: strictSchema, annotations }
+      : { description, inputSchema: strictSchema },
+    wrapped,
+  );
 }

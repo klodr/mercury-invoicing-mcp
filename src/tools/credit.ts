@@ -39,6 +39,7 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       const data = await client.get("/credit");
       return textResult(data);
     },
+    { title: "List Credit Accounts", readOnlyHint: true },
   );
 
   defineTool(
@@ -78,5 +79,6 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       const data = await client.get(`/account/${accountId}/transactions`, query);
       return textResult(data);
     },
+    { title: "List Credit Transactions", readOnlyHint: true },
   );
 }
