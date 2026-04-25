@@ -1,6 +1,12 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { createServer, resolveBaseUrl, SANDBOX_BASE_URL, VERSION } from "../src/server.js";
+import {
+  createServer,
+  resolveBaseUrl,
+  SANDBOX_BASE_URL,
+  validateBaseUrl,
+  VERSION,
+} from "../src/server.js";
 
 describe("resolveBaseUrl", () => {
   it("returns explicit baseUrl when provided", () => {
@@ -21,6 +27,46 @@ describe("resolveBaseUrl", () => {
     expect(resolveBaseUrl("secret-token:mercury_sandbox_abc", "https://override.example.com")).toBe(
       "https://override.example.com",
     );
+  });
+
+  it("throws on http:// override (no plaintext bearer leak)", () => {
+    expect(() => resolveBaseUrl("any-key", "http://attacker.tld/api")).toThrow(/https:\/\//);
+  });
+
+  it("throws on loopback override (no SSRF)", () => {
+    expect(() => resolveBaseUrl("any-key", "https://127.0.0.1/api")).toThrow(/publicly reachable/);
+    expect(() => resolveBaseUrl("any-key", "https://localhost/api")).toThrow(/Loopback/);
+  });
+
+  it("throws on RFC 1918 / link-local / cloud-metadata override", () => {
+    expect(() => resolveBaseUrl("any-key", "https://10.0.0.5/api")).toThrow(/publicly reachable/);
+    expect(() => resolveBaseUrl("any-key", "https://192.168.1.5/api")).toThrow(
+      /publicly reachable/,
+    );
+    expect(() => resolveBaseUrl("any-key", "https://172.16.0.5/api")).toThrow(/publicly reachable/);
+    expect(() => resolveBaseUrl("any-key", "https://169.254.169.254/api")).toThrow(
+      /publicly reachable/,
+    );
+  });
+
+  it("throws on IPv6 ULA / link-local override", () => {
+    expect(() => resolveBaseUrl("any-key", "https://[fc00::1]/api")).toThrow(/private IPv6/);
+    expect(() => resolveBaseUrl("any-key", "https://[fe80::1]/api")).toThrow(/private IPv6/);
+    expect(() => resolveBaseUrl("any-key", "https://[::1]/api")).toThrow(/Loopback/);
+  });
+
+  it("throws on malformed override URL", () => {
+    expect(() => resolveBaseUrl("any-key", "not-a-url")).toThrow(/not a valid URL/);
+  });
+});
+
+describe("validateBaseUrl (direct)", () => {
+  it("accepts the official Mercury production URL", () => {
+    expect(() => validateBaseUrl("https://api.mercury.com/api/v1")).not.toThrow();
+  });
+
+  it("accepts the official Mercury sandbox URL", () => {
+    expect(() => validateBaseUrl(SANDBOX_BASE_URL)).not.toThrow();
   });
 });
 
