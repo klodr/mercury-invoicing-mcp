@@ -39,6 +39,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.get(`/account/${accountId}/transactions`, query);
       return textResult(data);
     },
+    { title: "List Transactions", readOnlyHint: true },
   );
 
   defineTool(
@@ -61,6 +62,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
       return textResult(data);
     },
+    { title: "Get Transaction", readOnlyHint: true },
   );
 
   defineTool(
@@ -99,6 +101,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       });
       return textResult(data);
     },
+    { title: "Send Money", destructiveHint: true, idempotentHint: true },
   );
 
   defineTool(
@@ -135,6 +138,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.patch(`/transaction/${transactionId}`, body);
       return textResult(data);
     },
+    { title: "Update Transaction", destructiveHint: false },
   );
 
   defineTool(
@@ -166,6 +170,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.post(`/transfer`, { ...body, idempotencyKey: idem });
       return textResult(data);
     },
+    { title: "Create Internal Transfer", destructiveHint: false, idempotentHint: true },
   );
 
   defineTool(
@@ -199,5 +204,6 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       });
       return textResult(data);
     },
+    { title: "Request Send Money", destructiveHint: true, idempotentHint: true },
   );
 }

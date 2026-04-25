@@ -23,5 +23,6 @@ export function registerCardTools(server: McpServer, client: MercuryClient): voi
       const data = await client.get(`/account/${accountId}/cards`);
       return textResult(data);
     },
+    { title: "List Cards", readOnlyHint: true },
   );
 }
