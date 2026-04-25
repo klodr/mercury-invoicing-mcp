@@ -2,6 +2,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
   createServer,
+  MERCURY_HOSTS,
   resolveBaseUrl,
   SANDBOX_BASE_URL,
   validateBaseUrl,
@@ -123,15 +124,19 @@ describe("validateBaseUrl (direct)", () => {
     delete process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST;
   });
 
-  it("accepts the official Mercury production URL", () => {
-    expect(() => validateBaseUrl("https://api.mercury.com/api/v1")).not.toThrow();
-  });
-
-  it("accepts the official Mercury sandbox URL", () => {
+  it("accepts every host on the strict allowlist (and the sandbox URL constant)", () => {
+    // Iterate the exported allowlist — the test purposefully does not pin
+    // literal hostnames so the allowlist can be tightened (or relaxed)
+    // without rewriting the assertion.
+    for (const allowed of MERCURY_HOSTS) {
+      expect(() => validateBaseUrl(`https://${allowed}`)).not.toThrow();
+      expect(() => validateBaseUrl(`https://${allowed}/api/v1`)).not.toThrow();
+    }
+    // SANDBOX_BASE_URL must be on the allowlist by construction.
     expect(() => validateBaseUrl(SANDBOX_BASE_URL)).not.toThrow();
   });
 
-  it("rejects other *.mercury.com subdomains by default (strict allowlist)", () => {
+  it("rejects mercury.com subdomains that aren't on the strict allowlist", () => {
     // No wildcard: any future Mercury subdomain that should ship needs an
     // explicit code-review pass before it inherits write access to the
     // bearer token.

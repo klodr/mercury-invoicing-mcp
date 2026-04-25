@@ -10,6 +10,11 @@ import { registerAllPrompts } from "./prompts/index.js";
 export const VERSION = "0.12.0";
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
 
+// Strict allowlist of Mercury hostnames `validateBaseUrl()` accepts without
+// the explicit `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true` opt-in. New entries
+// require explicit code review (no wildcard).
+export const MERCURY_HOSTS = ["api.mercury.com", "api-sandbox.mercury.com"] as const;
+
 export interface ServerOptions {
   apiKey: string;
   /** Override the Mercury API base URL (e.g. for a self-hosted proxy). */
@@ -123,8 +128,7 @@ export function validateBaseUrl(raw: string): void {
   // Legitimate self-hosted proxies / observability shims opt in via
   // `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true`, which surfaces a loud
   // stderr warning so the deviation is visible at boot.
-  const MERCURY_HOSTS = ["api.mercury.com", "api-sandbox.mercury.com"];
-  const isMercuryHost = MERCURY_HOSTS.includes(host);
+  const isMercuryHost = (MERCURY_HOSTS as readonly string[]).includes(host);
   if (!isMercuryHost) {
     if (process.env.MERCURY_MCP_ALLOW_NON_MERCURY_HOST !== "true") {
       throw new Error(
