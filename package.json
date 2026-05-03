@@ -1,6 +1,6 @@
 {
   "name": "mercury-invoicing-mcp",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Mercury Banking MCP server with full Invoicing API support — accounts, transactions, recipients, customers, invoices (one-shot + recurring), webhooks.",
   "keywords": [
     "mcp",
