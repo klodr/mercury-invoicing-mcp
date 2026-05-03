@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-05-03 — Dependency refresh
+
+### Changed
+
+- **`zod`** 4.3.6 → 4.4.2 (production). Schemas drive every tool input/output in this repo; bumped on its own PR (#103) for independent triage. Tests 227/227 pass against the new minor.
+- **`eslint`** 10.2.1 → 10.3.0 (dev, minor).
+- **`typescript-eslint`** 8.59.0 → 8.59.1 (dev, patch).
+
+Pre-empts the weekly dependabot run rather than letting it open the bumps over multiple cycles. Two PRs: dev-deps (#102) and prod-deps (#103).
+
 ## [0.13.0] - 2026-04-26 — Layered SSRF defense + MCP annotations + LOW/INFO security findings
 
 A minor release shipping three independently-developed lines of work
@@ -566,7 +576,8 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 - Smithery + Official MCP Registry manifests
 - Examples and publishing checklist
 
-[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.10.0...v0.11.0
