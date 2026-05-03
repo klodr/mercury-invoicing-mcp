@@ -63,13 +63,13 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.19.17",
     "@vitest/coverage-v8": "^4.1.4",
-    "eslint": "^10.2.1",
+    "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "fast-check": "^4.7.0",
     "prettier": "^3.8.3",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2",
+    "typescript-eslint": "^8.59.1",
     "vitest": "^4.1.4"
   },
   "pnpm": {
