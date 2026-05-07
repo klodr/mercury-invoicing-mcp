@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.0...v0.14.1) (2026-05-07)
+
+
+### Changed
+
+* bump hono from 4.12.14 to 4.12.18 ([#109](https://github.com/klodr/mercury-invoicing-mcp/issues/109)) ([ac9ebaa](https://github.com/klodr/mercury-invoicing-mcp/commit/ac9ebaaee98d5f347d935a340efd9e70b6e1bc3d))
+* bump ip-address and express-rate-limit ([#107](https://github.com/klodr/mercury-invoicing-mcp/issues/107)) ([c7bfd36](https://github.com/klodr/mercury-invoicing-mcp/commit/c7bfd36493d8401091f5497b235eed77417e5180))
+* bump ipaddr.js from 2.3.0 to 2.4.0 (production-deps) ([#106](https://github.com/klodr/mercury-invoicing-mcp/issues/106)) ([cc60249](https://github.com/klodr/mercury-invoicing-mcp/commit/cc602495bacff542fa8986c0117e8f9f7cb5cfab))
+
 ## [Unreleased]
 
 ## [0.14.0] - 2026-05-03 — Dependency refresh
