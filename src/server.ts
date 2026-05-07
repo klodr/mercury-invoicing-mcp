@@ -4,10 +4,12 @@ import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
 import { registerAllPrompts } from "./prompts/index.js";
 
-// Kept in sync with package.json by scripts/sync-version.mjs (called by the
-// `npm version` lifecycle hook). Do not edit manually — bump via
-// `npm version patch|minor|major`.
-export const VERSION = "0.14.0";
+// Bumped by release-please via the `x-release-please-version`
+// annotation on the line below; the manual `npm version` path is
+// still supported via scripts/sync-version.mjs (which also keeps
+// server.json in sync with this constant). Do not edit the literal
+// manually — let one of the two mechanisms own it.
+export const VERSION = "0.14.0"; // x-release-please-version
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
 
 // Strict allowlist of Mercury hostnames `validateBaseUrl()` accepts without
