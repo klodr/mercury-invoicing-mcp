@@ -4,6 +4,7 @@ coverage:
       default:
         target: auto
         threshold: 0.5%
+        only_pulls: false
         # Project coverage shouldn't drop more than 0.5% in any single PR.
         if_no_uploads: success
         if_not_found: success
@@ -14,6 +15,7 @@ coverage:
       default:
         target: 95%
         threshold: 1.5%
+        only_pulls: false
         if_no_uploads: success
         if_not_found: success
         # Strict patch gate (95% target, 1.5% threshold) — new code must
