@@ -17,7 +17,7 @@ export function registerCardTools(server: McpServer, client: MercuryClient): voi
       "RETURNS: `{ cards: [{ id, last4, type, status, holderName, expiry, ... }] }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("The Mercury account ID"),
+      accountId: z.uuid().describe("The Mercury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/account/${accountId}/cards`);
