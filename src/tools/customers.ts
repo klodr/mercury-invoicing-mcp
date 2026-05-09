@@ -31,8 +31,8 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     {
       limit: z.number().int().min(1).max(1000).optional().describe("Max results (1-1000)"),
       order: z.enum(["asc", "desc"]).optional(),
-      startAfter: z.string().uuid().optional().describe("Pagination cursor (forward)"),
-      endBefore: z.string().uuid().optional().describe("Pagination cursor (reverse)"),
+      startAfter: z.uuid().optional().describe("Pagination cursor (forward)"),
+      endBefore: z.uuid().optional().describe("Pagination cursor (reverse)"),
     },
     async (args) => {
       const query: Record<string, string | number | undefined> = {
@@ -60,7 +60,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       "RETURNS: `{ id, name, email, address, ... }`.",
     ].join("\n"),
     {
-      customerId: z.string().uuid().describe("Customer ID"),
+      customerId: z.uuid().describe("Customer ID"),
     },
     async ({ customerId }) => {
       const data = await client.get(`/ar/customers/${customerId}`);
@@ -85,7 +85,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
     ].join("\n"),
     {
       name: z.string().describe("Customer name"),
-      email: z.string().email().describe("Customer email"),
+      email: z.email().describe("Customer email"),
       address: addressSchema.optional(),
     },
     async (args) => {
@@ -110,9 +110,9 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       "RETURNS: `{ id, name, email, address, ... }` — the updated customer.",
     ].join("\n"),
     {
-      customerId: z.string().uuid().describe("Customer ID"),
+      customerId: z.uuid().describe("Customer ID"),
       name: z.string().optional(),
-      email: z.string().email().optional(),
+      email: z.email().optional(),
       address: addressSchema.optional(),
     },
     async ({ customerId, ...body }) => {
@@ -137,7 +137,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       "RETURNS: confirmation payload from Mercury (`{ deleted: true, ... }` or similar).",
     ].join("\n"),
     {
-      customerId: z.string().uuid().describe("Customer ID"),
+      customerId: z.uuid().describe("Customer ID"),
     },
     async ({ customerId }) => {
       const data = await client.delete(`/ar/customers/${customerId}`);

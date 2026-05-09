@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   console.error(`mercury-invoicing-mcp v${VERSION} running on stdio`);
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error("Fatal error:", error);
   process.exit(1);
 });

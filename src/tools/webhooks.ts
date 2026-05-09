@@ -33,7 +33,7 @@ Check https://docs.mercury.com/reference/webhooks for the full list.`;
  *     (transactions, invoices, balances) in clear. The
  *     `webhooks_create: 2/day` rate limit is not a real brake here —
  *     two endpoints are more than enough to exfiltrate. The old
- *     `z.string().url()` accepted `http://`, `file://`, `data:`,
+ *     `z.url()` accepted `http://`, `file://`, `data:`,
  *     `ftp://`, etc.; the description said "HTTPS" but the validator
  *     did not enforce it.
  *
@@ -46,14 +46,13 @@ Check https://docs.mercury.com/reference/webhooks for the full list.`;
  *     nothing legitimate.
  */
 const HttpsWebhookUrl = z
-  .string()
   .url()
   .refine(
     (raw) => {
       try {
         return new URL(raw).protocol === "https:";
       } catch {
-        // `z.string().url()` rejects malformed URLs before this refine
+        // `z.url()` rejects malformed URLs before this refine
         // runs, so `new URL()` cannot actually throw here. Kept
         // defensive in case the upstream validator changes.
         /* v8 ignore next */
@@ -155,7 +154,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, url, status, events, ... }`.",
     ].join("\n"),
     {
-      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
+      webhookId: z.uuid().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
       const data = await client.get(`/webhooks/${webhookId}`);
@@ -206,7 +205,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, url, status, events, ... }` — the updated webhook.",
     ].join("\n"),
     {
-      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
+      webhookId: z.uuid().describe("The webhook endpoint ID"),
       url: HttpsWebhookUrl.optional().describe(
         "New publicly reachable HTTPS URL (same rules as mercury_create_webhook).",
       ),
@@ -235,7 +234,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       "RETURNS: confirmation payload (`{ deleted: true, ... }` or similar).",
     ].join("\n"),
     {
-      webhookId: z.string().uuid().describe("The webhook endpoint ID"),
+      webhookId: z.uuid().describe("The webhook endpoint ID"),
     },
     async ({ webhookId }) => {
       const data = await client.delete(`/webhooks/${webhookId}`);

@@ -37,7 +37,7 @@ export function registerAccountTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, name, kind, status, availableBalance, currentBalance, accountNumber, routingNumber, ... }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("The Mercury account ID"),
+      accountId: z.uuid().describe("The Mercury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/account/${accountId}`);
