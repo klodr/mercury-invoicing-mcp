@@ -3,6 +3,7 @@
 
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import promise from "eslint-plugin-promise";
 import importX from "eslint-plugin-import-x";
 import prettier from "eslint-config-prettier";
 
@@ -22,6 +23,7 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
+  promise.configs["flat/recommended"],
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   prettier,
