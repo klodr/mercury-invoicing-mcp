@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.1...v0.15.2) (2026-05-09)
+
+
+### Changed
+
+* **release-please:** chain on workflow_run instead of racing CI ([#132](https://github.com/klodr/mercury-invoicing-mcp/issues/132)) ([dfa44dd](https://github.com/klodr/mercury-invoicing-mcp/commit/dfa44dda8c3f4a03040672720f50b6724d67c02b))
+* **release:** strip prepare + prepublishOnly before npm publish ([#133](https://github.com/klodr/mercury-invoicing-mcp/issues/133)) ([f80e8a7](https://github.com/klodr/mercury-invoicing-mcp/commit/f80e8a7c0949497262115e81794da270a49249ab))
+
 ## [0.15.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.0...v0.15.1) (2026-05-09)
 
 
