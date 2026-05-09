@@ -235,9 +235,13 @@ jobs:
       # dev-only tool — keeping `prepare: husky` in the published
       # manifest would only mislead consumers who try to inspect it.
       - name: Strip prepare + prepublishOnly before publish
+        # `|| true` tolerates an absent key — `npm pkg delete` exits
+        # non-zero when the key is missing, which would block the job
+        # if a future commit removes one of these scripts from
+        # package.json.
         run: |
-          npm pkg delete scripts.prepare
-          npm pkg delete scripts.prepublishOnly
+          npm pkg delete scripts.prepare || true
+          npm pkg delete scripts.prepublishOnly || true
 
       - name: Publish to npm
         run: npm publish --access public --provenance --ignore-scripts
