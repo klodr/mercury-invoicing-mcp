@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.0...v0.15.1) (2026-05-09)
+
+
+### Changed
+
+* **eslint:** add eslint-plugin-import-x (flat/recommended) ([#129](https://github.com/klodr/mercury-invoicing-mcp/issues/129)) ([5169293](https://github.com/klodr/mercury-invoicing-mcp/commit/5169293d7f5e03a55fc172c3bad95e6f6fa6a2f8))
+* **eslint:** add eslint-plugin-promise (flat/recommended) ([#126](https://github.com/klodr/mercury-invoicing-mcp/issues/126)) ([69f70f6](https://github.com/klodr/mercury-invoicing-mcp/commit/69f70f6455d98c18aea234eff9cf0b66a85f56d3))
+* **eslint:** switch to tseslint.configs.strictTypeChecked ([#128](https://github.com/klodr/mercury-invoicing-mcp/issues/128)) ([a807f0c](https://github.com/klodr/mercury-invoicing-mcp/commit/a807f0c3c6a34666c99e01e4420302eeb136ba24))
+* **husky:** pre-push gate for format+lint+test+audit ([#125](https://github.com/klodr/mercury-invoicing-mcp/issues/125)) ([aec43be](https://github.com/klodr/mercury-invoicing-mcp/commit/aec43be6843654258b878aa2b0f703a199382f3b))
+* **lockfile-lint:** harden shape guard against null + arrays ([#124](https://github.com/klodr/mercury-invoicing-mcp/issues/124)) ([5e4e65d](https://github.com/klodr/mercury-invoicing-mcp/commit/5e4e65da769b3b6ac95feb49b78f05ad28d54253))
+* **lockfile-lint:** use npm ci + npx instead of pinned tarball ([#121](https://github.com/klodr/mercury-invoicing-mcp/issues/121)) ([35ab59a](https://github.com/klodr/mercury-invoicing-mcp/commit/35ab59ab348308d0bc045c8860092c7a8a1b69b5))
+* **release-please:** expose chore + ci in CHANGELOG sections ([#130](https://github.com/klodr/mercury-invoicing-mcp/issues/130)) ([7941a89](https://github.com/klodr/mercury-invoicing-mcp/commit/7941a899401c43d39513a1ed07e9f73fad454fb5))
+
 ## [0.15.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.1...v0.15.0) (2026-05-08)
 
 
