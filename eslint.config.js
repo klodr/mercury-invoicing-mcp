@@ -21,7 +21,7 @@ export default tseslint.config(
     ],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strict,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   prettier,
