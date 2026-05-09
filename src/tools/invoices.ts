@@ -39,12 +39,10 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         .describe("Max results to return (1-1000). Default: 1000"),
       order: z.enum(["asc", "desc"]).optional().describe("Sort order. Default: asc"),
       startAfter: z
-        .string()
         .uuid()
         .optional()
         .describe("Pagination: return invoices after this ID"),
       endBefore: z
-        .string()
         .uuid()
         .optional()
         .describe("Pagination: return invoices before this ID"),
@@ -75,7 +73,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, status, amount, customerId, lineItems, paymentUrl, dueDate, ... }`.",
     ].join("\n"),
     {
-      invoiceId: z.string().uuid().describe("The invoice ID (UUID)"),
+      invoiceId: z.uuid().describe("The invoice ID (UUID)"),
     },
     async ({ invoiceId }) => {
       const data = await client.get(`/ar/invoices/${invoiceId}`);
@@ -99,9 +97,8 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, status, amount, paymentUrl, ... }` — `paymentUrl` is the Mercury-hosted page where the customer pays.",
     ].join("\n"),
     {
-      customerId: z.string().uuid().describe("Customer ID (created via mercury_create_customer)"),
+      customerId: z.uuid().describe("Customer ID (created via mercury_create_customer)"),
       destinationAccountId: z
-        .string()
         .uuid()
         .describe("Mercury account ID where invoice payments will be deposited"),
       invoiceDate: z.iso.date().describe("Invoice date (YYYY-MM-DD)"),
@@ -116,7 +113,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         .boolean()
         .optional()
         .describe("Show real (vs virtual) account number on the invoice. Default: false"),
-      ccEmails: z.array(z.string().email()).optional().describe("CC emails for notifications"),
+      ccEmails: z.array(z.email()).optional().describe("CC emails for notifications"),
       sendEmailOption: z
         .enum(["DontSend", "SendNow"])
         .optional()
@@ -163,11 +160,11 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ id, status, amount, ... }` — the updated invoice.",
     ].join("\n"),
     {
-      invoiceId: z.string().uuid().describe("Invoice ID"),
+      invoiceId: z.uuid().describe("Invoice ID"),
       invoiceDate: z.iso.date().optional().describe("Invoice date (YYYY-MM-DD)"),
       dueDate: z.iso.date().optional().describe("Due date (YYYY-MM-DD)"),
       lineItems: z.array(lineItemSchema).optional(),
-      ccEmails: z.array(z.string().email()).optional(),
+      ccEmails: z.array(z.email()).optional(),
       payerMemo: z.string().optional(),
       internalNote: z.string().optional(),
       poNumber: z.string().optional(),
@@ -191,6 +188,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         // are elided), so the false branch is a defensive guard rather
         // than a runtime path we can hit.
         /* v8 ignore next */
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (v !== undefined) merged[k] = v;
       }
       const data = await client.post(`/ar/invoices/${invoiceId}`, merged);
@@ -218,7 +216,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       'RETURNS: `{ id, status: "cancelled", ... }`.',
     ].join("\n"),
     {
-      invoiceId: z.string().uuid().describe("Invoice ID"),
+      invoiceId: z.uuid().describe("Invoice ID"),
     },
     async ({ invoiceId }) => {
       const data = await client.post(`/ar/invoices/${invoiceId}/cancel`);
@@ -240,7 +238,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       "RETURNS: `{ attachments: [{ id, filename, downloadUrl, ... }] }`.",
     ].join("\n"),
     {
-      invoiceId: z.string().uuid().describe("Invoice ID"),
+      invoiceId: z.uuid().describe("Invoice ID"),
     },
     async ({ invoiceId }) => {
       const data = await client.get(`/ar/invoices/${invoiceId}/attachments`);

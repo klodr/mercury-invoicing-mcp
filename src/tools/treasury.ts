@@ -37,7 +37,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       "RETURNS: `{ transactions: [{ id, amount, kind, postedAt, ... }] }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("Treasury account ID"),
+      accountId: z.uuid().describe("Treasury account ID"),
       limit: z.number().int().min(1).max(500).optional(),
       offset: z.number().int().min(0).optional(),
       start: z.iso.date().optional().describe("Filter after this date (YYYY-MM-DD)"),
@@ -63,7 +63,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       "RETURNS: `{ statements: [{ id, periodStart, periodEnd, downloadUrl, ... }] }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("Treasury account ID"),
+      accountId: z.uuid().describe("Treasury account ID"),
     },
     async ({ accountId }) => {
       const data = await client.get(`/treasury/${accountId}/statements`);

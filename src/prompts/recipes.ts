@@ -127,7 +127,6 @@ const CreateRecipientArgs = {
     .optional()
     .describe("Short internal nickname shown in the Mercury UI (≤ 50 chars, optional)."),
   contactEmail: z
-    .string()
     .email()
     .max(254)
     .describe(

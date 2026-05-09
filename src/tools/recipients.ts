@@ -40,11 +40,11 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       "RETURNS: `{ id, name, nickname, defaultPaymentMethod, ... }` — the updated recipient.",
     ].join("\n"),
     {
-      recipientId: z.string().uuid().describe("The recipient ID"),
+      recipientId: z.uuid().describe("The recipient ID"),
       name: z.string().optional().describe("Recipient legal name"),
       nickname: z.string().optional().describe("Internal nickname"),
-      contactEmail: z.string().email().optional().describe("Primary contact email"),
-      emails: z.array(z.string().email()).optional().describe("List of email addresses"),
+      contactEmail: z.email().optional().describe("Primary contact email"),
+      emails: z.array(z.email()).optional().describe("List of email addresses"),
       defaultPaymentMethod: z
         .enum(["domesticAch", "internationalWire", "domesticWire", "check"])
         .optional(),
@@ -72,7 +72,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
     ].join("\n"),
     {
       name: z.string().describe("Recipient legal name"),
-      emails: z.array(z.string().email()).describe("List of email addresses"),
+      emails: z.array(z.email()).describe("List of email addresses"),
       paymentMethod: z
         .enum(["domesticAch", "internationalWire", "domesticWire", "check"])
         .describe("Payment method to send to this recipient"),

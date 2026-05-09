@@ -247,7 +247,7 @@ function withRateLimitLock<T>(fn: () => T): T {
     /* fall through: openSync below will surface the real error */
   }
   const start = Date.now();
-  while (true) {
+  for (;;) {
     let fd: number | undefined;
     try {
       // O_WRONLY | O_CREAT | O_EXCL — fails with EEXIST if already held.

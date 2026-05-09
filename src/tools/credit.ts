@@ -56,7 +56,6 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
     ].join("\n"),
     {
       accountId: z
-        .string()
         .uuid()
         .describe("The Mercury IO Credit account ID (from mercury_list_credit_accounts)"),
       limit: z

@@ -172,7 +172,11 @@ export function resolveBaseUrl(apiKey: string, explicitBaseUrl?: string): string
  * InMemoryTransport for tests).
  */
 export function createServer(opts: ServerOptions): McpServer {
-  const log = opts.log ?? ((msg: string) => console.error(msg));
+  const log =
+    opts.log ??
+    ((msg: string) => {
+      console.error(msg);
+    });
 
   const baseUrl = resolveBaseUrl(opts.apiKey, opts.baseUrl);
   if (baseUrl === SANDBOX_BASE_URL && !opts.baseUrl) {
