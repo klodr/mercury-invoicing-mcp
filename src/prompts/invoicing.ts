@@ -35,7 +35,6 @@ const CreateCustomerArgs = {
     .max(200)
     .describe("Customer legal name (business or individual, ≤ 200 chars)."),
   email: z
-    .string()
     .email()
     .max(254)
     .describe(

@@ -18,7 +18,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "RETURNS: `{ transactions: [{ id, amount, status, postedAt, counterpartyName, ... }] }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("The Mercury account ID"),
+      accountId: z.uuid().describe("The Mercury account ID"),
       limit: z
         .number()
         .int()
@@ -55,8 +55,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "RETURNS: `{ id, amount, status, postedAt, counterpartyName, memo, ... }`.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("The Mercury account ID"),
-      transactionId: z.string().uuid().describe("The transaction ID"),
+      accountId: z.uuid().describe("The Mercury account ID"),
+      transactionId: z.uuid().describe("The transaction ID"),
     },
     async ({ accountId, transactionId }) => {
       const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
@@ -80,8 +80,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "RETURNS: `{ id, status, amount, ... }`. `status` reflects either immediate execution or pending-approval state, depending on workspace policy.",
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("Source Mercury account ID"),
-      recipientId: z.string().uuid().describe("Recipient ID (must already exist)"),
+      accountId: z.uuid().describe("Source Mercury account ID"),
+      recipientId: z.uuid().describe("Recipient ID (must already exist)"),
       amount: z.number().positive().describe("Amount in USD (e.g. 100.50)"),
       paymentMethod: z.enum(["ach", "wire", "check"]).describe("Payment method"),
       note: z.string().optional().describe("Internal note"),
@@ -119,14 +119,13 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "RETURNS: `{ id, note, categoryId, ... }` — the updated transaction.",
     ].join("\n"),
     {
-      transactionId: z.string().uuid().describe("The transaction ID"),
+      transactionId: z.uuid().describe("The transaction ID"),
       note: z
         .string()
         .nullable()
         .optional()
         .describe("Internal note (send null to clear, omit to keep current)"),
       categoryId: z
-        .string()
         .uuid()
         .nullable()
         .optional()
@@ -156,8 +155,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "RETURNS: `{ id, amount, status, ... }` — the booked transfer.",
     ].join("\n"),
     {
-      sourceAccountId: z.string().uuid().describe("Source Mercury account ID"),
-      destinationAccountId: z.string().uuid().describe("Destination Mercury account ID"),
+      sourceAccountId: z.uuid().describe("Source Mercury account ID"),
+      destinationAccountId: z.uuid().describe("Destination Mercury account ID"),
       amount: z.number().min(0.01).describe("Amount in USD (>= 0.01)"),
       note: z.string().optional().describe("Optional note attached to the transfer"),
       idempotencyKey: z
@@ -190,8 +189,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       'RETURNS: `{ id, status: "pendingApproval", amount, ... }` — track via `mercury_get_transaction` once executed.',
     ].join("\n"),
     {
-      accountId: z.string().uuid().describe("Source Mercury account ID"),
-      recipientId: z.string().uuid().describe("Recipient ID"),
+      accountId: z.uuid().describe("Source Mercury account ID"),
+      recipientId: z.uuid().describe("Recipient ID"),
       amount: z.number().positive().describe("Amount in USD"),
       paymentMethod: z.enum(["ach", "wire", "check"]).describe("Payment method"),
       note: z.string().optional(),
