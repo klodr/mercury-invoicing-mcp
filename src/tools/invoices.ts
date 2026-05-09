@@ -38,14 +38,8 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
         .optional()
         .describe("Max results to return (1-1000). Default: 1000"),
       order: z.enum(["asc", "desc"]).optional().describe("Sort order. Default: asc"),
-      startAfter: z
-        .uuid()
-        .optional()
-        .describe("Pagination: return invoices after this ID"),
-      endBefore: z
-        .uuid()
-        .optional()
-        .describe("Pagination: return invoices before this ID"),
+      startAfter: z.uuid().optional().describe("Pagination: return invoices after this ID"),
+      endBefore: z.uuid().optional().describe("Pagination: return invoices before this ID"),
     },
     async (args) => {
       const query: Record<string, string | number | undefined> = {
