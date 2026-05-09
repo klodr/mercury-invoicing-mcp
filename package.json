@@ -68,6 +68,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-promise": "^7.3.0",
     "fast-check": "^4.7.0",
     "husky": "^9.1.7",
     "lockfile-lint": "^5.0.0",
