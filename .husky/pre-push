@@ -73,6 +73,9 @@ npm run --silent format:check
 echo "[husky] lint..."
 npm run --silent lint
 
+echo "[husky] typecheck..."
+npm run --silent typecheck
+
 echo "[husky] tests..."
 npm run --silent test
 

@@ -48,7 +48,8 @@
     "test:coverage": "vitest run --coverage",
     "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepare": "husky",
-    "prepublishOnly": "NODE_ENV=production npm run build"
+    "prepublishOnly": "NODE_ENV=production npm run build",
+    "typecheck": "tsc --noEmit"
   },
   "engines": {
     "node": ">=22.22.2"
