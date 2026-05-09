@@ -45,5 +45,13 @@ export function defineTool<S extends ZodRawShape>(
   // (not optional) so every new tool ships with explicit semantics —
   // forgetting the annotation now fails typecheck instead of
   // silently shipping a tool with no hint set.
-  server.registerTool(name, { description, inputSchema: strictSchema, annotations }, wrapped);
+  // The MCP SDK overloads `registerTool` with shape narrowing the runtime
+  // strict-schema and the wrapped callback can't satisfy through generics.
+  // Both casts are runtime-safe — the signatures only diverge at the type
+  // level. Asserted by the existing tool-registration tests.
+  (server.registerTool as unknown as (...a: unknown[]) => unknown)(
+    name,
+    { description, inputSchema: strictSchema, annotations },
+    wrapped,
+  );
 }
