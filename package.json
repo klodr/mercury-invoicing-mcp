@@ -40,7 +40,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/index.js",
-    "lint": "eslint src \"*.json\"",
+    "lint": "eslint src \"*.{json,jsonc,json5}\"",
     "format": "prettier --write src test",
     "format:check": "prettier --check src test",
     "test": "vitest run",
