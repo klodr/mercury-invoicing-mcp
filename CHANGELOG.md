@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.2...v0.15.3) (2026-05-09)
+
+
+### Fixed
+
+* **ci:** gate release-please on all required workflows succeeding ([#135](https://github.com/klodr/mercury-invoicing-mcp/issues/135)) ([b3591e5](https://github.com/klodr/mercury-invoicing-mcp/commit/b3591e59093beff9f2f233f3897e34a481238a4e))
+
+
+### Changed
+
+* **codecov:** silence GPG trust + multi-language search warnings ([#137](https://github.com/klodr/mercury-invoicing-mcp/issues/137)) ([6fd0087](https://github.com/klodr/mercury-invoicing-mcp/commit/6fd0087aaa21d7da0a89ac5ae0b28aa4c1194368))
+* harmonize cross-repo (typecheck pre-push + fail_ci_if_error) ([#138](https://github.com/klodr/mercury-invoicing-mcp/issues/138)) ([a344020](https://github.com/klodr/mercury-invoicing-mcp/commit/a3440207fb2b02aee71bce93ce9b241197d36bd3))
+
+
+### Documentation
+
+* **release:** clarify intent of stripping prepare + prepublishOnly ([#136](https://github.com/klodr/mercury-invoicing-mcp/issues/136)) ([dd92ce7](https://github.com/klodr/mercury-invoicing-mcp/commit/dd92ce78cd3eadf78aed59e9f523935bd176eaf4))
+
 ## [0.15.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.1...v0.15.2) (2026-05-09)
 
 
