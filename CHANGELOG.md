@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.3...v0.15.4) (2026-05-10)
+
+
+### Changed
+
+* add CR title baseline (Conventional Commits + 72c cap) ([#143](https://github.com/klodr/mercury-invoicing-mcp/issues/143)) ([dae9b09](https://github.com/klodr/mercury-invoicing-mcp/commit/dae9b094ceec88c0fd4f574fe36da87b82a6fd01))
+* add eslint-plugin-jsonc for JSON file linting ([#144](https://github.com/klodr/mercury-invoicing-mcp/issues/144)) ([0886e43](https://github.com/klodr/mercury-invoicing-mcp/commit/0886e43821d4ec01019fbb6033b81ab712d23ded))
+* **codecov:** upload v8 JSON alongside lcov for branch detail ([#140](https://github.com/klodr/mercury-invoicing-mcp/issues/140)) ([cddea9b](https://github.com/klodr/mercury-invoicing-mcp/commit/cddea9b4fd0a01c8bd8f391230cbfa3b67dc58a1))
+* factor ci.yml via klodr/.github composite actions ([#142](https://github.com/klodr/mercury-invoicing-mcp/issues/142)) ([e9eff29](https://github.com/klodr/mercury-invoicing-mcp/commit/e9eff29fde1c4de1b05821ef575d673eb32d4ecb))
+
+
+### Documentation
+
+* add AGENTS.md + CLAUDE.md + copilot-instructions stubs ([#141](https://github.com/klodr/mercury-invoicing-mcp/issues/141)) ([fe5f9cc](https://github.com/klodr/mercury-invoicing-mcp/commit/fe5f9cc8a79af0f8c14bee4b7492c7eaf53bdeca))
+
 ## [0.15.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.2...v0.15.3) (2026-05-09)
 
 
