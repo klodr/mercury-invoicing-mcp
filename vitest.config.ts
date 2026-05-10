@@ -12,7 +12,13 @@ export default defineConfig({
     reporters: ["default", ["junit", { outputFile: "test-results.junit.xml" }]],
     coverage: {
       provider: "v8",
-      reporter: ["text", "lcov"],
+      // `lcov` for codecov-action's primary upload; `json` (v8 native)
+      // carries per-branch hit counts so codecov can compute accurate
+      // indirect-changes — without it codecov falls back to a coarser
+      // line-based delta and reports phantom regressions on files the
+      // PR doesn't touch. `text` keeps the human-readable summary in
+      // CI logs.
+      reporter: ["text", "lcov", "json"],
       include: ["src/**/*.ts"],
       // index.ts is the stdio entry point; testing it requires process/stdio
       // mocking that adds complexity disproportionate to its coverage value.
