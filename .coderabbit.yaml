@@ -25,6 +25,13 @@ reviews:
   collapse_walkthrough: false
   abort_on_close: true
 
+  auto_title_instructions: |
+    Use Conventional Commits format: <type>[(<scope>)]: <subject>.
+    Types: feat, fix, docs, chore, refactor, test, ci, build, perf, revert.
+    Scope is optional (e.g. `chore: ...` is valid).
+    Subject must be in imperative mood, lowercase, no trailing period.
+    Cap the entire title (including type and optional scope) at 72 characters.
+
   auto_review:
     enabled: true
     drafts: false
@@ -40,6 +47,17 @@ reviews:
       # function names like `enforceRateLimit` / `redactSensitive` are
       # self-documenting and a forced JSDoc would just paraphrase them.
       mode: off
+    title:
+      # Enforce Conventional Commits format + 72-char cap (matches the
+      # auto_title_instructions above — this is the gate that actually
+      # blocks non-conforming titles from merging).
+      mode: error
+      requirements: |
+        Conventional Commits format: <type>[(<scope>)]: <subject>.
+        Types: feat, fix, docs, chore, refactor, test, ci, build, perf, revert.
+        Scope is optional (e.g. `chore: ...` is valid without scope).
+        Subject must be in imperative mood, lowercase, no trailing period.
+        Total title length (including type/scope) must be <= 72 characters.
     # If a specific human reviewer is explicitly requested on a PR
     # (via GitHub's "Reviewers" UI), CodeRabbit's own approval must NOT
     # count as a substitute for theirs. Does not affect the common case
