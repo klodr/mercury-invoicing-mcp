@@ -30,9 +30,11 @@ This creates the package on the npm registry. After this, future releases can be
 ## 2. Subsequent releases (automated)
 
 1. Bump the version in `package.json` (and `server.json`):
+
    ```bash
    npm version patch   # 0.1.0 -> 0.1.1 (or `minor` / `major`)
    ```
+
 2. Push tags: `git push --follow-tags`
 3. Create a GitHub Release on the new tag — the `release.yml` workflow will publish to npm automatically.
 

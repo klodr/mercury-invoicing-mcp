@@ -49,7 +49,8 @@
     "version": "node scripts/sync-version.mjs && git add server.json src/server.ts",
     "prepare": "husky",
     "prepublishOnly": "NODE_ENV=production npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#coverage\" \"#dist\" \"#CHANGELOG.md\""
   },
   "engines": {
     "node": ">=22.22.2"
@@ -62,6 +63,8 @@
     "zod": "^4.4.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.19.17",
     "@vitest/coverage-v8": "^4.1.4",
@@ -73,12 +76,15 @@
     "eslint-plugin-promise": "^7.3.0",
     "fast-check": "^4.7.0",
     "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
     "lockfile-lint": "^5.0.0",
+    "markdownlint-cli2": "^0.22.1",
     "prettier": "^3.8.3",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.1",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "yaml-lint": "^1.7.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -87,5 +93,19 @@
   },
   "overrides": {
     "fast-uri": "3.1.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs,mts}": [
+      "eslint --max-warnings=0 --no-warn-ignored"
+    ],
+    "*.{json,jsonc,json5}": [
+      "eslint --max-warnings=0 --no-warn-ignored"
+    ],
+    "*.{yml,yaml}": [
+      "yamllint"
+    ],
+    "*.md": [
+      "markdownlint-cli2"
+    ]
   }
 }
