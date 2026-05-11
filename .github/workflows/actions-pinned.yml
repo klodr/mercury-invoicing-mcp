@@ -1,11 +1,13 @@
 name: Actions pinned
 
+# Triggers on EVERY PR (no `paths:` filter). When used as a required
+# status check in branch protection, a `paths:` filter would cause
+# GitHub to skip creating a run on unrelated PRs and leave the check
+# in a perpetual "Pending" state, blocking merges. The pinact check
+# itself is fast (~5s on a clean repo), so always running it is
+# cheaper than dealing with the required-check skip semantics.
 on:
   pull_request:
-    paths:
-      - ".github/workflows/**"
-      - ".github/actions/**"
-      - "pinact.yaml"
 
 permissions: {}
 
