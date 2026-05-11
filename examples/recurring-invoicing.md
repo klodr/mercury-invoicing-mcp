@@ -20,7 +20,7 @@ Tell your MCP-aware assistant:
 
 The assistant will call:
 
-```
+```text
 mercury_create_customer(name="Acme Corp", email="billing@acme.example")
 ```
 
@@ -32,7 +32,7 @@ Mercury returns a customer object with `id` (UUID). Save this ID.
 
 The assistant will call:
 
-```
+```text
 mercury_create_invoice(
   customerId="...",
   destinationAccountId="...",
@@ -59,7 +59,7 @@ A minimal workflow:
 
 ## 4. Tracking payments
 
-```
+```text
 mercury_list_invoices(limit=50, order="desc")
 ```
 
