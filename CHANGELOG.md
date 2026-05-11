@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.5](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.4...v0.15.5) (2026-05-11)
+
+
+### Fixed
+
+* **ci:** gate auto-merge caller on bot login before passing secrets ([#156](https://github.com/klodr/mercury-invoicing-mcp/issues/156)) ([1a14154](https://github.com/klodr/mercury-invoicing-mcp/commit/1a1415455ef91e133987475676cadf9d097529e4))
+* scope release-please app token to least-privilege ([#148](https://github.com/klodr/mercury-invoicing-mcp/issues/148)) ([53b804b](https://github.com/klodr/mercury-invoicing-mcp/commit/53b804b96076ba1896c7620627b3b702a4ef0a4a))
+
+
+### Changed
+
+* add auto-merge caller for release-please PRs ([#147](https://github.com/klodr/mercury-invoicing-mcp/issues/147)) ([a0ace17](https://github.com/klodr/mercury-invoicing-mcp/commit/a0ace178c08ce896bf4d47feba1d8fa9211329cb))
+* add yamllint+markdownlint+commitlint+lint-staged pack ([#157](https://github.com/klodr/mercury-invoicing-mcp/issues/157)) ([c8f4fef](https://github.com/klodr/mercury-invoicing-mcp/commit/c8f4fef195c0eb06837738ad6468c9db127677d3))
+* bump github-script v9 + migrate to client-id ([#146](https://github.com/klodr/mercury-invoicing-mcp/issues/146)) ([35f0f1b](https://github.com/klodr/mercury-invoicing-mcp/commit/35f0f1b01a060b28387e390316ba04ee7f3687f1))
+* bump github/codeql-action from 4.35.3 to 4.35.4 ([#151](https://github.com/klodr/mercury-invoicing-mcp/issues/151)) ([82fc304](https://github.com/klodr/mercury-invoicing-mcp/commit/82fc3046497fbb90a2a8703a19ca296f8d14762f))
+* bump sigstore/cosign-installer from 4.1.1 to 4.1.2 ([#150](https://github.com/klodr/mercury-invoicing-mcp/issues/150)) ([35fbff5](https://github.com/klodr/mercury-invoicing-mcp/commit/35fbff56e28f4d3540ff730bce73546e9287bd70))
+* **bundle-analysis:** run on Dependabot PRs to satisfy required check ([#155](https://github.com/klodr/mercury-invoicing-mcp/issues/155)) ([71d470d](https://github.com/klodr/mercury-invoicing-mcp/commit/71d470d97681f57551fb83e29bc6c104dc2a7234))
+* **dependabot:** use chore(deps) prefix for Conventional Commits ([#149](https://github.com/klodr/mercury-invoicing-mcp/issues/149)) ([9c2a24b](https://github.com/klodr/mercury-invoicing-mcp/commit/9c2a24b2b4f6b6b88eea834036ab45087534acf0))
+* **deps-dev:** bump the dev-dependencies group with 2 updates ([#153](https://github.com/klodr/mercury-invoicing-mcp/issues/153)) ([0bec64d](https://github.com/klodr/mercury-invoicing-mcp/commit/0bec64d71625d474b9462ac3cab1fe469a2dedb5))
+* **deps:** bump actions/github-script SHA ([#152](https://github.com/klodr/mercury-invoicing-mcp/issues/152)) ([eb474b3](https://github.com/klodr/mercury-invoicing-mcp/commit/eb474b3e4e151a9adf9cb5aab639aa37a8d86b16))
+* **deps:** bump zod from 4.4.2 to 4.4.3 in the production-dependencies group across 1 directory ([#154](https://github.com/klodr/mercury-invoicing-mcp/issues/154)) ([b4b6ea0](https://github.com/klodr/mercury-invoicing-mcp/commit/b4b6ea03e45b0eed10b0d60c6e392e61e4902366))
+
 ## [0.15.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.3...v0.15.4) (2026-05-10)
 
 
