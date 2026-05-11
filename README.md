@@ -58,6 +58,8 @@ npx mercury-invoicing-mcp
 
 The server reads `MERCURY_API_KEY` from the environment. Get your API key at [Mercury Settings → API Tokens](https://app.mercury.com/settings/tokens).
 
+<a id="right-sizing-the-token"></a>
+
 ### 🔑 Right-sizing the token
 
 Mercury exposes **fine-grained per-resource scopes** at token creation — not a single read/write toggle. Pick exactly what your use case needs and Mercury enforces the rest server-side: a tool called without the right scope returns `403`, which the MCP surfaces as a clean `isError: true` response (with a Mercury Plus hint when relevant).
