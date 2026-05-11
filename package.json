@@ -50,7 +50,7 @@
     "prepare": "husky",
     "prepublishOnly": "NODE_ENV=production npm run build",
     "typecheck": "tsc --noEmit",
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#coverage\" \"#dist\" \"#CHANGELOG.md\""
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#dist\""
   },
   "engines": {
     "node": ">=22.22.2"
