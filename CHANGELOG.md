@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.6](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.5...v0.15.6) (2026-05-11)
+
+
+### Fixed
+
+* **ci:** align auto-merge filter on klodr-release-please[bot] ([#163](https://github.com/klodr/mercury-invoicing-mcp/issues/163)) ([2eaf0d9](https://github.com/klodr/mercury-invoicing-mcp/commit/2eaf0d9266dd28910800ecd16297a0d096343d7b))
+* **ci:** repin reusable auto-merge to a reachable SHA ([#164](https://github.com/klodr/mercury-invoicing-mcp/issues/164)) ([f115d5a](https://github.com/klodr/mercury-invoicing-mcp/commit/f115d5a74650c556b15043e07d6a19c3b2132822))
+
+
+### Changed
+
+* add pinact config + actions-pinned CI gate ([#159](https://github.com/klodr/mercury-invoicing-mcp/issues/159)) ([7a5ba7d](https://github.com/klodr/mercury-invoicing-mcp/commit/7a5ba7d737cbd9e41f54ec94b9c27bc7d42c0f0a))
+* **lint-staged:** add prettier --write to all globs ([#166](https://github.com/klodr/mercury-invoicing-mcp/issues/166)) ([6199b20](https://github.com/klodr/mercury-invoicing-mcp/commit/6199b207ecef294c1a094e3e50f950c40518591f))
+* migrate ci.yml to reusable-node-ci ([#165](https://github.com/klodr/mercury-invoicing-mcp/issues/165)) ([6753fda](https://github.com/klodr/mercury-invoicing-mcp/commit/6753fda678781bc5b15122c8f6ac113f2a2ee63a))
+
 ## [0.15.5](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.4...v0.15.5) (2026-05-11)
 
 
