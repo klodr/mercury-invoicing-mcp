@@ -138,7 +138,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       const data = await client.get("/webhooks");
       return textResult(data);
     },
-    { title: "List Webhooks", readOnlyHint: true },
+    { title: "List Webhooks", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -160,7 +160,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       const data = await client.get(`/webhooks/${webhookId}`);
       return textResult(data);
     },
-    { title: "Get Webhook", readOnlyHint: true },
+    { title: "Get Webhook", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -187,7 +187,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       const data = await client.post("/webhooks", { url, events });
       return textResult(data);
     },
-    { title: "Create Webhook", destructiveHint: false },
+    { title: "Create Webhook", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -216,7 +216,7 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       const data = await client.post(`/webhooks/${webhookId}`, body);
       return textResult(data);
     },
-    { title: "Update Webhook", destructiveHint: false },
+    { title: "Update Webhook", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -240,6 +240,6 @@ export function registerWebhookTools(server: McpServer, client: MercuryClient): 
       const data = await client.delete(`/webhooks/${webhookId}`);
       return textResult(data);
     },
-    { title: "Delete Webhook", destructiveHint: true },
+    { title: "Delete Webhook", destructiveHint: true, openWorldHint: true },
   );
 }

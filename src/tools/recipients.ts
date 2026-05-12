@@ -22,7 +22,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       const data = await client.get("/recipients");
       return textResult(data);
     },
-    { title: "List Recipients", readOnlyHint: true },
+    { title: "List Recipients", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -53,7 +53,7 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       const data = await client.post(`/recipient/${recipientId}`, body);
       return textResult(data);
     },
-    { title: "Update Recipient", destructiveHint: false },
+    { title: "Update Recipient", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -110,6 +110,6 @@ export function registerRecipientTools(server: McpServer, client: MercuryClient)
       const data = await client.post("/recipients", { ...body, idempotencyKey: idem });
       return textResult(data);
     },
-    { title: "Add Recipient", destructiveHint: false, idempotentHint: true },
+    { title: "Add Recipient", destructiveHint: false, idempotentHint: true, openWorldHint: true },
   );
 }
