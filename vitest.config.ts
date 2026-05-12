@@ -20,10 +20,12 @@ export default defineConfig({
       // CI logs.
       reporter: ["text", "lcov", "json"],
       include: ["src/**/*.ts"],
-      // index.ts is the stdio entry point; testing it requires process/stdio
-      // mocking that adds complexity disproportionate to its coverage value.
-      // The actual server logic lives in server.ts.
-      exclude: ["src/**/*.d.ts", "src/index.ts"],
+      // `src/index.ts` is the stdio CLI entry point — a thin shim that
+      // boots `StdioServerTransport`. Testing it requires booting a real
+      // transport, which deadlocks the test runner waiting for the next
+      // stdio frame. The orchestration the shim wraps lives in
+      // `server.ts` and is covered there.
+      exclude: ["src/index.ts"],
     },
   },
 });
