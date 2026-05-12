@@ -51,7 +51,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.get("/ar/invoices", query);
       return textResult(data);
     },
-    { title: "List Invoices", readOnlyHint: true },
+    { title: "List Invoices", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -73,7 +73,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.get(`/ar/invoices/${invoiceId}`);
       return textResult(data);
     },
-    { title: "Get Invoice", readOnlyHint: true },
+    { title: "Get Invoice", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -136,7 +136,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.post("/ar/invoices", body);
       return textResult(data);
     },
-    { title: "Create Invoice", destructiveHint: false },
+    { title: "Create Invoice", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -188,7 +188,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.post(`/ar/invoices/${invoiceId}`, merged);
       return textResult(data);
     },
-    { title: "Update Invoice", destructiveHint: false },
+    { title: "Update Invoice", destructiveHint: false, openWorldHint: true },
   );
 
   // Note: Mercury does not expose POST /ar/invoices/{id}/send via the public
@@ -216,7 +216,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.post(`/ar/invoices/${invoiceId}/cancel`);
       return textResult(data);
     },
-    { title: "Cancel Invoice", destructiveHint: true },
+    { title: "Cancel Invoice", destructiveHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -238,6 +238,6 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const data = await client.get(`/ar/invoices/${invoiceId}/attachments`);
       return textResult(data);
     },
-    { title: "List Invoice Attachments", readOnlyHint: true },
+    { title: "List Invoice Attachments", readOnlyHint: true, openWorldHint: true },
   );
 }

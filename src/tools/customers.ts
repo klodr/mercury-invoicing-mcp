@@ -44,7 +44,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       const data = await client.get("/ar/customers", query);
       return textResult(data);
     },
-    { title: "List Customers", readOnlyHint: true },
+    { title: "List Customers", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -66,7 +66,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       const data = await client.get(`/ar/customers/${customerId}`);
       return textResult(data);
     },
-    { title: "Get Customer", readOnlyHint: true },
+    { title: "Get Customer", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -92,7 +92,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       const data = await client.post("/ar/customers", args);
       return textResult(data);
     },
-    { title: "Create Customer", destructiveHint: false },
+    { title: "Create Customer", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -119,7 +119,7 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       const data = await client.patch(`/ar/customers/${customerId}`, body);
       return textResult(data);
     },
-    { title: "Update Customer", destructiveHint: false },
+    { title: "Update Customer", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -143,6 +143,6 @@ export function registerCustomerTools(server: McpServer, client: MercuryClient):
       const data = await client.delete(`/ar/customers/${customerId}`);
       return textResult(data);
     },
-    { title: "Delete Customer", destructiveHint: true },
+    { title: "Delete Customer", destructiveHint: true, openWorldHint: true },
   );
 }
