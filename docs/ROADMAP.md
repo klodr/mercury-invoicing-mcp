@@ -23,4 +23,3 @@ Loose planning horizon of ~12 months. The MCP follows Mercury's own API surface 
 ## Compliance / governance
 
 - **Second maintainer → OpenSSF Gold** — actively welcome co-maintainership via `.github/CODEOWNERS` once a contributor has several merged PRs. Gold requires ≥2 active maintainers; that's the gating constraint.
-
