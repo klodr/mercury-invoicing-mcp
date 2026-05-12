@@ -131,12 +131,17 @@ describe("syncVersion", () => {
       tsContent: 'export const NOT_VERSION = "0.0.0";\n',
     });
     const serverJsonBefore = readFileSync(join(scratch, "server.json"), "utf8");
+    const tsBefore = readFileSync(join(scratch, "src", "server.ts"), "utf8");
     expect(() => syncVersion(scratch)).toThrow(/did not find the VERSION constant/);
     const serverJsonAfter = readFileSync(join(scratch, "server.json"), "utf8");
-    // Byte-exact equality — even a re-serialisation with the same
-    // content (rewriting the bumped object) would defeat the
-    // atomicity contract because a later step could still throw.
+    const tsAfter = readFileSync(join(scratch, "src", "server.ts"), "utf8");
+    // Byte-exact equality on BOTH files — even a re-serialisation
+    // with the same content (rewriting the bumped object) would
+    // defeat the atomicity contract because a later step could still
+    // throw. A half-applied bump on EITHER file would smuggle
+    // mismatched metadata into the next release.
     expect(serverJsonAfter).toBe(serverJsonBefore);
+    expect(tsAfter).toBe(tsBefore);
   });
 
   it("returns the version string for the caller (CLI uses it in the success log)", () => {
