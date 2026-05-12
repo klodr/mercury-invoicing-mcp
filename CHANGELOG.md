@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.7](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.6...v0.15.7) (2026-05-12)
+
+
+### Fixed
+
+* **pre-commit:** call ./node_modules/.bin/lint-staged directly ([#171](https://github.com/klodr/mercury-invoicing-mcp/issues/171)) ([c37bc33](https://github.com/klodr/mercury-invoicing-mcp/commit/c37bc331626fd6ee3349c0cfe549c97e911707c4))
+* **scripts:** defer all writes in syncVersion until validation passes ([#175](https://github.com/klodr/mercury-invoicing-mcp/issues/175)) ([09eb4a5](https://github.com/klodr/mercury-invoicing-mcp/commit/09eb4a5613b584403c862663da4267117ff482e3))
+
+
+### Changed
+
+* add leak-detect caller workflow ([#172](https://github.com/klodr/mercury-invoicing-mcp/issues/172)) ([d224484](https://github.com/klodr/mercury-invoicing-mcp/commit/d224484716833052e75fbb26131314cc6a4a8d82))
+* fix four workflow errors (pinact, gitleaks, auto-merge, coderabbit) ([#176](https://github.com/klodr/mercury-invoicing-mcp/issues/176)) ([691501f](https://github.com/klodr/mercury-invoicing-mcp/commit/691501fddcd90554df0d8a429bc3d1d9265ed814))
+* **node:** align .npmrc rationale + bump .nvmrc to 22.22.2 (CVE floor) ([#170](https://github.com/klodr/mercury-invoicing-mcp/issues/170)) ([44f363d](https://github.com/klodr/mercury-invoicing-mcp/commit/44f363db9cbe06c7d05e131258f8643840701262))
+* **pre-commit:** warn on missing system tooling (yamllint) ([#168](https://github.com/klodr/mercury-invoicing-mcp/issues/168)) ([50512c5](https://github.com/klodr/mercury-invoicing-mcp/commit/50512c5c3059626e23b9f36ab31fa0b065490327))
+* **pre-push:** sync with canonical template (SC2034 + drop npm audit) ([#169](https://github.com/klodr/mercury-invoicing-mcp/issues/169)) ([a555eda](https://github.com/klodr/mercury-invoicing-mcp/commit/a555eda48f429abf587fa147d5a6e8b1d3be7a1c))
+* **scripts:** canonicalise sync-version with ecosystem ([#174](https://github.com/klodr/mercury-invoicing-mcp/issues/174)) ([5ba87e4](https://github.com/klodr/mercury-invoicing-mcp/commit/5ba87e4fc5c13ff9fd475f624e96668312ba3470))
+* **test:** harmonise vitest coverage config with klodr/* ecosystem ([#173](https://github.com/klodr/mercury-invoicing-mcp/issues/173)) ([589e6cb](https://github.com/klodr/mercury-invoicing-mcp/commit/589e6cbd545fd9d5e7cd0a2f03b51e4f76a8e933))
+
 ## [0.15.6](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.5...v0.15.6) (2026-05-11)
 
 
