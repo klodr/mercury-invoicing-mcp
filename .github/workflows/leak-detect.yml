@@ -34,7 +34,7 @@ jobs:
     #      before.
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository
-      && github.actor != 'dependabot[bot]'
+      && github.event.pull_request.user.login != 'dependabot[bot]'
     uses: klodr/.github/.github/workflows/reusable-leak-detect.yml@a2618fb7c675a9f6bbbd68f0f957dd5ffa1b5c10
     secrets:
       leak-detect-client-id: ${{ secrets.LEAK_DETECT_CLIENT_ID }}
