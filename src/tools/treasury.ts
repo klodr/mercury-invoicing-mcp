@@ -21,7 +21,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       const data = await client.get("/treasury");
       return textResult(data);
     },
-    { title: "Get Treasury", readOnlyHint: true },
+    { title: "Get Treasury", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -47,7 +47,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       const data = await client.get(`/treasury/${accountId}/transactions`, query);
       return textResult(data);
     },
-    { title: "List Treasury Transactions", readOnlyHint: true },
+    { title: "List Treasury Transactions", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -69,6 +69,6 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       const data = await client.get(`/treasury/${accountId}/statements`);
       return textResult(data);
     },
-    { title: "List Treasury Statements", readOnlyHint: true },
+    { title: "List Treasury Statements", readOnlyHint: true, openWorldHint: true },
   );
 }
