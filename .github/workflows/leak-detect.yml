@@ -21,12 +21,20 @@ concurrency:
 jobs:
   leak-detect:
     name: Leak detect
-    # Skip on PRs from forks: GitHub does not expose repository secrets
-    # to `pull_request` runs whose head repo differs from the base, so
-    # the GitHub App credentials would be empty and the job would hard-
-    # fail as a required check. Leak scanning of fork PRs is enforced
-    # post-merge by the maintainer-side push trigger on main.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Skip on PRs from forks AND Dependabot. GitHub does not expose
+    # repository secrets to:
+    #   1. `pull_request` runs whose head repo differs from the base
+    #      (fork-origin) — the GitHub App credentials would be empty
+    #      and the job would hard-fail as a required check.
+    #   2. Dependabot-actor `pull_request` runs — those see a separate
+    #      `secrets.DEPENDABOT_*` namespace and never the regular
+    #      `secrets.*`. Leak scanning Dependabot bumps adds no value
+    #      anyway: the upgrade content is upstream library bytes, not
+    #      our own diff. Same-repo human PRs continue to scan as
+    #      before.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.actor != 'dependabot[bot]'
     uses: klodr/.github/.github/workflows/reusable-leak-detect.yml@a2618fb7c675a9f6bbbd68f0f957dd5ffa1b5c10
     secrets:
       leak-detect-client-id: ${{ secrets.LEAK_DETECT_CLIENT_ID }}
