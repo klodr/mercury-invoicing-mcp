@@ -16,11 +16,11 @@ language: en-US
 early_access: false
 
 reviews:
-  profile: assertive          # stricter feedback (vs "chill")
+  profile: assertive # stricter feedback (vs "chill")
   request_changes_workflow: true
   high_level_summary: true
-  poem: false                 # no decorative poetry
-  in_progress_fortune: false  # no fortune-cookie message during reviews
+  poem: false # no decorative poetry
+  in_progress_fortune: false # no fortune-cookie message during reviews
   review_status: true
   collapse_walkthrough: false
   abort_on_close: true
@@ -46,7 +46,7 @@ reviews:
       # The codebase deliberately keeps comments to non-obvious WHY only;
       # function names like `enforceRateLimit` / `redactSensitive` are
       # self-documenting and a forced JSDoc would just paraphrase them.
-      mode: off
+      mode: "off"
     title:
       # Enforce Conventional Commits format + 72-char cap (matches the
       # auto_title_instructions above — this is the gate that actually
@@ -85,4 +85,4 @@ reviews:
 
 chat:
   auto_reply: true
-  art: false                  # no ASCII/emoji art in chat responses
+  art: false # no ASCII/emoji art in chat responses
