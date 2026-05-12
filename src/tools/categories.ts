@@ -20,6 +20,6 @@ export function registerCategoryTools(server: McpServer, client: MercuryClient):
       const data = await client.get("/categories");
       return textResult(data);
     },
-    { title: "List Categories", readOnlyHint: true },
+    { title: "List Categories", readOnlyHint: true, openWorldHint: true },
   );
 }

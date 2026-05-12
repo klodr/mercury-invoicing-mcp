@@ -20,6 +20,6 @@ export function registerOrganizationTools(server: McpServer, client: MercuryClie
       const data = await client.get("/organization");
       return textResult(data);
     },
-    { title: "Get Organization", readOnlyHint: true },
+    { title: "Get Organization", readOnlyHint: true, openWorldHint: true },
   );
 }
