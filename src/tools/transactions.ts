@@ -39,7 +39,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.get(`/account/${accountId}/transactions`, query);
       return textResult(data);
     },
-    { title: "List Transactions", readOnlyHint: true },
+    { title: "List Transactions", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -62,7 +62,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
       return textResult(data);
     },
-    { title: "Get Transaction", readOnlyHint: true },
+    { title: "Get Transaction", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -101,7 +101,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       });
       return textResult(data);
     },
-    { title: "Send Money", destructiveHint: true, idempotentHint: true },
+    { title: "Send Money", destructiveHint: true, idempotentHint: true, openWorldHint: true },
   );
 
   defineTool(
@@ -137,7 +137,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.patch(`/transaction/${transactionId}`, body);
       return textResult(data);
     },
-    { title: "Update Transaction", destructiveHint: false },
+    { title: "Update Transaction", destructiveHint: false, openWorldHint: true },
   );
 
   defineTool(
@@ -171,7 +171,12 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       const data = await client.post(`/transfer`, { ...body, idempotencyKey: idem });
       return textResult(data);
     },
-    { title: "Create Internal Transfer", destructiveHint: false, idempotentHint: true },
+    {
+      title: "Create Internal Transfer",
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
   );
 
   defineTool(
@@ -210,6 +215,11 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       });
       return textResult(data);
     },
-    { title: "Request Send Money", destructiveHint: true, idempotentHint: true },
+    {
+      title: "Request Send Money",
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
   );
 }
