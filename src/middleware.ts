@@ -122,8 +122,8 @@ const callHistory = new Map<string, number[]>();
 let stateLoaded = false;
 
 function getStateFile(): string {
-  const dir = process.env.MERCURY_MCP_STATE_DIR || join(homedir(), ".mercury-mcp");
-  return join(dir, "ratelimit.json");
+  const directory = process.env.MERCURY_MCP_STATE_DIR || join(homedir(), ".mercury-mcp");
+  return join(directory, "ratelimit.json");
 }
 
 function loadCallHistory(): void {
@@ -236,7 +236,7 @@ function sleepSync(ms: number): void {
 }
 /* v8 ignore stop */
 
-function withRateLimitLock<T>(fn: () => T): T {
+function withRateLimitLock<T>(function_: () => T): T {
   const lockPath = getLockFile();
   // Best-effort: ensure the parent dir exists. mkdirSync is idempotent,
   // and persistCallHistory does this too — but if we fail to acquire
@@ -262,7 +262,7 @@ function withRateLimitLock<T>(fn: () => T): T {
         console.error(
           `[ratelimit] cannot create lockfile ${lockPath}: ${(error as Error).message}; proceeding without inter-process lock`,
         );
-        return fn();
+        return function_();
       }
       // Stale-lock detection: reclaim a lockfile whose mtime is older
       // than LOCK_STALE_MS (process crashed between open and unlink).
@@ -290,14 +290,14 @@ function withRateLimitLock<T>(fn: () => T): T {
         console.error(
           `[ratelimit] lock contention on ${lockPath} after ${LOCK_TIMEOUT_MS}ms; proceeding without inter-process lock`,
         );
-        return fn();
+        return function_();
       }
       sleepSync(LOCK_RETRY_MS);
       continue;
       /* v8 ignore stop */
     }
     try {
-      return fn();
+      return function_();
     } finally {
       // Order matters: close before rm so we don't unlink a file we
       // still hold an fd on (POSIX is fine with it, but Windows isn't).

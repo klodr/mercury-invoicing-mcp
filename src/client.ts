@@ -32,9 +32,9 @@ function capErrorMessage(message: string, max: number = MERCURY_ERROR_MESSAGE_MA
   if (message.length <= max) return message;
   // Reserve the marker length out of the budget so the final string is
   // always ≤ max + marker (predictable upper bound for callers).
-  const headLen = Math.ceil((max - TRUNCATION_MARKER.length) / 2);
-  const tailLen = Math.floor((max - TRUNCATION_MARKER.length) / 2);
-  return message.slice(0, headLen) + TRUNCATION_MARKER + message.slice(-tailLen);
+  const headLength = Math.ceil((max - TRUNCATION_MARKER.length) / 2);
+  const tailLength = Math.floor((max - TRUNCATION_MARKER.length) / 2);
+  return message.slice(0, headLength) + TRUNCATION_MARKER + message.slice(-tailLength);
 }
 
 export class MercuryError extends Error {
@@ -80,7 +80,7 @@ export class MercuryClient {
     // schema level).
     const encodedPath = path
       .split("/")
-      .map((seg, i) => (i === 0 || seg.length === 0 ? seg : encodeURIComponent(seg)))
+      .map((seg, index) => (index === 0 || seg.length === 0 ? seg : encodeURIComponent(seg)))
       .join("/");
     const url = new URL(this.baseUrl + encodedPath);
     if (init.query) {
