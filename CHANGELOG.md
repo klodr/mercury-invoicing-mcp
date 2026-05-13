@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.7...v0.16.0) (2026-05-12)
+
+
+### Added
+
+* **tools:** declare openWorldHint:true on every tool ([#181](https://github.com/klodr/mercury-invoicing-mcp/issues/181)) ([444336f](https://github.com/klodr/mercury-invoicing-mcp/commit/444336fe67bc05d337cce0998c0b37345160c939))
+
+
+### Fixed
+
+* **verify-release:** pin cosign predicate to SLSA Provenance v1 ([#180](https://github.com/klodr/mercury-invoicing-mcp/issues/180)) ([9be0bf9](https://github.com/klodr/mercury-invoicing-mcp/commit/9be0bf9da216efb3f0f130ab07c23e2527caf3ff))
+
 ## [0.15.7](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.6...v0.15.7) (2026-05-12)
 
 
