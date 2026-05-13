@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.16.0...v0.16.1) (2026-05-13)
+
+
+### Fixed
+
+* **ci:** add top-level permissions: contents: read to auto-merge ([#183](https://github.com/klodr/mercury-invoicing-mcp/issues/183)) ([7a08e68](https://github.com/klodr/mercury-invoicing-mcp/commit/7a08e68b5496fcb498ee41d4288b05828ce49cbc))
+
+
+### Changed
+
+* **lint:** adopt eslint-plugin-unicorn (pass 1) ([#185](https://github.com/klodr/mercury-invoicing-mcp/issues/185)) ([aa5b0ff](https://github.com/klodr/mercury-invoicing-mcp/commit/aa5b0ff38fc94b01555415cda9322cbaa67f9c61))
+
 ## [0.16.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.7...v0.16.0) (2026-05-12)
 
 
