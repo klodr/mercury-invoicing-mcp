@@ -9,7 +9,7 @@ import { registerAllPrompts } from "./prompts/index.js";
 // still supported via scripts/sync-version.mjs (which also keeps
 // server.json in sync with this constant). Do not edit the literal
 // manually — let one of the two mechanisms own it.
-export const VERSION = "0.16.1"; // x-release-please-version
+export const VERSION = "0.17.0"; // x-release-please-version
 export const SANDBOX_BASE_URL = "https://api-sandbox.mercury.com/api/v1";
 
 // Strict allowlist of Mercury hostnames `validateBaseUrl()` accepts without
