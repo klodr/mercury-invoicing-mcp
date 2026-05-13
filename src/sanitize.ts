@@ -64,7 +64,7 @@ export function stripControl(text: string): string {
  */
 export function sanitizeJsonValues(value: unknown): unknown {
   if (typeof value === "string") return stripControl(value);
-  if (Array.isArray(value)) return value.map(sanitizeJsonValues);
+  if (Array.isArray(value)) return value.map((item: unknown) => sanitizeJsonValues(item));
   if (value !== null && typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
