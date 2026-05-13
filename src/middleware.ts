@@ -132,8 +132,8 @@ function loadCallHistory(): void {
   let raw: string;
   try {
     raw = readFileSync(path, "utf8");
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
       // Cold start: no prior state to load. Mark loaded so the first
       // enforce can persist its first record.
@@ -146,7 +146,7 @@ function loadCallHistory(): void {
     // an empty counter — silently resetting the rate limit. Keeping
     // stateLoaded=false makes persistCallHistory a no-op (see below)
     // and lets the next enforce retry the read.
-    console.error(`[ratelimit] failed to read state from ${path}: ${(err as Error).message}`);
+    console.error(`[ratelimit] failed to read state from ${path}: ${(error as Error).message}`);
     return;
   }
   try {
@@ -158,11 +158,11 @@ function loadCallHistory(): void {
         }
       }
     }
-  } catch (err) {
+  } catch (error) {
     // Corrupted JSON: we *did* read the file, so a fresh start is the
     // documented recovery — overwriting the corrupt file is intentional.
     console.error(
-      `[ratelimit] corrupted state at ${path}, starting fresh: ${(err as Error).message}`,
+      `[ratelimit] corrupted state at ${path}, starting fresh: ${(error as Error).message}`,
     );
   }
   stateLoaded = true;
@@ -186,8 +186,8 @@ function persistCallHistory(): void {
     for (const [k, v] of callHistory) obj[k] = v;
     writeFileSync(tmp, JSON.stringify(obj), { mode: 0o600 });
     renameSync(tmp, path);
-  } catch (err) {
-    console.error(`[ratelimit] failed to persist state to ${path}: ${(err as Error).message}`);
+  } catch (error) {
+    console.error(`[ratelimit] failed to persist state to ${path}: ${(error as Error).message}`);
   }
 }
 
@@ -252,15 +252,15 @@ function withRateLimitLock<T>(fn: () => T): T {
     try {
       // O_WRONLY | O_CREAT | O_EXCL — fails with EEXIST if already held.
       fd = openSync(lockPath, "wx", 0o600);
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
       if (code !== "EEXIST") {
         // Anything other than EEXIST (EACCES on a read-only state dir,
         // ENOENT on a vanished mount, etc.) means we cannot hold the
         // lock at all. Fall through without it; the documented worst
         // case is an under-count by 1-2 entries.
         console.error(
-          `[ratelimit] cannot create lockfile ${lockPath}: ${(err as Error).message}; proceeding without inter-process lock`,
+          `[ratelimit] cannot create lockfile ${lockPath}: ${(error as Error).message}; proceeding without inter-process lock`,
         );
         return fn();
       }
@@ -423,7 +423,7 @@ const SENSITIVE_KEYS_SET: ReadonlySet<string> = new Set(SENSITIVE_KEYS);
 
 export function redactSensitive(value: unknown): unknown {
   if (value === null || typeof value !== "object") return value;
-  if (Array.isArray(value)) return value.map(redactSensitive);
+  if (Array.isArray(value)) return value.map((item: unknown) => redactSensitive(item));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
     out[k] = SENSITIVE_KEYS_SET.has(k.toLowerCase()) ? "[REDACTED]" : redactSensitive(v);
@@ -467,25 +467,25 @@ function rotateAuditLogIfNeeded(path: string, maxBytes: number): void {
   let size: number;
   try {
     size = statSync(path).size;
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") return; // not yet created — nothing to rotate
     // EACCES / EIO / etc.: refuse to rotate; the next appendFileSync
     // will surface the same problem with a clearer message.
     /* v8 ignore start -- statSync error path other than ENOENT (EACCES,
        EIO, ELOOP, …) needs a hostile filesystem state we don't simulate
        in unit tests. */
-    console.error(`[audit] cannot stat ${path} for rotation: ${(err as Error).message}`);
+    console.error(`[audit] cannot stat ${path} for rotation: ${(error as Error).message}`);
     return;
     /* v8 ignore stop */
   }
   if (size < maxBytes) return;
   try {
     renameSync(path, `${path}.1`);
-  } catch (err) {
+  } catch (error) {
     /* v8 ignore next -- renameSync error path: same reason as the
        statSync fallback above. */
-    console.error(`[audit] failed to rotate ${path}: ${(err as Error).message}`);
+    console.error(`[audit] failed to rotate ${path}: ${(error as Error).message}`);
   }
 }
 
@@ -508,8 +508,8 @@ export function logAudit(
   // keeps its original mode (don't widen, don't narrow).
   try {
     mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
-  } catch (err) {
-    console.error(`[audit] failed to create dir for ${path}: ${(err as Error).message}`);
+  } catch (error) {
+    console.error(`[audit] failed to create dir for ${path}: ${(error as Error).message}`);
     // fall through: appendFileSync below will surface the real error
   }
   rotateAuditLogIfNeeded(path, getAuditLogMaxBytes());
@@ -521,8 +521,8 @@ export function logAudit(
   });
   try {
     appendFileSync(path, entry + "\n", { mode: 0o600 });
-  } catch (err) {
-    console.error(`[audit] failed to write to ${path}:`, (err as Error).message);
+  } catch (error) {
+    console.error(`[audit] failed to write to ${path}:`, (error as Error).message);
   }
 }
 
@@ -547,14 +547,14 @@ export function logAudit(
 function safeLogAudit(toolName: string, args: unknown, result: "ok" | "dry-run" | "error"): void {
   try {
     logAudit(toolName, args, result);
-  } catch (auditErr) {
+  } catch (error) {
     /* v8 ignore next -- defensive catch: logAudit already swallows
        appendFileSync failures internally, so this branch only fires on
        a JSON.stringify / Date format throw — not exercisable from a
        unit test without mocking the import (which would over-couple
        the test to implementation detail). The guarantee is the
        `try/catch` presence itself. */
-    console.error(`[middleware] audit log failed for ${toolName}:`, (auditErr as Error).message);
+    console.error(`[middleware] audit log failed for ${toolName}:`, (error as Error).message);
   }
 }
 
@@ -612,11 +612,11 @@ export function wrapToolHandler<TArgs>(
     if (isWriteOp) {
       try {
         enforceRateLimit(toolName);
-      } catch (err) {
-        if (err instanceof RateLimitError) {
+      } catch (error) {
+        if (error instanceof RateLimitError) {
           safeLogAudit(toolName, args, "error");
           return {
-            content: [{ type: "text", text: formatRateLimitError(err) }],
+            content: [{ type: "text", text: formatRateLimitError(error) }],
             isError: true,
           };
         }
@@ -630,7 +630,7 @@ export function wrapToolHandler<TArgs>(
            test. */
         safeLogAudit(toolName, args, "error");
         /* v8 ignore next */
-        throw err;
+        throw error;
       }
     }
 
@@ -664,12 +664,12 @@ export function wrapToolHandler<TArgs>(
       // backported from klodr/gmail-mcp#48).
       if (isWriteOp) safeLogAudit(toolName, args, result.isError ? "error" : "ok");
       return result;
-    } catch (err) {
+    } catch (error) {
       safeLogAudit(toolName, args, "error");
-      if (err instanceof MercuryError) {
+      if (error instanceof MercuryError) {
         const isAR = toolName.includes("invoice") || toolName.includes("customer");
         const planHint =
-          err.status === 403 && isAR
+          error.status === 403 && isAR
             ? " (Mercury's Invoicing/Customers API requires the Plus plan or higher.)"
             : "";
         // err.message is plain text that can carry an upstream
@@ -681,13 +681,15 @@ export function wrapToolHandler<TArgs>(
           content: [
             {
               type: "text",
-              text: sanitizeForLlm(`Mercury API error ${err.status}: ${err.message}${planHint}`),
+              text: sanitizeForLlm(
+                `Mercury API error ${error.status}: ${error.message}${planHint}`,
+              ),
             },
           ],
           isError: true,
         };
       }
-      throw err;
+      throw error;
     }
   };
 }
