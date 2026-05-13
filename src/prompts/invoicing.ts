@@ -153,11 +153,11 @@ export function registerInvoicingPrompts(server: McpServer): void {
       argsSchema: CreateCustomerArgs,
     },
     ({ name, email, address }) => {
-      const n = promptSafe(name);
-      const e = promptSafe(email);
-      const a = address ? promptSafe(address) : undefined;
+      const nameSafe = promptSafe(name);
+      const emailSafe = promptSafe(email);
+      const addressSafe = address ? promptSafe(address) : undefined;
       return {
-        description: `Create AR customer "${n}"`,
+        description: `Create AR customer "${nameSafe}"`,
         messages: [
           {
             role: "user" as const,
@@ -173,11 +173,11 @@ export function registerInvoicingPrompts(server: McpServer): void {
                 `invoice selection ambiguous in the Mercury Dashboard and is NOT what the ` +
                 `user wants.\n` +
                 `2. Call \`mercury_create_customer\` with:\n` +
-                `   - name: "${n}"\n` +
-                `   - email: "${e}"\n` +
-                (a
+                `   - name: "${nameSafe}"\n` +
+                `   - email: "${emailSafe}"\n` +
+                (addressSafe
                   ? `   - address: <parse the string below into { street, city, state, postalCode, country }>\n` +
-                    `     Source address: "${a}"\n` +
+                    `     Source address: "${addressSafe}"\n` +
                     `     If the parsing is ambiguous, STOP and ask the user to confirm the ` +
                     `split rather than guessing.\n`
                   : `   (no address supplied — will default to the workspace's on-file address)\n`) +
