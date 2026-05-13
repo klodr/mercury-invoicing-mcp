@@ -168,7 +168,7 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
       const current = await client.get<Record<string, unknown>>(`/ar/invoices/${invoiceId}`);
       // Strip read-only fields Mercury rejects in the update payload
       const {
-        id: _i,
+        id: _index,
         slug: _s,
         status: _st,
         amount: _a,
