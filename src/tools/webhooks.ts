@@ -108,8 +108,8 @@ const HttpsWebhookUrl = z
       // code and showed up as an uncovered branch on Codecov.
       const firstHextet = Number.parseInt(host.split(":")[0], 16);
       if (!Number.isNaN(firstHextet)) {
-        if ((firstHextet & 0xfe00) === 0xfc00) return false; // fc00::/7 (ULA)
-        if ((firstHextet & 0xffc0) === 0xfe80) return false; // fe80::/10 (link-local)
+        if ((firstHextet & 0xfe_00) === 0xfc_00) return false; // fc00::/7 (ULA)
+        if ((firstHextet & 0xff_c0) === 0xfe_80) return false; // fe80::/10 (link-local)
       }
 
       return true;

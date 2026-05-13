@@ -4,9 +4,6 @@ import { z, ZodRawShape } from "zod";
 import { wrapToolHandler, type ToolResult } from "../middleware.js";
 import { sanitizeJsonValues } from "../sanitize.js";
 
-export type { ToolResult };
-export type { ToolAnnotations };
-
 /**
  * Build a ToolResult from a JSON-shaped response. The LLM-display
  * surface (`content[0].text`) is a parseable JSON string with every
@@ -55,3 +52,6 @@ export function defineTool<S extends ZodRawShape>(
     wrapped,
   );
 }
+
+export { type ToolResult } from "../middleware.js";
+export { type ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";

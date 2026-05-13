@@ -81,7 +81,7 @@ const CreateInvoiceArgs = {
       message:
         "amount must be a decimal dollar string with at most 2 fractional digits (e.g. `1250.00`)",
     })
-    .refine((v) => parseFloat(v) >= 0.01, {
+    .refine((v) => Number.parseFloat(v) >= 0.01, {
       message: "amount must be at least 0.01 USD",
     })
     .describe(
