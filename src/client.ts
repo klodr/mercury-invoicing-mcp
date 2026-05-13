@@ -104,7 +104,7 @@ export class MercuryClient {
     const res = await fetch(url, {
       method,
       headers,
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
       signal: AbortSignal.timeout(30_000),
       // Fail closed on any 30x. The default `redirect: "follow"` would
       // let undici chase a Location header transparently — bouncing the

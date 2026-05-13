@@ -54,7 +54,7 @@ const SendAchArgs = {
       message:
         "amount must be a decimal dollar string with at most 2 fractional digits (e.g. `150.00`)",
     })
-    .refine((v) => parseFloat(v) >= 0.01, {
+    .refine((v) => Number.parseFloat(v) >= 0.01, {
       message: "amount must be at least 0.01 USD",
     })
     .describe(
@@ -227,7 +227,7 @@ export function registerRecipePrompts(server: McpServer): void {
                     `them.\n`) +
                 `4. Before calling \`mercury_send_money\`, echo a single-line confirmation:\n` +
                 `   "Send ${a} USD via ACH from <account> to <recipient>` +
-                (m ? ` with memo \\"${m}\\"` : "") +
+                (m ? String.raw` with memo \"${m}\"` : "") +
                 `. Confirm?" and WAIT for an explicit yes.\n` +
                 `5. Once confirmed, call \`mercury_send_money\` with:\n` +
                 `   - accountId: <source account UUID>\n` +
