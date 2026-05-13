@@ -212,8 +212,8 @@ function persistCallHistory(): void {
  * legitimate RMW (a few ms) but short enough that recovery on
  * crash/SIGKILL is automatic on the next call.
  */
-const LOCK_TIMEOUT_MS = 2_000;
-const LOCK_STALE_MS = 5_000;
+const LOCK_TIMEOUT_MS = 2000;
+const LOCK_STALE_MS = 5000;
 const LOCK_RETRY_MS = 25;
 
 function getLockFile(): string {
