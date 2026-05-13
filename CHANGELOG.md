@@ -5,55 +5,103 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.15.6](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.5...v0.15.6) (2026-05-11)
+## [0.17.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.6...v0.17.0) (2026-05-13)
 
+### Added
+
+* **tools:** declare openWorldHint:true on every tool ([#181](https://github.com/klodr/mercury-invoicing-mcp/issues/181))
+
+### Fixed
+
+* **ci:** add top-level permissions: contents: read to auto-merge ([#183](https://github.com/klodr/mercury-invoicing-mcp/issues/183))
+
+* **ci(leak-detect):** re-pin reusable workflow to fix yq checksum SHA ([#178](https://github.com/klodr/mercury-invoicing-mcp/issues/178))
+
+* **pre-commit:** call ./node_modules/.bin/lint-staged directly ([#171](https://github.com/klodr/mercury-invoicing-mcp/issues/171))
+
+* **scripts:** defer all writes in syncVersion until validation passes ([#175](https://github.com/klodr/mercury-invoicing-mcp/issues/175))
+
+* **verify-release:** pin cosign predicate to SLSA Provenance v1 ([#180](https://github.com/klodr/mercury-invoicing-mcp/issues/180))
+
+### Changed
+
+* add leak-detect caller workflow ([#172](https://github.com/klodr/mercury-invoicing-mcp/issues/172))
+
+* fix four workflow errors ([#176](https://github.com/klodr/mercury-invoicing-mcp/issues/176))
+
+* **lint:** adopt eslint-plugin-unicorn (pass 1 + pass 3 prevent-abbreviations) ([#185](https://github.com/klodr/mercury-invoicing-mcp/issues/185), [#188](https://github.com/klodr/mercury-invoicing-mcp/issues/188))
+
+* **node:** bump .nvmrc to 22.22.2 (CVE floor) ([#170](https://github.com/klodr/mercury-invoicing-mcp/issues/170))
+
+* **pre-commit:** warn on missing system tooling ([#168](https://github.com/klodr/mercury-invoicing-mcp/issues/168))
+
+* **pre-push:** sync with canonical template ([#169](https://github.com/klodr/mercury-invoicing-mcp/issues/169))
+
+* **scripts:** canonicalise sync-version ([#174](https://github.com/klodr/mercury-invoicing-mcp/issues/174))
+
+* **test:** harmonise vitest coverage config ([#173](https://github.com/klodr/mercury-invoicing-mcp/issues/173))
+
+## [0.15.6](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.5...v0.15.6) (2026-05-11)
 
 ### Fixed
 
 * **ci:** align auto-merge filter on klodr-release-please[bot] ([#163](https://github.com/klodr/mercury-invoicing-mcp/issues/163)) ([2eaf0d9](https://github.com/klodr/mercury-invoicing-mcp/commit/2eaf0d9266dd28910800ecd16297a0d096343d7b))
-* **ci:** repin reusable auto-merge to a reachable SHA ([#164](https://github.com/klodr/mercury-invoicing-mcp/issues/164)) ([f115d5a](https://github.com/klodr/mercury-invoicing-mcp/commit/f115d5a74650c556b15043e07d6a19c3b2132822))
 
+* **ci:** repin reusable auto-merge to a reachable SHA ([#164](https://github.com/klodr/mercury-invoicing-mcp/issues/164)) ([f115d5a](https://github.com/klodr/mercury-invoicing-mcp/commit/f115d5a74650c556b15043e07d6a19c3b2132822))
 
 ### Changed
 
 * add pinact config + actions-pinned CI gate ([#159](https://github.com/klodr/mercury-invoicing-mcp/issues/159)) ([7a5ba7d](https://github.com/klodr/mercury-invoicing-mcp/commit/7a5ba7d737cbd9e41f54ec94b9c27bc7d42c0f0a))
+
 * **lint-staged:** add prettier --write to all globs ([#166](https://github.com/klodr/mercury-invoicing-mcp/issues/166)) ([6199b20](https://github.com/klodr/mercury-invoicing-mcp/commit/6199b207ecef294c1a094e3e50f950c40518591f))
+
 * migrate ci.yml to reusable-node-ci ([#165](https://github.com/klodr/mercury-invoicing-mcp/issues/165)) ([6753fda](https://github.com/klodr/mercury-invoicing-mcp/commit/6753fda678781bc5b15122c8f6ac113f2a2ee63a))
 
 ## [0.15.5](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.4...v0.15.5) (2026-05-11)
 
-
 ### Fixed
 
 * **ci:** gate auto-merge caller on bot login before passing secrets ([#156](https://github.com/klodr/mercury-invoicing-mcp/issues/156)) ([1a14154](https://github.com/klodr/mercury-invoicing-mcp/commit/1a1415455ef91e133987475676cadf9d097529e4))
-* **lint:** drain CR findings + valid globs syntax ([#161](https://github.com/klodr/mercury-invoicing-mcp/issues/161)) ([51ed32a](https://github.com/klodr/mercury-invoicing-mcp/commit/51ed32ac64e475121c9a358aeb1d4de64977e071))
-* scope release-please app token to least-privilege ([#148](https://github.com/klodr/mercury-invoicing-mcp/issues/148)) ([53b804b](https://github.com/klodr/mercury-invoicing-mcp/commit/53b804b96076ba1896c7620627b3b702a4ef0a4a))
 
+* **lint:** drain CR findings + valid globs syntax ([#161](https://github.com/klodr/mercury-invoicing-mcp/issues/161)) ([51ed32a](https://github.com/klodr/mercury-invoicing-mcp/commit/51ed32ac64e475121c9a358aeb1d4de64977e071))
+
+* scope release-please app token to least-privilege ([#148](https://github.com/klodr/mercury-invoicing-mcp/issues/148)) ([53b804b](https://github.com/klodr/mercury-invoicing-mcp/commit/53b804b96076ba1896c7620627b3b702a4ef0a4a))
 
 ### Changed
 
 * add auto-merge caller for release-please PRs ([#147](https://github.com/klodr/mercury-invoicing-mcp/issues/147)) ([a0ace17](https://github.com/klodr/mercury-invoicing-mcp/commit/a0ace178c08ce896bf4d47feba1d8fa9211329cb))
+
 * add yamllint+markdownlint+commitlint+lint-staged pack ([#157](https://github.com/klodr/mercury-invoicing-mcp/issues/157)) ([c8f4fef](https://github.com/klodr/mercury-invoicing-mcp/commit/c8f4fef195c0eb06837738ad6468c9db127677d3))
+
 * bump github-script v9 + migrate to client-id ([#146](https://github.com/klodr/mercury-invoicing-mcp/issues/146)) ([35f0f1b](https://github.com/klodr/mercury-invoicing-mcp/commit/35f0f1b01a060b28387e390316ba04ee7f3687f1))
+
 * bump github/codeql-action from 4.35.3 to 4.35.4 ([#151](https://github.com/klodr/mercury-invoicing-mcp/issues/151)) ([82fc304](https://github.com/klodr/mercury-invoicing-mcp/commit/82fc3046497fbb90a2a8703a19ca296f8d14762f))
+
 * bump sigstore/cosign-installer from 4.1.1 to 4.1.2 ([#150](https://github.com/klodr/mercury-invoicing-mcp/issues/150)) ([35fbff5](https://github.com/klodr/mercury-invoicing-mcp/commit/35fbff56e28f4d3540ff730bce73546e9287bd70))
+
 * **bundle-analysis:** run on Dependabot PRs to satisfy required check ([#155](https://github.com/klodr/mercury-invoicing-mcp/issues/155)) ([71d470d](https://github.com/klodr/mercury-invoicing-mcp/commit/71d470d97681f57551fb83e29bc6c104dc2a7234))
+
 * **dependabot:** use chore(deps) prefix for Conventional Commits ([#149](https://github.com/klodr/mercury-invoicing-mcp/issues/149)) ([9c2a24b](https://github.com/klodr/mercury-invoicing-mcp/commit/9c2a24b2b4f6b6b88eea834036ab45087534acf0))
+
 * **deps-dev:** bump the dev-dependencies group with 2 updates ([#153](https://github.com/klodr/mercury-invoicing-mcp/issues/153)) ([0bec64d](https://github.com/klodr/mercury-invoicing-mcp/commit/0bec64d71625d474b9462ac3cab1fe469a2dedb5))
+
 * **deps:** bump actions/github-script SHA ([#152](https://github.com/klodr/mercury-invoicing-mcp/issues/152)) ([eb474b3](https://github.com/klodr/mercury-invoicing-mcp/commit/eb474b3e4e151a9adf9cb5aab639aa37a8d86b16))
+
 * **deps:** bump zod from 4.4.2 to 4.4.3 in the production-dependencies group across 1 directory ([#154](https://github.com/klodr/mercury-invoicing-mcp/issues/154)) ([b4b6ea0](https://github.com/klodr/mercury-invoicing-mcp/commit/b4b6ea03e45b0eed10b0d60c6e392e61e4902366))
+
 * **husky:** adopt shared pre-push template ([#160](https://github.com/klodr/mercury-invoicing-mcp/issues/160)) ([13c0a26](https://github.com/klodr/mercury-invoicing-mcp/commit/13c0a260959a545699dd1ebe7844b18ba1c77dd9))
 
 ## [0.15.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.3...v0.15.4) (2026-05-10)
 
-
 ### Changed
 
 * add CR title baseline (Conventional Commits + 72c cap) ([#143](https://github.com/klodr/mercury-invoicing-mcp/issues/143)) ([dae9b09](https://github.com/klodr/mercury-invoicing-mcp/commit/dae9b094ceec88c0fd4f574fe36da87b82a6fd01))
-* add eslint-plugin-jsonc for JSON file linting ([#144](https://github.com/klodr/mercury-invoicing-mcp/issues/144)) ([0886e43](https://github.com/klodr/mercury-invoicing-mcp/commit/0886e43821d4ec01019fbb6033b81ab712d23ded))
-* **codecov:** upload v8 JSON alongside lcov for branch detail ([#140](https://github.com/klodr/mercury-invoicing-mcp/issues/140)) ([cddea9b](https://github.com/klodr/mercury-invoicing-mcp/commit/cddea9b4fd0a01c8bd8f391230cbfa3b67dc58a1))
-* factor ci.yml via klodr/.github composite actions ([#142](https://github.com/klodr/mercury-invoicing-mcp/issues/142)) ([e9eff29](https://github.com/klodr/mercury-invoicing-mcp/commit/e9eff29fde1c4de1b05821ef575d673eb32d4ecb))
 
+* add eslint-plugin-jsonc for JSON file linting ([#144](https://github.com/klodr/mercury-invoicing-mcp/issues/144)) ([0886e43](https://github.com/klodr/mercury-invoicing-mcp/commit/0886e43821d4ec01019fbb6033b81ab712d23ded))
+
+* **codecov:** upload v8 JSON alongside lcov for branch detail ([#140](https://github.com/klodr/mercury-invoicing-mcp/issues/140)) ([cddea9b](https://github.com/klodr/mercury-invoicing-mcp/commit/cddea9b4fd0a01c8bd8f391230cbfa3b67dc58a1))
+
+* factor ci.yml via klodr/.github composite actions ([#142](https://github.com/klodr/mercury-invoicing-mcp/issues/142)) ([e9eff29](https://github.com/klodr/mercury-invoicing-mcp/commit/e9eff29fde1c4de1b05821ef575d673eb32d4ecb))
 
 ### Documentation
 
@@ -61,17 +109,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.15.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.2...v0.15.3) (2026-05-09)
 
-
 ### Fixed
 
 * **ci:** gate release-please on all required workflows succeeding ([#135](https://github.com/klodr/mercury-invoicing-mcp/issues/135)) ([b3591e5](https://github.com/klodr/mercury-invoicing-mcp/commit/b3591e59093beff9f2f233f3897e34a481238a4e))
 
-
 ### Changed
 
 * **codecov:** silence GPG trust + multi-language search warnings ([#137](https://github.com/klodr/mercury-invoicing-mcp/issues/137)) ([6fd0087](https://github.com/klodr/mercury-invoicing-mcp/commit/6fd0087aaa21d7da0a89ac5ae0b28aa4c1194368))
-* harmonize cross-repo (typecheck pre-push + fail_ci_if_error) ([#138](https://github.com/klodr/mercury-invoicing-mcp/issues/138)) ([a344020](https://github.com/klodr/mercury-invoicing-mcp/commit/a3440207fb2b02aee71bce93ce9b241197d36bd3))
 
+* harmonize cross-repo (typecheck pre-push + fail_ci_if_error) ([#138](https://github.com/klodr/mercury-invoicing-mcp/issues/138)) ([a344020](https://github.com/klodr/mercury-invoicing-mcp/commit/a3440207fb2b02aee71bce93ce9b241197d36bd3))
 
 ### Documentation
 
@@ -79,27 +125,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.15.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.1...v0.15.2) (2026-05-09)
 
-
 ### Changed
 
 * **release-please:** chain on workflow_run instead of racing CI ([#132](https://github.com/klodr/mercury-invoicing-mcp/issues/132)) ([dfa44dd](https://github.com/klodr/mercury-invoicing-mcp/commit/dfa44dda8c3f4a03040672720f50b6724d67c02b))
+
 * **release:** strip prepare + prepublishOnly before npm publish ([#133](https://github.com/klodr/mercury-invoicing-mcp/issues/133)) ([f80e8a7](https://github.com/klodr/mercury-invoicing-mcp/commit/f80e8a7c0949497262115e81794da270a49249ab))
 
 ## [0.15.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.15.0...v0.15.1) (2026-05-09)
 
-
 ### Changed
 
 * **eslint:** add eslint-plugin-import-x (flat/recommended) ([#129](https://github.com/klodr/mercury-invoicing-mcp/issues/129)) ([5169293](https://github.com/klodr/mercury-invoicing-mcp/commit/5169293d7f5e03a55fc172c3bad95e6f6fa6a2f8))
+
 * **eslint:** add eslint-plugin-promise (flat/recommended) ([#126](https://github.com/klodr/mercury-invoicing-mcp/issues/126)) ([69f70f6](https://github.com/klodr/mercury-invoicing-mcp/commit/69f70f6455d98c18aea234eff9cf0b66a85f56d3))
+
 * **eslint:** switch to tseslint.configs.strictTypeChecked ([#128](https://github.com/klodr/mercury-invoicing-mcp/issues/128)) ([a807f0c](https://github.com/klodr/mercury-invoicing-mcp/commit/a807f0c3c6a34666c99e01e4420302eeb136ba24))
+
 * **husky:** pre-push gate for format+lint+test+audit ([#125](https://github.com/klodr/mercury-invoicing-mcp/issues/125)) ([aec43be](https://github.com/klodr/mercury-invoicing-mcp/commit/aec43be6843654258b878aa2b0f703a199382f3b))
+
 * **lockfile-lint:** harden shape guard against null + arrays ([#124](https://github.com/klodr/mercury-invoicing-mcp/issues/124)) ([5e4e65d](https://github.com/klodr/mercury-invoicing-mcp/commit/5e4e65da769b3b6ac95feb49b78f05ad28d54253))
+
 * **lockfile-lint:** use npm ci + npx instead of pinned tarball ([#121](https://github.com/klodr/mercury-invoicing-mcp/issues/121)) ([35ab59a](https://github.com/klodr/mercury-invoicing-mcp/commit/35ab59ab348308d0bc045c8860092c7a8a1b69b5))
+
 * **release-please:** expose chore + ci in CHANGELOG sections ([#130](https://github.com/klodr/mercury-invoicing-mcp/issues/130)) ([7941a89](https://github.com/klodr/mercury-invoicing-mcp/commit/7941a899401c43d39513a1ed07e9f73fad454fb5))
 
 ## [0.15.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.1...v0.15.0) (2026-05-08)
-
 
 ### Added
 
@@ -107,11 +157,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.14.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.0...v0.14.1) (2026-05-07)
 
-
 ### Changed
 
 * bump hono from 4.12.14 to 4.12.18 ([#109](https://github.com/klodr/mercury-invoicing-mcp/issues/109)) ([ac9ebaa](https://github.com/klodr/mercury-invoicing-mcp/commit/ac9ebaaee98d5f347d935a340efd9e70b6e1bc3d))
+
 * bump ip-address and express-rate-limit ([#107](https://github.com/klodr/mercury-invoicing-mcp/issues/107)) ([c7bfd36](https://github.com/klodr/mercury-invoicing-mcp/commit/c7bfd36493d8401091f5497b235eed77417e5180))
+
 * bump ipaddr.js from 2.3.0 to 2.4.0 (production-deps) ([#106](https://github.com/klodr/mercury-invoicing-mcp/issues/106)) ([cc60249](https://github.com/klodr/mercury-invoicing-mcp/commit/cc602495bacff542fa8986c0117e8f9f7cb5cfab))
 
 ## [Unreleased]
@@ -120,9 +171,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`zod`** 4.3.6 → 4.4.2 (production). Schemas drive every tool input/output in this repo; bumped on its own PR (#103) for independent triage. Tests 227/227 pass against the new minor.
-- **`eslint`** 10.2.1 → 10.3.0 (dev, minor).
-- **`typescript-eslint`** 8.59.0 → 8.59.1 (dev, patch).
+* **`zod`** 4.3.6 → 4.4.2 (production). Schemas drive every tool input/output in this repo; bumped on its own PR (#103) for independent triage. Tests 227/227 pass against the new minor.
+
+* **`eslint`** 10.2.1 → 10.3.0 (dev, minor).
+
+* **`typescript-eslint`** 8.59.0 → 8.59.1 (dev, patch).
 
 Pre-empts the weekly dependabot run rather than letting it open the bumps over multiple cycles. Two PRs: dev-deps (#102) and prod-deps (#103).
 
@@ -157,22 +210,29 @@ major SSRF-defense library in the Node ecosystem).
 
 ### Added
 
-- **MCP tool annotations on every one of the 36 tools** (#97) — `readOnlyHint`, `destructiveHint`, `idempotentHint` declared in each tool's `registerTool` config. Read-only tools (21) carry `readOnlyHint: true`; non-destructive write tools (10) carry `destructiveHint: false` (and `idempotentHint: true` where the API accepts an `idempotencyKey`); destructive + money-moving tools (5 — `mercury_delete_customer`, `mercury_cancel_invoice`, `mercury_send_money`, `mercury_request_send_money`, `mercury_delete_webhook`) carry `destructiveHint: true`. MCP hosts and rubrics (notably the Glama TDQS Behavior dimension) can now detect tool semantics machine-readably instead of grepping the prose description. Mirrors the pattern already in place on `klodr/gmail-mcp`.
-- **`MERCURY_HOSTS` exact-match allowlist** (#98) — strictly accepts `api.mercury.com` and `api-sandbox.mercury.com` as base URLs. Opt-out via `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true` for self-hosted proxies; the opt-out path emits a loud stderr warning that makes the trust-radius widening obvious in operator logs. Constant exposed for tests so the assertion contract does not duplicate the literal hostnames.
-- **`assertSafeUrl()` runtime SSRF gate** (#98, `src/safe-url.ts`) — called before every outbound `fetch`. Resolves the URL's hostname via `node:dns/promises.lookup` and rejects if any A/AAAA record falls outside `ipaddr.js` `unicast` range. Closes the DNS-rebinding window left open by `validateBaseUrl()` (which only inspects the URL string at boot). Six dedicated test cases cover IP literals (loopback, RFC 1918, link-local, CGNAT, IPv6 loopback / ULA / link-local) and DNS-resolved hostnames (mocked `node:dns` returning private / cloud-metadata / mixed / ULA / public records), reaching 100% lines / 100% branches on the new module.
-- **Audit-log rotation env knob** (#99) — `MERCURY_MCP_AUDIT_LOG_MAX_BYTES` triggers an in-place `.1` rotation when the live log exceeds the threshold. Default: unbounded (operator preserves prior behaviour). Documented in `.github/SECURITY.md` alongside the existing `logrotate(8)` recipe.
+* **MCP tool annotations on every one of the 36 tools** (#97) — `readOnlyHint`, `destructiveHint`, `idempotentHint` declared in each tool's `registerTool` config. Read-only tools (21) carry `readOnlyHint: true`; non-destructive write tools (10) carry `destructiveHint: false` (and `idempotentHint: true` where the API accepts an `idempotencyKey`); destructive + money-moving tools (5 — `mercury_delete_customer`, `mercury_cancel_invoice`, `mercury_send_money`, `mercury_request_send_money`, `mercury_delete_webhook`) carry `destructiveHint: true`. MCP hosts and rubrics (notably the Glama TDQS Behavior dimension) can now detect tool semantics machine-readably instead of grepping the prose description. Mirrors the pattern already in place on `klodr/gmail-mcp`.
+
+* **`MERCURY_HOSTS` exact-match allowlist** (#98) — strictly accepts `api.mercury.com` and `api-sandbox.mercury.com` as base URLs. Opt-out via `MERCURY_MCP_ALLOW_NON_MERCURY_HOST=true` for self-hosted proxies; the opt-out path emits a loud stderr warning that makes the trust-radius widening obvious in operator logs. Constant exposed for tests so the assertion contract does not duplicate the literal hostnames.
+
+* **`assertSafeUrl()` runtime SSRF gate** (#98, `src/safe-url.ts`) — called before every outbound `fetch`. Resolves the URL's hostname via `node:dns/promises.lookup` and rejects if any A/AAAA record falls outside `ipaddr.js` `unicast` range. Closes the DNS-rebinding window left open by `validateBaseUrl()` (which only inspects the URL string at boot). Six dedicated test cases cover IP literals (loopback, RFC 1918, link-local, CGNAT, IPv6 loopback / ULA / link-local) and DNS-resolved hostnames (mocked `node:dns` returning private / cloud-metadata / mixed / ULA / public records), reaching 100% lines / 100% branches on the new module.
+
+* **Audit-log rotation env knob** (#99) — `MERCURY_MCP_AUDIT_LOG_MAX_BYTES` triggers an in-place `.1` rotation when the live log exceeds the threshold. Default: unbounded (operator preserves prior behaviour). Documented in `.github/SECURITY.md` alongside the existing `logrotate(8)` recipe.
 
 ### Changed
 
-- **`validateBaseUrl()` rebuilt on `ipaddr.js`** (#98) — single RFC-based range classification covers loopback, RFC 1918, RFC 3927 link-local, RFC 6598 CGNAT, RFC 2544 benchmarking, RFC 5737 documentation, multicast, IPv6 ULA, IPv6 link-local — replacing the hand-rolled per-range bitmask checks. Decouples the public error message from the library's internal taxonomy: callers see a stable "non-public range" wording, raw range value goes to stderr only.
-- **`MercuryClient.request` passes `redirect: "manual"` and throws on 30x** (#98, `src/client.ts`) — the default `redirect: "follow"` would let undici chase a `Location` header transparently, bouncing the bearer token to whatever host the redirect points at, which `assertSafeUrl()` never re-classifies because the redirect is handled below the public fetch surface. Now fails closed with an explicit `MercuryError("…unexpected redirect…")`. Mirrors the same gate landed on `klodr/faxdrop-mcp` `src/client.ts`.
-- **Audit-log directory pre-created at `0o700`** (#99, `src/middleware.ts`) — mirrors the state-file pattern; the log no longer sits inside a world-readable directory on a multi-tenant host. Mode applies only to dirs the call creates, so a pre-existing parent keeps its original mode.
-- **`MercuryError.message` capped at 2 KB at the source** (#99) — structured head/tail truncation (`… [truncated] …`) preserves both ends of the upstream payload while bounding context-window saturation. The existing fence + `stripControl` stack is unchanged. New `MERCURY_ERROR_MESSAGE_MAX` constant exposed for tests.
-- **Rate-limit RMW now under an `O_EXCL` lockfile** (#99) — wraps the load → check → append → persist cycle in a sibling lockfile to `ratelimit.json`. Stale locks reclaimed after a 5 s grace window; sustained contention beyond a 2 s timeout falls through with a stderr warning rather than blocking the tool call. `Atomics.wait` on a tiny `SharedArrayBuffer` keeps the retry sync without burning CPU. No new dependency.
+* **`validateBaseUrl()` rebuilt on `ipaddr.js`** (#98) — single RFC-based range classification covers loopback, RFC 1918, RFC 3927 link-local, RFC 6598 CGNAT, RFC 2544 benchmarking, RFC 5737 documentation, multicast, IPv6 ULA, IPv6 link-local — replacing the hand-rolled per-range bitmask checks. Decouples the public error message from the library's internal taxonomy: callers see a stable "non-public range" wording, raw range value goes to stderr only.
+
+* **`MercuryClient.request` passes `redirect: "manual"` and throws on 30x** (#98, `src/client.ts`) — the default `redirect: "follow"` would let undici chase a `Location` header transparently, bouncing the bearer token to whatever host the redirect points at, which `assertSafeUrl()` never re-classifies because the redirect is handled below the public fetch surface. Now fails closed with an explicit `MercuryError("…unexpected redirect…")`. Mirrors the same gate landed on `klodr/faxdrop-mcp` `src/client.ts`.
+
+* **Audit-log directory pre-created at `0o700`** (#99, `src/middleware.ts`) — mirrors the state-file pattern; the log no longer sits inside a world-readable directory on a multi-tenant host. Mode applies only to dirs the call creates, so a pre-existing parent keeps its original mode.
+
+* **`MercuryError.message` capped at 2 KB at the source** (#99) — structured head/tail truncation (`… [truncated] …`) preserves both ends of the upstream payload while bounding context-window saturation. The existing fence + `stripControl` stack is unchanged. New `MERCURY_ERROR_MESSAGE_MAX` constant exposed for tests.
+
+* **Rate-limit RMW now under an `O_EXCL` lockfile** (#99) — wraps the load → check → append → persist cycle in a sibling lockfile to `ratelimit.json`. Stale locks reclaimed after a 5 s grace window; sustained contention beyond a 2 s timeout falls through with a stderr warning rather than blocking the tool call. `Atomics.wait` on a tiny `SharedArrayBuffer` keeps the retry sync without burning CPU. No new dependency.
 
 ### Fixed
 
-- **Idempotency docs on the money tools** (#99) — `mercury_request_send_money` and `mercury_create_internal_transfer` now mirror `mercury_send_money` ("auto-generated if omitted; pass an explicit one to make retries safe"). No code change to the call path.
+* **Idempotency docs on the money tools** (#99) — `mercury_request_send_money` and `mercury_create_internal_transfer` now mirror `mercury_send_money` ("auto-generated if omitted; pass an explicit one to make retries safe"). No code change to the call path.
 
 ## [0.12.0] - 2026-04-25 — Tool descriptions polish
 
@@ -180,70 +240,91 @@ A documentation-quality release. Every one of the 36 tool definitions across 12 
 
 ### Changed
 
-- **Tool descriptions adopt the TDQS pattern** — every one of the 36 tool definitions across 12 modules (`accounts`, `cards`, `categories`, `credit`, `customers`, `invoices`, `organization`, `recipients`, `statements`, `transactions`, `treasury`, `webhooks`) is restructured into explicit USE WHEN / DO NOT USE / SIDE EFFECTS / RETURNS sections. Read-only tools (21) drop the trivial `SIDE EFFECTS` line — the `list_/get_` prefix already encodes the property. Write tools (10) surface persistence, idempotency keys, and email side-effects (`create_invoice` with `sendEmailOption: "SendNow"`). Destructive + money-moving tools (5) carry explicit `REAL FUNDS` / `irrecoverable` / `ALWAYS confirm with user` warnings: `send_money`, `request_send_money`, `delete_customer`, `cancel_invoice` (with the customer-facing email notice), `delete_webhook`. `mercury_send_money` documents the workspace approval policy semantics (immediate execution depends on Mercury's own Settings → Approvals, not on the MCP).
-- **Disambiguation of overlapping account / transaction surfaces** — `mercury_list_accounts` (deposit) vs `mercury_list_credit_accounts` (IO Credit) vs `mercury_get_treasury` (Treasury cash); `mercury_list_transactions` vs `mercury_list_credit_transactions` vs `mercury_list_treasury_transactions`; `mercury_create_customer` (AR billable) vs `mercury_add_recipient` (payment counterparty); `mercury_send_money` vs `mercury_request_send_money` vs `mercury_create_internal_transfer` (workspace-policy-dependent immediate execution vs always-pending-approval vs no-recipient internal sweep). All cross-referenced in the `DO NOT USE` of each pairing.
-- **Drop misleading singular-vs-plural path claim** — both `mercury_list_transactions` and `mercury_list_credit_transactions` hit the SINGULAR `/account/{id}/transactions` path. The previous "PLURAL `/accounts/{id}/transactions`" comparison in `credit.ts`'s header comment and in the inline description was inaccurate; the plural path is never invoked anywhere in the codebase. Caught by CodeRabbit on the TDQS PR.
-- **`packageManager` field pinned to `npm@10.9.7`** — matches the npm version bundled with Node 22.22.2 (our `engines.node` floor), so Corepack stays a no-op for default Node 22 installs and a no-cost pin elsewhere. Stops a contributor or CI runner with an older npm from regenerating a lockfileVersion 2 lockfile.
-- **`pnpm.onlyBuiltDependencies: ["esbuild"]`** — pnpm-based registries (Glama, Smithery, etc.) can now build cleanly without operator-prompt for esbuild's post-install hook. Other transitive post-install scripts stay blocked.
-- **README MIT badge dropped** — license is already surfaced by GitHub (sidebar, auto-detected from `LICENSE`) and npm (right rail, parsed from `package.json` `license`). The third copy in the README was noise without information.
+* **Tool descriptions adopt the TDQS pattern** — every one of the 36 tool definitions across 12 modules (`accounts`, `cards`, `categories`, `credit`, `customers`, `invoices`, `organization`, `recipients`, `statements`, `transactions`, `treasury`, `webhooks`) is restructured into explicit USE WHEN / DO NOT USE / SIDE EFFECTS / RETURNS sections. Read-only tools (21) drop the trivial `SIDE EFFECTS` line — the `list_/get_` prefix already encodes the property. Write tools (10) surface persistence, idempotency keys, and email side-effects (`create_invoice` with `sendEmailOption: "SendNow"`). Destructive + money-moving tools (5) carry explicit `REAL FUNDS` / `irrecoverable` / `ALWAYS confirm with user` warnings: `send_money`, `request_send_money`, `delete_customer`, `cancel_invoice` (with the customer-facing email notice), `delete_webhook`. `mercury_send_money` documents the workspace approval policy semantics (immediate execution depends on Mercury's own Settings → Approvals, not on the MCP).
+
+* **Disambiguation of overlapping account / transaction surfaces** — `mercury_list_accounts` (deposit) vs `mercury_list_credit_accounts` (IO Credit) vs `mercury_get_treasury` (Treasury cash); `mercury_list_transactions` vs `mercury_list_credit_transactions` vs `mercury_list_treasury_transactions`; `mercury_create_customer` (AR billable) vs `mercury_add_recipient` (payment counterparty); `mercury_send_money` vs `mercury_request_send_money` vs `mercury_create_internal_transfer` (workspace-policy-dependent immediate execution vs always-pending-approval vs no-recipient internal sweep). All cross-referenced in the `DO NOT USE` of each pairing.
+
+* **Drop misleading singular-vs-plural path claim** — both `mercury_list_transactions` and `mercury_list_credit_transactions` hit the SINGULAR `/account/{id}/transactions` path. The previous "PLURAL `/accounts/{id}/transactions`" comparison in `credit.ts`'s header comment and in the inline description was inaccurate; the plural path is never invoked anywhere in the codebase. Caught by CodeRabbit on the TDQS PR.
+
+* **`packageManager` field pinned to `npm@10.9.7`** — matches the npm version bundled with Node 22.22.2 (our `engines.node` floor), so Corepack stays a no-op for default Node 22 installs and a no-cost pin elsewhere. Stops a contributor or CI runner with an older npm from regenerating a lockfileVersion 2 lockfile.
+
+* **`pnpm.onlyBuiltDependencies: ["esbuild"]`** — pnpm-based registries (Glama, Smithery, etc.) can now build cleanly without operator-prompt for esbuild's post-install hook. Other transitive post-install scripts stay blocked.
+
+* **README MIT badge dropped** — license is already surfaced by GitHub (sidebar, auto-detected from `LICENSE`) and npm (right rail, parsed from `package.json` `license`). The third copy in the README was noise without information.
 
 ### Added
 
-- **`docs/ROADMAP.md` — MCP `outputSchema` per tool item** — extend `defineTool()` with an optional `outputSchema?: ZodRawShape` and write a Zod schema for each of the ~36 tools so clients can validate `structuredContent` per MCP spec 2025-06-18+. Lets us drop the textual `RETURNS:` block from tool descriptions and rely on a machine-readable contract instead.
+* **`docs/ROADMAP.md` — MCP `outputSchema` per tool item** — extend `defineTool()` with an optional `outputSchema?: ZodRawShape` and write a Zod schema for each of the ~36 tools so clients can validate `structuredContent` per MCP spec 2025-06-18+. Lets us drop the textual `RETURNS:` block from tool descriptions and rely on a machine-readable contract instead.
 
 ## [0.11.0] - 2026-04-25
 
 ### Added
 
-- **Community-health files** — `.github/SUPPORT.md` (issue-redirection page surfaced by GitHub on issue creation, with best-effort response SLOs) and `CITATION.cff` (Citation File Format metadata enabling the GitHub "Cite this repository" button on the repo page).
-- **`package.json` discoverability** — `funding` field now points at `https://github.com/sponsors/klodr` (renders as the ❤️ Sponsor button on `npmjs.com`). `CHANGELOG.md` added to the `files` allowlist so it stays in the published tarball — npm v11 dropped `CHANGELOG.md` from the always-included list, so consumers who read changelog from `node_modules/` would otherwise see it disappear silently.
+* **Community-health files** — `.github/SUPPORT.md` (issue-redirection page surfaced by GitHub on issue creation, with best-effort response SLOs) and `CITATION.cff` (Citation File Format metadata enabling the GitHub "Cite this repository" button on the repo page).
+
+* **`package.json` discoverability** — `funding` field now points at `https://github.com/sponsors/klodr` (renders as the ❤️ Sponsor button on `npmjs.com`). `CHANGELOG.md` added to the `files` allowlist so it stays in the published tarball — npm v11 dropped `CHANGELOG.md` from the always-included list, so consumers who read changelog from `node_modules/` would otherwise see it disappear silently.
 
 ### Changed
 
-- **Socket Security stricter posture (aligned with `klodr/gmail-mcp`)** — `socket.yml` no longer silences the three high-value supply-chain alerts `unstableOwnership`, `unmaintained`, and `manifestConfusion`. The original blanket-suppression (PR #39, 2026-04-19) was preventive against the `@modelcontextprotocol/sdk → express` transitive surface tracked in [modelcontextprotocol/typescript-sdk#1924](https://github.com/modelcontextprotocol/typescript-sdk/issues/1924), but in practice `express` is actively maintained with stable ownership, so the rules generate near-zero noise. They will now fire on transitive owner changes / abandonware / manifest mismatch — exactly the supply-chain attack surface that hit `event-stream`, `ua-parser-js`, `nx`. Per-package `@SocketSecurity ignore <pkg>@<version>` comments on the relevant PR remain available if a transitive dep generates a real false positive.
-- **Repository structure cleanup** — community-health files (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) moved to `.github/`, and general documentation (`ROADMAP.md`, `ASSURANCE_CASE.md`, `CONTINUITY.md`) moved to `docs/`. Internal links updated across `README.md`, `llms-install.md`, `docs/ASSURANCE_CASE.md`, `docs/CONTINUITY.md`, `docs/ROADMAP.md`, `src/{sanitize,middleware}.ts`, `src/tools/credit.ts`, `src/prompts/recipes.ts`, and `.github/workflows/verify-release.yml`. The repository root now keeps only `README.md`, `LICENSE`, `CHANGELOG.md`, `llms-install.md`, and project-config files. No behaviour change; GitHub still resolves the community files at their new canonical locations.
-- **README "Why this MCP?" comparison row reworded** — the prior `Hosted (no token to manage)` line implied the hosted Mercury MCP's lack of token was a feature klodr lacked. In practice, the hosted MCP requires frequent OAuth re-authentication, while a long-lived, IP-allowlistable token (used by both `dragonkhoi/mercury-mcp` and this server) is the more operational option. The row is now `Stable token (no frequent re-auth, IP-allowlistable)` to describe each MCP factually.
+* **Socket Security stricter posture (aligned with `klodr/gmail-mcp`)** — `socket.yml` no longer silences the three high-value supply-chain alerts `unstableOwnership`, `unmaintained`, and `manifestConfusion`. The original blanket-suppression (PR #39, 2026-04-19) was preventive against the `@modelcontextprotocol/sdk → express` transitive surface tracked in [modelcontextprotocol/typescript-sdk#1924](https://github.com/modelcontextprotocol/typescript-sdk/issues/1924), but in practice `express` is actively maintained with stable ownership, so the rules generate near-zero noise. They will now fire on transitive owner changes / abandonware / manifest mismatch — exactly the supply-chain attack surface that hit `event-stream`, `ua-parser-js`, `nx`. Per-package `@SocketSecurity ignore <pkg>@<version>` comments on the relevant PR remain available if a transitive dep generates a real false positive.
+
+* **Repository structure cleanup** — community-health files (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`) moved to `.github/`, and general documentation (`ROADMAP.md`, `ASSURANCE_CASE.md`, `CONTINUITY.md`) moved to `docs/`. Internal links updated across `README.md`, `llms-install.md`, `docs/ASSURANCE_CASE.md`, `docs/CONTINUITY.md`, `docs/ROADMAP.md`, `src/{sanitize,middleware}.ts`, `src/tools/credit.ts`, `src/prompts/recipes.ts`, and `.github/workflows/verify-release.yml`. The repository root now keeps only `README.md`, `LICENSE`, `CHANGELOG.md`, `llms-install.md`, and project-config files. No behaviour change; GitHub still resolves the community files at their new canonical locations.
+
+* **README "Why this MCP?" comparison row reworded** — the prior `Hosted (no token to manage)` line implied the hosted Mercury MCP's lack of token was a feature klodr lacked. In practice, the hosted MCP requires frequent OAuth re-authentication, while a long-lived, IP-allowlistable token (used by both `dragonkhoi/mercury-mcp` and this server) is the more operational option. The row is now `Stable token (no frequent re-auth, IP-allowlistable)` to describe each MCP factually.
 
 ## [0.10.0] - 2026-04-23
 
 ### Added
 
-- **MCP slash-command prompts (8 total)** — LLM clients that support the MCP Prompts capability can now invoke high-level workflows as slash commands: `/mercury-send-ach`, `/mercury-create-recipient`, `/mercury-accounts-overview`, `/mercury-recipients-overview`, `/mercury-create-customer`, `/mercury-create-invoice`, `/mercury-unpaid-invoices-overview`, `/mercury-pending-card-transactions`. Each prompt wires the right tools with the right scopes and the right safeguards (confirmation gates, forbidden-tools list, NACHA memo validation, amount floor at $0.01, ACH routing/account co-dependency via `us-bank-account-validator`). All user-supplied arguments go through `promptSafe()` (NACHA allowlist: alphanumerics plus <code>( ) ! # $ % &amp; ' * + - . / : ; = ? @ [ ] ^ _ { | }</code>) before interpolation, so a crafted slot value can no longer break out with a quote+newline or smuggle a backtick-substitution. Prompt source: `src/prompts/{recipes,invoicing,credit,_shared}.ts`; covered by 41 end-to-end tests. (#82)
-- **Mercury IO Credit account exposure (2 tools)** — `mercury_list_credit_accounts` wraps `GET /credit` (documented under [Credit › List all credit accounts](https://docs.mercury.com/reference/credit) in the Mercury API reference) and `mercury_list_credit_transactions` wraps `GET /account/{id}/transactions` (SINGULAR path used for IO Credit transactions, distinct from the plural `/accounts/{id}/transactions` used for deposit accounts). These power the "pending card transactions" recipe above. Tool count: 34 → 36. (#83)
-- **`.strict()` schema wrapping in `defineTool`** — every tool's `inputSchema` is now wrapped in `z.object(shape).strict()` before being registered, so unknown keys in an LLM-generated tool call are rejected at parse time instead of silently dropped. Defense against prompt-injection payloads that smuggle extra fields past validation.
+* **MCP slash-command prompts (8 total)** — LLM clients that support the MCP Prompts capability can now invoke high-level workflows as slash commands: `/mercury-send-ach`, `/mercury-create-recipient`, `/mercury-accounts-overview`, `/mercury-recipients-overview`, `/mercury-create-customer`, `/mercury-create-invoice`, `/mercury-unpaid-invoices-overview`, `/mercury-pending-card-transactions`. Each prompt wires the right tools with the right scopes and the right safeguards (confirmation gates, forbidden-tools list, NACHA memo validation, amount floor at $0.01, ACH routing/account co-dependency via `us-bank-account-validator`). All user-supplied arguments go through `promptSafe()` (NACHA allowlist: alphanumerics plus <code>( ) ! # $ % &amp; ' * + - . / : ; = ? @ [ ] ^ _ { | }</code>) before interpolation, so a crafted slot value can no longer break out with a quote+newline or smuggle a backtick-substitution. Prompt source: `src/prompts/{recipes,invoicing,credit,_shared}.ts`; covered by 41 end-to-end tests. (#82)
+
+* **Mercury IO Credit account exposure (2 tools)** — `mercury_list_credit_accounts` wraps `GET /credit` (documented under [Credit › List all credit accounts](https://docs.mercury.com/reference/credit) in the Mercury API reference) and `mercury_list_credit_transactions` wraps `GET /account/{id}/transactions` (SINGULAR path used for IO Credit transactions, distinct from the plural `/accounts/{id}/transactions` used for deposit accounts). These power the "pending card transactions" recipe above. Tool count: 34 → 36. (#83)
+
+* **`.strict()` schema wrapping in `defineTool`** — every tool's `inputSchema` is now wrapped in `z.object(shape).strict()` before being registered, so unknown keys in an LLM-generated tool call are rejected at parse time instead of silently dropped. Defense against prompt-injection payloads that smuggle extra fields past validation.
 
 ### Changed
 
-- **README / CONTRIBUTING emoji tagging** — every top-level heading carries a single-glyph emoji (🏦 ✨ 📦 ⚙️ 🔑 ⚠️ 🧪 🤖 🖱️ 🦀 🛠️ 🗺️ 🔒 🛡️ 🔧 💡 📄 🤝), the three safeguards and the PR checklist render as numbered 1️⃣ 2️⃣ 3️⃣ callouts, and the `Tools` list gains per-domain icons that line up with the banking / AR / webhooks split (🏦 Accounts / 💳 IO Credit / 💸 Transactions / 👥 Recipients / 📊 Statements / 🏛️ Treasury / 🧾 Invoicing / 👤 Customers / 🔗 Webhooks). Pure visual diff, zero change to the prose or to any tool behaviour. (#84)
-- **Node.js floor pinned to exact `>=22.22.2`** (was `>=22.22`, originally `>=22.11`). The previous `>=22.22` range accepted `22.22.0` and `22.22.1`, which predate the seven CVEs fixed in `22.22.2`. The CVEs addressed: [CVE-2026-21637](https://nvd.nist.gov/vuln/detail/CVE-2026-21637) (High — SNICallback invocation error handling in TLS), [CVE-2026-21710](https://nvd.nist.gov/vuln/detail/CVE-2026-21710) (High — prototype pollution in HTTP header processing), [CVE-2026-21713](https://nvd.nist.gov/vuln/detail/CVE-2026-21713) (Medium — non-timing-safe comparison in WebCrypto HMAC), [CVE-2026-21714](https://nvd.nist.gov/vuln/detail/CVE-2026-21714) (Medium — NGHTTP2 flow-control error handling), [CVE-2026-21717](https://nvd.nist.gov/vuln/detail/CVE-2026-21717) (Medium — V8 array index hash collision), [CVE-2026-21715](https://nvd.nist.gov/vuln/detail/CVE-2026-21715) (Low — missing permission check in `realpath.native`), [CVE-2026-21716](https://nvd.nist.gov/vuln/detail/CVE-2026-21716) (Low — missing permission check in `fs/promises`). Pinning to the exact patch closes the gap so a fresh `npm install` cannot land on a pre-CVE runtime. Aligned with `klodr/gmail-mcp`, `klodr/faxdrop-mcp` (shipped in PR #71), and the private `klodr/relayfi-mcp`. Also updates `README.md` comparison-table row, `SECURITY.md` "Supported runtimes", `llms-install.md` prerequisite, and `.github/dependabot.yml` `@types/node` major-clamp comment.
+* **README / CONTRIBUTING emoji tagging** — every top-level heading carries a single-glyph emoji (🏦 ✨ 📦 ⚙️ 🔑 ⚠️ 🧪 🤖 🖱️ 🦀 🛠️ 🗺️ 🔒 🛡️ 🔧 💡 📄 🤝), the three safeguards and the PR checklist render as numbered 1️⃣ 2️⃣ 3️⃣ callouts, and the `Tools` list gains per-domain icons that line up with the banking / AR / webhooks split (🏦 Accounts / 💳 IO Credit / 💸 Transactions / 👥 Recipients / 📊 Statements / 🏛️ Treasury / 🧾 Invoicing / 👤 Customers / 🔗 Webhooks). Pure visual diff, zero change to the prose or to any tool behaviour. (#84)
+
+* **Node.js floor pinned to exact `>=22.22.2`** (was `>=22.22`, originally `>=22.11`). The previous `>=22.22` range accepted `22.22.0` and `22.22.1`, which predate the seven CVEs fixed in `22.22.2`. The CVEs addressed: [CVE-2026-21637](https://nvd.nist.gov/vuln/detail/CVE-2026-21637) (High — SNICallback invocation error handling in TLS), [CVE-2026-21710](https://nvd.nist.gov/vuln/detail/CVE-2026-21710) (High — prototype pollution in HTTP header processing), [CVE-2026-21713](https://nvd.nist.gov/vuln/detail/CVE-2026-21713) (Medium — non-timing-safe comparison in WebCrypto HMAC), [CVE-2026-21714](https://nvd.nist.gov/vuln/detail/CVE-2026-21714) (Medium — NGHTTP2 flow-control error handling), [CVE-2026-21717](https://nvd.nist.gov/vuln/detail/CVE-2026-21717) (Medium — V8 array index hash collision), [CVE-2026-21715](https://nvd.nist.gov/vuln/detail/CVE-2026-21715) (Low — missing permission check in `realpath.native`), [CVE-2026-21716](https://nvd.nist.gov/vuln/detail/CVE-2026-21716) (Low — missing permission check in `fs/promises`). Pinning to the exact patch closes the gap so a fresh `npm install` cannot land on a pre-CVE runtime. Aligned with `klodr/gmail-mcp`, `klodr/faxdrop-mcp` (shipped in PR #71), and the private `klodr/relayfi-mcp`. Also updates `README.md` comparison-table row, `SECURITY.md` "Supported runtimes", `llms-install.md` prerequisite, and `.github/dependabot.yml` `@types/node` major-clamp comment.
 
 ### Fixed
 
-- **Audit throws no longer mask handler errors** (Qodo finding backported from `klodr/gmail-mcp#48`). A `logAudit(...)` call in the `finally` or `catch` would override the handler's own exception per JS/TS semantics — so a full-disk or a circular-`args` `JSON.stringify` throw inside the audit helper could erase the root cause from the caller. Introduces a local `safeLogAudit` wrapper that swallows any audit-side exception to stderr and applies it to all five terminal audit-log calls (rate-limit catch → `"error"`, `"dry-run"` early-return, `"ok"` success path, `"error"` catch before the `MercuryError` mapping, and the new `"error"` before a non-`RateLimitError` re-throw — previously missing, see next bullet). The runtime audit-`result` values on mercury are `"ok" | "dry-run" | "error"` (gmail also has a `"rate_limited"` state, mercury doesn't).
-- **Non-`RateLimitError` re-throw now logs an audit entry**. If `enforceRateLimit` ever throws something other than `RateLimitError` (a future regression in rate-limit state handling, a programming bug), the audit trail now shows the event before the re-throw propagates. The path is marked `v8 ignore` because it is not reachable from the current implementation.
-- **Business errors returned via `isError: true` are now audited as "error"** (Qodo finding backported from `klodr/gmail-mcp#48`). Previously, handlers that surfaced a failure through the MCP `isError` channel (vs a thrown exception) were audited as `"ok"`, conflating successful calls with handler-side failures in the audit log. `wrapToolHandler` now inspects `result.isError` on the success path and picks the audit state accordingly.
+* **Audit throws no longer mask handler errors** (Qodo finding backported from `klodr/gmail-mcp#48`). A `logAudit(...)` call in the `finally` or `catch` would override the handler's own exception per JS/TS semantics — so a full-disk or a circular-`args` `JSON.stringify` throw inside the audit helper could erase the root cause from the caller. Introduces a local `safeLogAudit` wrapper that swallows any audit-side exception to stderr and applies it to all five terminal audit-log calls (rate-limit catch → `"error"`, `"dry-run"` early-return, `"ok"` success path, `"error"` catch before the `MercuryError` mapping, and the new `"error"` before a non-`RateLimitError` re-throw — previously missing, see next bullet). The runtime audit-`result` values on mercury are `"ok" | "dry-run" | "error"` (gmail also has a `"rate_limited"` state, mercury doesn't).
+
+* **Non-`RateLimitError` re-throw now logs an audit entry**. If `enforceRateLimit` ever throws something other than `RateLimitError` (a future regression in rate-limit state handling, a programming bug), the audit trail now shows the event before the re-throw propagates. The path is marked `v8 ignore` because it is not reachable from the current implementation.
+
+* **Business errors returned via `isError: true` are now audited as "error"** (Qodo finding backported from `klodr/gmail-mcp#48`). Previously, handlers that surfaced a failure through the MCP `isError` channel (vs a thrown exception) were audited as `"ok"`, conflating successful calls with handler-side failures in the audit log. `wrapToolHandler` now inspects `result.isError` on the success path and picks the audit state accordingly.
 
 ## [0.9.2] - 2026-04-23
 
 ### Fixed
 
-- **CodeQL Code Scanning alert #28** (`src/sanitize.ts`) — the control-character stripping regex is now spelled with explicit `\uXXXX` escapes instead of literal C0/C1 characters embedded in the source. Functionally identical, but the literal form tripped CodeQL's "invisible Unicode" rule. No runtime behaviour change.
-- **CI `Upload test results to Codecov` guard** — the step now reads `if: ${{ always() && matrix.node == '22' && !cancelled() }}`. The prior `if: matrix.node == '22' && !cancelled()` was ambiguous: `!cancelled()` alone does replace the implicit `success()` check in GitHub Actions expression semantics, but the ambiguity is enough that failed test runs were at risk of being filtered out of Test Analytics — defeating the entire point of the upload (seeing flaky-test patterns on red builds). Explicit `always()` makes the "upload on failure" behaviour load-bearing in the YAML itself.
-- **README CodeRabbit badge URL** — dropped the `utm_source=oss&utm_medium=github&utm_campaign=klodr%2Fmercury-invoicing-mcp&` prefix from the `img.shields.io/coderabbit/prs/...` badge URL. Those params are what CodeRabbit's "embed this badge" snippet proposes by default, but shields.io doesn't interpret them — they only serve to give the URL a unique signature from the other sibling-repo badges, which means GitHub's camo image proxy caches each variant independently. When the upstream CodeRabbit endpoint returned a transient `provider or repo not found` at camo's initial fetch, that error SVG got cached and kept rendering while the sibling-repo badge (with a different URL) rendered fine. Dropping the utm params aligns the badge URL with the form used on `klodr/gmail-mcp` and invalidates the stale camo cache on the next README render.
+* **CodeQL Code Scanning alert #28** (`src/sanitize.ts`) — the control-character stripping regex is now spelled with explicit `\uXXXX` escapes instead of literal C0/C1 characters embedded in the source. Functionally identical, but the literal form tripped CodeQL's "invisible Unicode" rule. No runtime behaviour change.
+
+* **CI `Upload test results to Codecov` guard** — the step now reads `if: ${{ always() && matrix.node == '22' && !cancelled() }}`. The prior `if: matrix.node == '22' && !cancelled()` was ambiguous: `!cancelled()` alone does replace the implicit `success()` check in GitHub Actions expression semantics, but the ambiguity is enough that failed test runs were at risk of being filtered out of Test Analytics — defeating the entire point of the upload (seeing flaky-test patterns on red builds). Explicit `always()` makes the "upload on failure" behaviour load-bearing in the YAML itself.
+
+* **README CodeRabbit badge URL** — dropped the `utm_source=oss&utm_medium=github&utm_campaign=klodr%2Fmercury-invoicing-mcp&` prefix from the `img.shields.io/coderabbit/prs/...` badge URL. Those params are what CodeRabbit's "embed this badge" snippet proposes by default, but shields.io doesn't interpret them — they only serve to give the URL a unique signature from the other sibling-repo badges, which means GitHub's camo image proxy caches each variant independently. When the upstream CodeRabbit endpoint returned a transient `provider or repo not found` at camo's initial fetch, that error SVG got cached and kept rendering while the sibling-repo badge (with a different URL) rendered fine. Dropping the utm params aligns the badge URL with the form used on `klodr/gmail-mcp` and invalidates the stale camo cache on the next README render.
 
 ### Changed
 
-- **Node.js floor tightened to `>=22.11`** (was `>=22`). `22.11.0` is the LTS-tagged entry point for the Node 22 "Jod" line (October 2024); the previous `>=22` would have accepted the pre-LTS `22.0`–`22.10` releases which predate the LTS designation. Aligned with the sibling repos `klodr/faxdrop-mcp` and `klodr/gmail-mcp`, all moving to the same floor.
-- `.github/dependabot.yml` `@types/node` major-version-clamp comment aligned to the new `>=22.11` floor.
-- `llms-install.md` prerequisite updated to **Node.js ≥ 22.11**.
-- `SECURITY.md` "Supported runtimes" section updated to state `Node.js ≥ 22.11` with the LTS-tag rationale.
-- `README.md` comparison table gained a **Node.js floor** row making the three-way posture explicit (hosted N/A, `dragonkhoi/mercury-mcp` ships without `engines.node` so installs silently on Node 14 EOL, `mercury-invoicing-mcp` enforces `>=22.11` at the manifest level).
-- **Coverage ignore comments renamed from `/* istanbul ignore next */` to `/* v8 ignore next */`** to match the V8 coverage provider actually used under vitest. Functionally identical; aligns the syntax with the tool doing the work.
+* **Node.js floor tightened to `>=22.11`** (was `>=22`). `22.11.0` is the LTS-tagged entry point for the Node 22 "Jod" line (October 2024); the previous `>=22` would have accepted the pre-LTS `22.0`–`22.10` releases which predate the LTS designation. Aligned with the sibling repos `klodr/faxdrop-mcp` and `klodr/gmail-mcp`, all moving to the same floor.
+
+* `.github/dependabot.yml` `@types/node` major-version-clamp comment aligned to the new `>=22.11` floor.
+
+* `llms-install.md` prerequisite updated to **Node.js ≥ 22.11**.
+
+* `SECURITY.md` "Supported runtimes" section updated to state `Node.js ≥ 22.11` with the LTS-tag rationale.
+
+* `README.md` comparison table gained a **Node.js floor** row making the three-way posture explicit (hosted N/A, `dragonkhoi/mercury-mcp` ships without `engines.node` so installs silently on Node 14 EOL, `mercury-invoicing-mcp` enforces `>=22.11` at the manifest level).
+
+* **Coverage ignore comments renamed from `/* istanbul ignore next */` to `/* v8 ignore next */`** to match the V8 coverage provider actually used under vitest. Functionally identical; aligns the syntax with the tool doing the work.
 
 ### Added
 
-- **Codecov Test Analytics wiring** — vitest emits a `test-results.junit.xml` alongside its default human reporter, and the CI run uploads it to Codecov via `codecov/codecov-action@v6.0.0` (pinned by SHA) invoked with `report_type: test_results` — the standalone `codecov/test-results-action@v1.2.1` is deprecated in favour of the unified action. Gives us the "Tests" dashboard on codecov.io: per-suite flaky-test detection, slowest tests, test failure history. Upload runs only on the Node 22 matrix leg with `!cancelled()` so a test failure still surfaces the report. XML file is in `.gitignore` and excluded from the published tarball (not in `package.json#files`).
-- **`glama.json` at the repo root** — claims ownership of the `klodr/mercury-invoicing-mcp` listing on glama.ai (MCP server registry), so the automated scanner pairs the listing with this repo rather than an unclaimed fork.
+* **Codecov Test Analytics wiring** — vitest emits a `test-results.junit.xml` alongside its default human reporter, and the CI run uploads it to Codecov via `codecov/codecov-action@v6.0.0` (pinned by SHA) invoked with `report_type: test_results` — the standalone `codecov/test-results-action@v1.2.1` is deprecated in favour of the unified action. Gives us the "Tests" dashboard on codecov.io: per-suite flaky-test detection, slowest tests, test failure history. Upload runs only on the Node 22 matrix leg with `!cancelled()` so a test failure still surfaces the report. XML file is in `.gitignore` and excluded from the published tarball (not in `package.json#files`).
+
+* **`glama.json` at the repo root** — claims ownership of the `klodr/mercury-invoicing-mcp` listing on glama.ai (MCP server registry), so the automated scanner pairs the listing with this repo rather than an unclaimed fork.
 
 ## [0.9.1] - 2026-04-22
 
@@ -251,36 +332,47 @@ Single focus: move the whole toolchain off Node 20 ahead of its 2026-04-30 end-o
 
 ### Changed (BREAKING)
 
-- **Node.js floor: `>=22`** (was `>=20.11`). Node 20 reaches end-of-life on 2026-04-30; keeping the floor there would ship 0.9.0-era packages on an unmaintained runtime the day after. Node 22 is in Maintenance LTS through 2027-04-30, which gives a year of headroom before the next cadence bump.
-- **Compile target: `ES2024`** (was `ES2023`). Node 22 implements the full ES2024 surface (`Object.groupBy`, `Map.groupBy`, `Promise.withResolvers`, iterator helpers, etc.) — the TypeScript `target` and `lib` now match, so stdlib additions don't need polyfills.
-- **Bundle target: `tsup target: node22`** (was `node20`). Without this the bundler kept down-levelling Node 22 intrinsics (WebCrypto globals, `AbortSignal.any`) and the shipped `dist/index.js` wasn't actually exploiting the higher floor we just set.
+* **Node.js floor: `>=22`** (was `>=20.11`). Node 20 reaches end-of-life on 2026-04-30; keeping the floor there would ship 0.9.0-era packages on an unmaintained runtime the day after. Node 22 is in Maintenance LTS through 2027-04-30, which gives a year of headroom before the next cadence bump.
+
+* **Compile target: `ES2024`** (was `ES2023`). Node 22 implements the full ES2024 surface (`Object.groupBy`, `Map.groupBy`, `Promise.withResolvers`, iterator helpers, etc.) — the TypeScript `target` and `lib` now match, so stdlib additions don't need polyfills.
+
+* **Bundle target: `tsup target: node22`** (was `node20`). Without this the bundler kept down-levelling Node 22 intrinsics (WebCrypto globals, `AbortSignal.any`) and the shipped `dist/index.js` wasn't actually exploiting the higher floor we just set.
 
 ### Changed
 
-- `@types/node` bumped from `^20.19.0` to `^22.19.17` so the TypeScript definitions line up with the runtime floor.
-- CI matrix dropped Node 20 — builds now run on Node 22 + 24. The coverage-upload step (Codecov) moved from Node 20 to Node 22.
-- Release and verify-release workflows set up Node 22 (`setup-node node-version: "22"`).
-- Dockerfile base image pinned to `node:22-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f` (digest resolved via Docker Hub API at release time).
-- `package-lock.json` refreshed via `npm update` — minor bumps within existing carets, no semver-major shifts.
+* `@types/node` bumped from `^20.19.0` to `^22.19.17` so the TypeScript definitions line up with the runtime floor.
+
+* CI matrix dropped Node 20 — builds now run on Node 22 + 24. The coverage-upload step (Codecov) moved from Node 20 to Node 22.
+
+* Release and verify-release workflows set up Node 22 (`setup-node node-version: "22"`).
+
+* Dockerfile base image pinned to `node:22-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f` (digest resolved via Docker Hub API at release time).
+
+* `package-lock.json` refreshed via `npm update` — minor bumps within existing carets, no semver-major shifts.
 
 ### Added
 
-- `.nvmrc` with `22` so `nvm use` in a fresh checkout matches `engines.node` and the CI matrix without guessing.
-- `SECURITY.md` gained a **Supported runtimes** section stating the Node 22 floor and the LTS window.
-- `ROADMAP.md` item **Node.js 22 migration** ticked off; `dependabot.yml` `@types/node` pin comment now references the 22.x line.
-- Issue-template `bug_report.yml` / `CONTINUITY.md` / `ASSURANCE_CASE.md` / `llms-install.md` scrubbed of stray Node 20 / `20.11` references.
+* `.nvmrc` with `22` so `nvm use` in a fresh checkout matches `engines.node` and the CI matrix without guessing.
+
+* `SECURITY.md` gained a **Supported runtimes** section stating the Node 22 floor and the LTS window.
+
+* `ROADMAP.md` item **Node.js 22 migration** ticked off; `dependabot.yml` `@types/node` pin comment now references the 22.x line.
+
+* Issue-template `bug_report.yml` / `CONTINUITY.md` / `ASSURANCE_CASE.md` / `llms-install.md` scrubbed of stray Node 20 / `20.11` references.
 
 ## [0.9.0] - 2026-04-22
 
 ### Added
 
-- **External AI review tier** via Qodo Merge (`.github/workflows/qodo-merge.yml`). Every PR now gets three independent AI reviews in parallel: CodeRabbit (GPT lineage), DeepSeek R1 (reasoner, explicit chain-of-thought), and Gemini 3.1 Pro Preview (thinking mode). `qodo-ai/pr-agent@v0.34` pinned by SHA, `/review` only (no auto-description, no commitable suggestions), fork PRs and drafts skipped, 15-min timeout, `persistent_comment=false` so each model lands its own comment. Triangulates findings across three model families — the failure mode of one lineage is rarely the failure mode of the others.
+* **External AI review tier** via Qodo Merge (`.github/workflows/qodo-merge.yml`). Every PR now gets three independent AI reviews in parallel: CodeRabbit (GPT lineage), DeepSeek R1 (reasoner, explicit chain-of-thought), and Gemini 3.1 Pro Preview (thinking mode). `qodo-ai/pr-agent@v0.34` pinned by SHA, `/review` only (no auto-description, no commitable suggestions), fork PRs and drafts skipped, 15-min timeout, `persistent_comment=false` so each model lands its own comment. Triangulates findings across three model families — the failure mode of one lineage is rarely the failure mode of the others.
 
 ### Security
 
-- **Webhook URL validator tightened** (M-01). `mercury_create_webhook` / `mercury_update_webhook` now require `https://` and reject any hostname that resolves to a loopback, RFC 1918 private, link-local, cloud-metadata, or private-IPv6 range — IPv4 via numeric CIDR match (`127/8`, `10/8`, `169.254/16`, `192.168/16`, `172.16/12`, plus `0.0.0.0/8`), IPv6 via bitmask on the first hextet (`fc00::/7`, `fe80::/10`). The previous `z.string().url()` let `http://`, `file://`, `data:`, `ftp://` through even though the tool description said HTTPS. A prompt-injected agent that reached the webhook API of this MCP would otherwise have registered `http://attacker.tld` and siphoned every subsequent Mercury event (transactions, invoices, balances) in clear. Defense-in-depth: Mercury almost certainly validates upstream too, but validating here keeps the hostile URL out of Mercury's audit trail and surfaces the failure to the operator instead of a generic 400.
-- **LLM ping-pong injection sanitized** (M-02). Every JSON value returned by the Mercury API is walked and stripped of ASCII control characters, zero-width characters (U+200B-U+200F, U+202A-U+202E, U+2060, U+FEFF), BiDi control marks, and the BOM before reaching the LLM. Errors are fenced in a `<untrusted-tool-output>` block so a prompt embedded inside an invoice description, a recipient name, or a transaction memo cannot hijack the tool-calling agent by echoing back crafted instructions. JSON structure is preserved verbatim — no double-wrapping, no lossy re-encoding.
-- **Local write rate limiter** visible in audit: `webhooks_create` caps at 2/day by default. The test suite exercises `MERCURY_MCP_RATE_LIMIT_DISABLE=true` via a snapshot-and-restore pattern so a shared env var set by the test runner survives the run.
+* **Webhook URL validator tightened** (M-01). `mercury_create_webhook` / `mercury_update_webhook` now require `https://` and reject any hostname that resolves to a loopback, RFC 1918 private, link-local, cloud-metadata, or private-IPv6 range — IPv4 via numeric CIDR match (`127/8`, `10/8`, `169.254/16`, `192.168/16`, `172.16/12`, plus `0.0.0.0/8`), IPv6 via bitmask on the first hextet (`fc00::/7`, `fe80::/10`). The previous `z.string().url()` let `http://`, `file://`, `data:`, `ftp://` through even though the tool description said HTTPS. A prompt-injected agent that reached the webhook API of this MCP would otherwise have registered `http://attacker.tld` and siphoned every subsequent Mercury event (transactions, invoices, balances) in clear. Defense-in-depth: Mercury almost certainly validates upstream too, but validating here keeps the hostile URL out of Mercury's audit trail and surfaces the failure to the operator instead of a generic 400.
+
+* **LLM ping-pong injection sanitized** (M-02). Every JSON value returned by the Mercury API is walked and stripped of ASCII control characters, zero-width characters (U+200B-U+200F, U+202A-U+202E, U+2060, U+FEFF), BiDi control marks, and the BOM before reaching the LLM. Errors are fenced in a `<untrusted-tool-output>` block so a prompt embedded inside an invoice description, a recipient name, or a transaction memo cannot hijack the tool-calling agent by echoing back crafted instructions. JSON structure is preserved verbatim — no double-wrapping, no lossy re-encoding.
+
+* **Local write rate limiter** visible in audit: `webhooks_create` caps at 2/day by default. The test suite exercises `MERCURY_MCP_RATE_LIMIT_DISABLE=true` via a snapshot-and-restore pattern so a shared env var set by the test runner survives the run.
 
 ## [0.8.6] - 2026-04-22
 
@@ -294,73 +386,88 @@ Republish of 0.8.5. The CHANGELOG `[0.8.5]` narrative and the GitHub Release bod
 
 This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. The reasons are strictly hygiene, not a change in the wire-level behaviour consumers rely on:
 
-- **Commit-metadata privacy**: `main` was historically authored under two of the maintainer's personal email addresses. `main` has been rewritten so that every commit, every `Signed-off-by:` trailer, and every `Co-authored-by:` line carries `klodr@users.noreply.github.com` instead. 101 of the 101 commits on the new `main` carry a verified SSH signature; 95 are authored by the maintainer, 6 by Dependabot.
-- **Supply-chain contract actually deliverable**: the `SECURITY.md` of earlier releases advertised SBOM attestations verifiable with `gh attestation verify --predicate-type https://spdx.dev/Document/v2.3`. That was never true on 0.8.4 and earlier — the two `actions/attest` steps lacked `id:` fields, so their signed `.sigstore` bundles were never captured and never uploaded. Starting with 0.8.5 the promise is actually met: the bundles are referenced via `${{ steps.attest_spdx.outputs.bundle-path }}` / `${{ steps.attest_cdx.outputs.bundle-path }}`, copied to `dist/sbom.spdx.sigstore` / `dist/sbom.cdx.sigstore`, and uploaded to the Release alongside the JSON SBOMs.
-- **npm `--ignore-scripts` on publish**: the `prepublishOnly` build hook needs `tsc`/`tsup`, which the earlier `npm prune --omit=dev` step (run before SBOM generation) removes. `npm publish --access public --provenance --ignore-scripts` now skips the redundant re-build — the dist/ artefact produced earlier in the job is what ships, with its own Sigstore signature.
+* **Commit-metadata privacy**: `main` was historically authored under two of the maintainer's personal email addresses. `main` has been rewritten so that every commit, every `Signed-off-by:` trailer, and every `Co-authored-by:` line carries `klodr@users.noreply.github.com` instead. 101 of the 101 commits on the new `main` carry a verified SSH signature; 95 are authored by the maintainer, 6 by Dependabot.
+
+* **Supply-chain contract actually deliverable**: the `SECURITY.md` of earlier releases advertised SBOM attestations verifiable with `gh attestation verify --predicate-type https://spdx.dev/Document/v2.3`. That was never true on 0.8.4 and earlier — the two `actions/attest` steps lacked `id:` fields, so their signed `.sigstore` bundles were never captured and never uploaded. Starting with 0.8.5 the promise is actually met: the bundles are referenced via `${{ steps.attest_spdx.outputs.bundle-path }}` / `${{ steps.attest_cdx.outputs.bundle-path }}`, copied to `dist/sbom.spdx.sigstore` / `dist/sbom.cdx.sigstore`, and uploaded to the Release alongside the JSON SBOMs.
+
+* **npm `--ignore-scripts` on publish**: the `prepublishOnly` build hook needs `tsc`/`tsup`, which the earlier `npm prune --omit=dev` step (run before SBOM generation) removes. `npm publish --access public --provenance --ignore-scripts` now skips the redundant re-build — the dist/ artefact produced earlier in the job is what ships, with its own Sigstore signature.
 
 ### What this means for consumers
 
-- **`npm install mercury-invoicing-mcp@0.8.5`** produces an install that is **functionally identical** to what 0.8.4 would have shipped — the bundled `dist/index.js` carries the same tools, same schemas, same Zod bounds, same rate-limit middleware, same FaxDrop/Mercury client.
-- **`npm install mercury-invoicing-mcp@0.7.4`** (the previous stable on npm) still works; that version is deprecated with a pointer to 0.8.5, but not unpublished.
-- **Every 0.x tag other than `v0.7.4`** has been removed from the GitHub repository — those tags pointed to pre-rewrite SHAs that are no longer reachable from `main` and their npm counterparts (0.7.5 through 0.8.3) had already been unpublished from the registry within the 72-hour window. Removing the orphan tags keeps the tag history coherent with what's actually installable.
+* **`npm install mercury-invoicing-mcp@0.8.5`** produces an install that is **functionally identical** to what 0.8.4 would have shipped — the bundled `dist/index.js` carries the same tools, same schemas, same Zod bounds, same rate-limit middleware, same FaxDrop/Mercury client.
+
+* **`npm install mercury-invoicing-mcp@0.7.4`** (the previous stable on npm) still works; that version is deprecated with a pointer to 0.8.5, but not unpublished.
+
+* **Every 0.x tag other than `v0.7.4`** has been removed from the GitHub repository — those tags pointed to pre-rewrite SHAs that are no longer reachable from `main` and their npm counterparts (0.7.5 through 0.8.3) had already been unpublished from the registry within the 72-hour window. Removing the orphan tags keeps the tag history coherent with what's actually installable.
 
 ### Technical scope (content-wise identical to 0.8.4)
 
-- Docker MCP Registry submission path — Dockerfile, `.github/icon.png`, `.github/workflows/docker.yml` (multi-stage, `node:20-alpine` digest-pinned, non-root `mcp` user, OCI labels, `HEALTHCHECK NONE`, strict smoke-test)
-- `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 (OpenSSF Silver requirement)
-- `ROADMAP.md` extracted from the README, Node.js 22 migration tracked with the 2026-04-30 deadline
-- Dual-reviewer-friendly `.coderabbit.yaml` — `finishing_touches.docstrings.enabled: false`, `finishing_touches.unit_tests.enabled: false` so CodeRabbit never auto-commits against the branch-protection `require_last_push_approval` gate
+* Docker MCP Registry submission path — Dockerfile, `.github/icon.png`, `.github/workflows/docker.yml` (multi-stage, `node:20-alpine` digest-pinned, non-root `mcp` user, OCI labels, `HEALTHCHECK NONE`, strict smoke-test)
+
+* `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 (OpenSSF Silver requirement)
+
+* `ROADMAP.md` extracted from the README, Node.js 22 migration tracked with the 2026-04-30 deadline
+
+* Dual-reviewer-friendly `.coderabbit.yaml` — `finishing_touches.docstrings.enabled: false`, `finishing_touches.unit_tests.enabled: false` so CodeRabbit never auto-commits against the branch-protection `require_last_push_approval` gate
 
 ## [0.8.4] - 2026-04-22
 
 ### Added
 
-- **Dockerfile + `.github/icon.png`** — container distribution path for the Docker MCP Registry submission. Multi-stage, `node:20-alpine` pinned by digest, non-root `mcp` user, OCI labels (`version` from build-arg), no EXPOSE, explicit `HEALTHCHECK NONE` to silence Checkov `CKV_DOCKER_2` on stdio images.
-- **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, required for OpenSSF Silver.
-- **`.github/workflows/docker.yml`** — buildx + GHA cache, asserts required OCI labels + non-root `USER=mcp`, strict smoke-test of the entrypoint.
+* **Dockerfile + `.github/icon.png`** — container distribution path for the Docker MCP Registry submission. Multi-stage, `node:20-alpine` pinned by digest, non-root `mcp` user, OCI labels (`version` from build-arg), no EXPOSE, explicit `HEALTHCHECK NONE` to silence Checkov `CKV_DOCKER_2` on stdio images.
+
+* **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, required for OpenSSF Silver.
+
+* **`.github/workflows/docker.yml`** — buildx + GHA cache, asserts required OCI labels + non-root `USER=mcp`, strict smoke-test of the entrypoint.
 
 ### Changed
 
-- **Roadmap extracted to `ROADMAP.md`** (no longer inlined in the README) and Silver-tier wording consolidated. Purely a docs reshuffle; the repo content covered by OpenSSF Best Practices is unchanged.
-- `.github/dependabot.yml` — `@types/node` major-version-clamp comment aligned with `engines.node` floor.
+* **Roadmap extracted to `ROADMAP.md`** (no longer inlined in the README) and Silver-tier wording consolidated. Purely a docs reshuffle; the repo content covered by OpenSSF Best Practices is unchanged.
+
+* `.github/dependabot.yml` — `@types/node` major-version-clamp comment aligned with `engines.node` floor.
 
 ## [0.8.2] - 2026-04-21
 
 ### Added
 
-- Funding links in `.github/FUNDING.yml` (GitHub Sponsors, Patreon,
+* Funding links in `.github/FUNDING.yml` (GitHub Sponsors, Patreon,
   Ko-fi) and matching badges at the top of the README. Monthly
   recurring funding helps cover the tooling (Claude Code, Socket
   Security, CI) behind steady security patches and issue triage.
 
 ### Changed (BREAKING for env overrides + state file)
 
-- **Dual-window rate limits**: every write tool now enforces both a daily
+* **Dual-window rate limits**: every write tool now enforces both a daily
   and a 30-day rolling cap, rejecting calls as soon as either window is
   at its limit. Previously only a daily cap existed, so a slow agent
   could spread enough calls across weeks to drain an account while
   staying under the daily threshold.
-- Per-category limits replaced with finer-grained **per-bucket limits**
+
+* Per-category limits replaced with finer-grained **per-bucket limits**
   (see README for the full matrix). Example: `create_customer` /
   `update_customer` / `delete_customer` now share a `customers_write`
   bucket capped at 3/day, 60/month (previously pooled under `invoicing`
   at 100/day with no monthly cap).
-- Rate-limit env override format changed from
+
+* Rate-limit env override format changed from
   `MERCURY_MCP_RATE_LIMIT_<category>=N/day` to
   `MERCURY_MCP_RATE_LIMIT_<bucket>=D/day,M/month` — both windows must
   be supplied. Old-format values now fall back to the built-in default
   (with a stderr warning) instead of being silently mis-parsed.
-- Rate-limit state file (`~/.mercury-mcp/ratelimit.json`) is now keyed
+
+* Rate-limit state file (`~/.mercury-mcp/ratelimit.json`) is now keyed
   by bucket name. Pre-existing state keyed by category (`money`,
   `invoicing`, …) is ignored on first load after upgrade — effectively
   a fresh 30-day window starts from the upgrade moment.
-- Rate-limit errors now return a structured JSON payload with
+
+* Rate-limit errors now return a structured JSON payload with
   `source: "mcp_safeguard"`, `error_type` (`mcp_rate_limit_daily_exceeded`
   or `mcp_rate_limit_monthly_exceeded`), `message`, `hint`, and
   `retry_after` (ISO 8601 timestamp) — unambiguously distinct from a
   server-side Mercury 429 (which surfaces separately as
   `"Mercury API error 429: …"` via the `MercuryError` branch).
-- `.coderabbit.yaml` now carries an explicit policy NOTE forbidding
+
+* `.coderabbit.yaml` now carries an explicit policy NOTE forbidding
   CodeRabbit-authored commits: on a solo-maintainer repo the branch
   protection rule "approval from someone other than the last pusher"
   deadlocks if the bot is both the last pusher and the approver. The
@@ -368,12 +475,14 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
   `pre_merge_checks.override_requested_reviewers_only: true` gate with
   explicit human discipline (never click "Commit suggestion", never
   run `@coderabbitai apply suggestions`).
-- `SECURITY.md` updated to describe the dual-window design and clarify
+
+* `SECURITY.md` updated to describe the dual-window design and clarify
   that `isError: true` lives on the `ToolResult` as a sibling of the
   `content` array (set by `wrapToolHandler`), while the structured
   JSON payload with `source` / `error_type` is inside
   `content[0].text` (returned by `formatRateLimitError`).
-- `dependabot.yml`: drop `include: "scope"` (was producing duplicated
+
+* `dependabot.yml`: drop `include: "scope"` (was producing duplicated
   titles like `deps(deps): bump X` / `deps-dev(deps-dev): bump X`
   because the prefix already encodes prod vs dev). Reduce
   `open-pull-requests-limit` from 10 to 5 to keep the review queue
@@ -381,7 +490,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Security
 
-- Monthly cap blocks a drain-by-pacing attack that the previous
+* Monthly cap blocks a drain-by-pacing attack that the previous
   single-window limiter could not catch: e.g. 7 `send_money` calls per
   day × 30 days = 210 outbound payments that used to pass silently.
   The new 150/month cap on `payments` stops this at 150.
@@ -390,12 +499,13 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Changed
 
-- `codecov.yml`: revert `project.threshold` from `1.5%` to `0.5%` now that
+* `codecov.yml`: revert `project.threshold` from `1.5%` to `0.5%` now that
   v0.8.0 has shipped and codecov has a clean v8-instrumented baseline.
   The 1.5% was a one-shot accommodation for the istanbul → v8
   instrumentation switch; PRs from here on compare like-for-like.
   Patch threshold (`95%` / `1.5%`) is unchanged.
-- `socket.yml`: flip the intrinsic-behavior alerts (`envVars`,
+
+* `socket.yml`: flip the intrinsic-behavior alerts (`envVars`,
   `filesystemAccess`, `networkAccess`, `urlStrings`, `hasIPProxy`) from
   `true` to `false`. These rules aren't in Socket's default-enabled set,
   so the previous `true` opted us IN to the warnings instead of silencing
@@ -406,7 +516,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Security
 
-- Tighten date validation on every `YYYY-MM-DD` tool input (12 fields
+* Tighten date validation on every `YYYY-MM-DD` tool input (12 fields
   across `invoices`, `statements`, `transactions`, `treasury`).
   `z.string().describe("YYYY-MM-DD")` had no actual validation —
   arbitrary strings were forwarded to Mercury. Now uses zod 4's
@@ -414,51 +524,55 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### BREAKING
 
-- **Drop Node 18.** Minimum runtime is now **Node 20.11+** (Node 18 is past
+* **Drop Node 18.** Minimum runtime is now **Node 20.11+** (Node 18 is past
   EOL; the 20.11 floor is required by `import.meta.dirname` in
   `eslint.config.js`). `engines.node` is `>=20.11`, the CI matrix is
   `[20, 22, 24]`, and tsup target is `node20`.
 
 ### Changed
 
-- **Major dep bumps** (all green on the test suite):
-  - `zod` 3.25 → **4.3.6**. `z.string().uuid()` is now strict v1-v8 (or nil/max);
+* **Major dep bumps** (all green on the test suite):
+  * `zod` 3.25 → **4.3.6**. `z.string().uuid()` is now strict v1-v8 (or nil/max);
     13 fake UUIDs in `test/integration.test.ts` migrated from `00000000-...` to
     `00000000-0000-4000-8000-...` (valid v4 pattern, suffix preserved). MCP SDK
     1.29 already supports `^3.25 || ^4.0`.
-  - `typescript` 5.9 → **6.0.3** (no source change required).
-  - `eslint` 9.39 → **10.2.1** + `@eslint/js` 9.39 → **10.0.1**. The new
+  * `typescript` 5.9 → **6.0.3** (no source change required).
+  * `eslint` 9.39 → **10.2.1** + `@eslint/js` 9.39 → **10.0.1**. The new
     `no-useless-assignment` rule flagged a redundant `let json = undefined`
     initializer in `src/client.ts:76` (now `let json: unknown;`).
-  - `@types/node` 22 → **20.19.0** (matches `engines.node >=20.11`; previously
+  * `@types/node` 22 → **20.19.0** (matches `engines.node >=20.11`; previously
     bumped to 25 then walked back so typings can't introduce Node 21+ APIs).
-- **Minor dep bumps**:
-  - `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
-  - `tsup` 8.3 → **8.5.1**
-- **Test runner: jest → vitest** (`vitest@4.1.4` + `@vitest/coverage-v8`).
+
+* **Minor dep bumps**:
+  * `@modelcontextprotocol/sdk` 1.25 → **1.29.0**
+  * `tsup` 8.3 → **8.5.1**
+
+* **Test runner: jest → vitest** (`vitest@4.1.4` + `@vitest/coverage-v8`).
   Drops `jest`, `@types/jest`, `ts-jest` and their deprecated `glob@10`
   / `inflight` / `babel-plugin-istanbul` transitives
   ([jestjs/jest#15173](https://github.com/jestjs/jest/issues/15173)).
   Native ESM/TS, no preset. v8 coverage instead of istanbul. API is
   drop-in: `jest.fn`/`jest.spyOn` → `vi.fn`/`vi.spyOn`.
-- **GitHub Actions bumps** (SHA-pinned):
-  - `actions/checkout` → **v6.0.2**
-  - `actions/setup-node` → **v6.3.0**
-  - `actions/upload-artifact` → **v7.0.1**
-- `eslint.config.js`: replaced the Node 18 `dirname(fileURLToPath(import.meta.url))`
+
+* **GitHub Actions bumps** (SHA-pinned):
+  * `actions/checkout` → **v6.0.2**
+  * `actions/setup-node` → **v6.3.0**
+  * `actions/upload-artifact` → **v7.0.1**
+
+* `eslint.config.js`: replaced the Node 18 `dirname(fileURLToPath(import.meta.url))`
   shim with the native `import.meta.dirname` (Node 20.11+). Drops the
   `node:path` and `node:url` imports.
 
 ### Documentation
 
-- `CONTINUITY.md`, `ASSURANCE_CASE.md`: updated CI matrix mention from
+* `CONTINUITY.md`, `ASSURANCE_CASE.md`: updated CI matrix mention from
   Node 18/20/22 to Node 20/22/24.
 
 ## [0.7.9] - 2026-04-19
 
 ### Fixed
 
-- `.github/workflows/verify-release.yml` — drop `--signer-workflow` from
+* `.github/workflows/verify-release.yml` — drop `--signer-workflow` from
   `gh attestation verify` (Path 2). The current `gh` CLI rejects the
   combination with `--cert-identity` (mutually exclusive flag group),
   so the post-release verify job exited 1 on every release since 0.7.6
@@ -471,7 +585,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Changed
 
-- `.github/workflows/verify-release.yml` — added manual ECDSA P-256 verification
+* `.github/workflows/verify-release.yml` — added manual ECDSA P-256 verification
   of the npm registry signature on `<pkg>@<version>:<integrity>` against the
   public keys at `https://registry.npmjs.org/-/npm/v1/keys`. Closes the gap
   introduced in 0.7.7 where the local-tarball install bypassed
@@ -483,7 +597,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Changed
 
-- `.github/workflows/verify-release.yml` — Path 1 `npm install` now downloads
+* `.github/workflows/verify-release.yml` — Path 1 `npm install` now downloads
   the tarball explicitly, verifies its SHA-1 against the registry-published
   `dist.shasum`, and installs the local file (instead of `npm install
   <pkg>@<version>`). Fixes Scorecard `Pinned-Dependencies` finding.
@@ -495,7 +609,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Changed
 
-- `.github/workflows/verify-release.yml` — `gh attestation verify` now also
+* `.github/workflows/verify-release.yml` — `gh attestation verify` now also
   passes `--cert-identity` (in addition to `--signer-workflow` and
   `--source-ref`) to lock the exact Fulcio SAN encoded in the attestation
   certificate, matching what cosign verifies in Path 3. `--signer-workflow`
@@ -506,7 +620,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Added
 
-- **Post-release verification workflow** (`.github/workflows/verify-release.yml`):
+* **Post-release verification workflow** (`.github/workflows/verify-release.yml`):
   re-exercises the three SECURITY.md verification paths (`npm audit signatures`,
   `gh attestation verify`, `cosign verify-blob-attestation`) on every published
   release. Runs on `workflow_run: completed` of `Release & npm publish` and
@@ -515,7 +629,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Documentation
 
-- `SECURITY.md`: extended the "single-process semantics" entry with an
+* `SECURITY.md`: extended the "single-process semantics" entry with an
   explicit "persistent unreadable state" paragraph. On chronic `EACCES`/`EIO`
   on the state file the middleware preserves the prior counter (does not
   overwrite) and falls back to an in-memory cap valid for the current
@@ -527,7 +641,7 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Fixed
 
-- **Rate-limit state now survives process restarts.** MCP hosts that respawn the
+* **Rate-limit state now survives process restarts.** MCP hosts that respawn the
   server per session (Claude Desktop, Claude Code, Cursor with stdio transport)
   used to silently reset the in-memory `callHistory`, defeating the daily caps.
   State is now persisted to `~/.mercury-mcp/ratelimit.json` (mode `0o600`,
@@ -538,152 +652,203 @@ This release supersedes **all** prior 0.x versions of `mercury-invoicing-mcp`. T
 
 ### Documentation
 
-- `SECURITY.md`: new entry under "What this MCP does NOT protect against"
+* `SECURITY.md`: new entry under "What this MCP does NOT protect against"
   describing prompt injection through Mercury response data — counterparty-
   controlled fields (`customer.name`, `recipient.note`, invoice memos,
   transaction descriptions) are forwarded verbatim to the LLM. Reminder that
   read-then-write chains require explicit user confirmation.
-- `SECURITY.md` + `README.md`: documented `MERCURY_MCP_STATE_DIR` and the
+
+* `SECURITY.md` + `README.md`: documented `MERCURY_MCP_STATE_DIR` and the
   cross-restart guarantee.
 
 ## [0.7.3] - 2026-04-18
 
 ### Fixed
 
-- `codeql.yml` + `scorecard.yml`: pinned `github/codeql-action` to the **commit SHA** of v4.35.2 (`95e58e9a…`) instead of the SHA of the annotated tag object (`7fc6561…`). OpenSSF Scorecard's "imposter commit" verification rejected the tag-object SHA with HTTP 400. Same fix on `klodr/faxdrop-mcp`.
-- `README.md`: CodeQL badge now points at our explicit Advanced workflow (`actions/workflows/codeql.yml/badge.svg`) instead of the unused GitHub Default Setup URL — badge now shows passing/failing instead of just the wordmark.
+* `codeql.yml` + `scorecard.yml`: pinned `github/codeql-action` to the **commit SHA** of v4.35.2 (`95e58e9a…`) instead of the SHA of the annotated tag object (`7fc6561…`). OpenSSF Scorecard's "imposter commit" verification rejected the tag-object SHA with HTTP 400. Same fix on `klodr/faxdrop-mcp`.
+
+* `README.md`: CodeQL badge now points at our explicit Advanced workflow (`actions/workflows/codeql.yml/badge.svg`) instead of the unused GitHub Default Setup URL — badge now shows passing/failing instead of just the wordmark.
 
 ## [0.7.2] - 2026-04-18
 
 ### Changed
 
-- `codeql.yml` + `scorecard.yml`: bumped `github/codeql-action` from v3 to **v4.35.2** (SHA-pinned `7fc6561…`). v3 EOL is December 2026 and the underlying actions still ran on Node 20, which GitHub deprecates in September 2026; v4 runs on Node 24.
-- Tooling consistency with `klodr/faxdrop-mcp`: ESLint v9 flat config with `typescript-eslint` type-aware rules; Prettier + `eslint-config-prettier`; `Lint & Format` CI job gating every PR; TypeScript strict + `noUnusedLocals/noUnusedParameters/noImplicitReturns/noFallthroughCasesInSwitch`; jest `restoreMocks: true` to auto-restore spies between tests. Already on `main` since PRs #25/#26; surfaced in this release for the npm changelog.
+* `codeql.yml` + `scorecard.yml`: bumped `github/codeql-action` from v3 to **v4.35.2** (SHA-pinned `7fc6561…`). v3 EOL is December 2026 and the underlying actions still ran on Node 20, which GitHub deprecates in September 2026; v4 runs on Node 24.
+
+* Tooling consistency with `klodr/faxdrop-mcp`: ESLint v9 flat config with `typescript-eslint` type-aware rules; Prettier + `eslint-config-prettier`; `Lint & Format` CI job gating every PR; TypeScript strict + `noUnusedLocals/noUnusedParameters/noImplicitReturns/noFallthroughCasesInSwitch`; jest `restoreMocks: true` to auto-restore spies between tests. Already on `main` since PRs #25/#26; surfaced in this release for the npm changelog.
 
 ## [0.7.1] - 2026-04-18
 
 ### Changed
 
-- `SECURITY.md`: switched the `cosign verify-blob-attestation` example to `--bundle index.js.sigstore` (the actual Sigstore bundle file with the Fulcio cert chain + Rekor inclusion proof). The previous `--signature index.js.intoto.jsonl` form could not complete keyless verification on its own. The companion `index.js.intoto.jsonl` asset is documented as the SLSA-format file consumed by tools that scan release assets by extension (Scorecard `Signed-Releases`).
-- `SECURITY.md`: softened the "vulnerable versions will trigger Dependabot alerts" line to a conditional "may trigger ... provided Dependabot security updates are enabled" — alerts depend on the consuming repository's configuration.
+* `SECURITY.md`: switched the `cosign verify-blob-attestation` example to `--bundle index.js.sigstore` (the actual Sigstore bundle file with the Fulcio cert chain + Rekor inclusion proof). The previous `--signature index.js.intoto.jsonl` form could not complete keyless verification on its own. The companion `index.js.intoto.jsonl` asset is documented as the SLSA-format file consumed by tools that scan release assets by extension (Scorecard `Signed-Releases`).
+
+* `SECURITY.md`: softened the "vulnerable versions will trigger Dependabot alerts" line to a conditional "may trigger ... provided Dependabot security updates are enabled" — alerts depend on the consuming repository's configuration.
 
 ### Fixed
 
-- `scripts/sandbox-test.mjs`: removed two unused `const` assignments (`recipients`, `trAccs`) flagged by CodeQL alerts #20 / #21. The `await run(...)` calls remain for their smoke-test side effect.
+* `scripts/sandbox-test.mjs`: removed two unused `const` assignments (`recipients`, `trAccs`) flagged by CodeQL alerts #20 / #21. The `await run(...)` calls remain for their smoke-test side effect.
 
 ## [0.7.0] - 2026-04-18
 
 ### Added
 
-- `test/fuzz.test.ts`: property-based tests using `fast-check`. Covers `redactSensitive` (no leak through any sensitive key at any depth, mixed-case variants exercise the case-folding path) and `MercuryError` (toString / toJSON never expose the response body, sentinel-based property). Recognised by OpenSSF Scorecard's `Fuzzing` check (8/10 → 10/10).
-- `release.yml`: now also emits `dist/index.js.intoto.jsonl` (SLSA in-toto attestation extracted from the Sigstore bundle's DSSE envelope, with non-null guard) alongside `dist/index.js.sigstore`. Lifts Scorecard's `Signed-Releases` check from 8/10 to 10/10.
-- `CONTINUITY.md`: project continuity plan with a fork-and-continue takeover checklist (Best Practices Silver: `access_continuity`).
-- `ASSURANCE_CASE.md`: threat model, trust boundaries, secure-design principles, CWE/OWASP weakness mapping (Best Practices Silver: `assurance_case`).
-- `SECURITY.md`: explicit "Security model — what you can and cannot expect" section; "Verifying releases" section with three independent paths (npm CLI provenance, `gh attestation verify`, `cosign verify-blob-attestation`).
+* `test/fuzz.test.ts`: property-based tests using `fast-check`. Covers `redactSensitive` (no leak through any sensitive key at any depth, mixed-case variants exercise the case-folding path) and `MercuryError` (toString / toJSON never expose the response body, sentinel-based property). Recognised by OpenSSF Scorecard's `Fuzzing` check (8/10 → 10/10).
+
+* `release.yml`: now also emits `dist/index.js.intoto.jsonl` (SLSA in-toto attestation extracted from the Sigstore bundle's DSSE envelope, with non-null guard) alongside `dist/index.js.sigstore`. Lifts Scorecard's `Signed-Releases` check from 8/10 to 10/10.
+
+* `CONTINUITY.md`: project continuity plan with a fork-and-continue takeover checklist (Best Practices Silver: `access_continuity`).
+
+* `ASSURANCE_CASE.md`: threat model, trust boundaries, secure-design principles, CWE/OWASP weakness mapping (Best Practices Silver: `assurance_case`).
+
+* `SECURITY.md`: explicit "Security model — what you can and cannot expect" section; "Verifying releases" section with three independent paths (npm CLI provenance, `gh attestation verify`, `cosign verify-blob-attestation`).
 
 ### Changed
 
-- `src/middleware.ts`: `SENSITIVE_KEYS` is now exported and `Object.freeze`d so the fuzz tests can reuse the canonical list (no drift) and the array is immutable at runtime.
+* `src/middleware.ts`: `SENSITIVE_KEYS` is now exported and `Object.freeze`d so the fuzz tests can reuse the canonical list (no drift) and the array is immutable at runtime.
 
 ## [0.6.2] - 2026-04-18
 
 ### Changed
 
-- `release.yml`: end-to-end automated release on `git push origin vX.Y.Z`. The workflow now extracts the matching `## [VERSION]` section from `CHANGELOG.md`, creates (or updates) the GitHub Release with those notes, signs `dist/index.js` with Sigstore, attaches the signed bundle, and `npm publish --provenance`. No manual UI step.
-- `release.yml`: added a sanity check that the pushed tag matches `package.json`'s `version` — fails fast on mismatched bumps.
-- `release.yml`: changelog link in the auto-generated release notes pinned to `/blob/${TAG}/CHANGELOG.md` (was `/blob/main/`) so it stays authoritative for the release it accompanies.
-- `release.yml`: GitHub Release creation is idempotent (`view` then `edit` if it exists, `create` otherwise) so re-runs after a later-step failure are not blocked.
-- `codeql.yml`: matrix now includes both `javascript-typescript` and `actions` languages. Replaces the deleted auto-generated `codeql-analysis.yml` whose duplicate job name was triggering parallel runs and confusing the required `Code scanning results / CodeQL` status check.
+* `release.yml`: end-to-end automated release on `git push origin vX.Y.Z`. The workflow now extracts the matching `## [VERSION]` section from `CHANGELOG.md`, creates (or updates) the GitHub Release with those notes, signs `dist/index.js` with Sigstore, attaches the signed bundle, and `npm publish --provenance`. No manual UI step.
+
+* `release.yml`: added a sanity check that the pushed tag matches `package.json`'s `version` — fails fast on mismatched bumps.
+
+* `release.yml`: changelog link in the auto-generated release notes pinned to `/blob/${TAG}/CHANGELOG.md` (was `/blob/main/`) so it stays authoritative for the release it accompanies.
+
+* `release.yml`: GitHub Release creation is idempotent (`view` then `edit` if it exists, `create` otherwise) so re-runs after a later-step failure are not blocked.
+
+* `codeql.yml`: matrix now includes both `javascript-typescript` and `actions` languages. Replaces the deleted auto-generated `codeql-analysis.yml` whose duplicate job name was triggering parallel runs and confusing the required `Code scanning results / CodeQL` status check.
 
 ### Added
 
-- README: OpenSSF Best Practices badge ([project 12575](https://www.bestpractices.dev/projects/12575), passing tier).
+* README: OpenSSF Best Practices badge ([project 12575](https://www.bestpractices.dev/projects/12575), passing tier).
 
 ## [0.6.1] - 2026-04-18
 
 ### Fixed
 
-- `release.yml`: replaced the incorrect `@sigstore/cli@1.0.0` install (no such version, no `sign` subcommand) with `actions/attest-build-provenance@v4.1.0`. The v0.6.0 release run failed at the install step, so 0.6.0 was never published to npm — 0.6.1 ships the same code as 0.6.0 plus a working signing pipeline.
-- `release.yml`: added a `BUNDLE_PATH` guard before `cp` so a missing attestation output produces a self-explanatory error instead of a generic `cp` failure.
+* `release.yml`: replaced the incorrect `@sigstore/cli@1.0.0` install (no such version, no `sign` subcommand) with `actions/attest-build-provenance@v4.1.0`. The v0.6.0 release run failed at the install step, so 0.6.0 was never published to npm — 0.6.1 ships the same code as 0.6.0 plus a working signing pipeline.
+
+* `release.yml`: added a `BUNDLE_PATH` guard before `cp` so a missing attestation output produces a self-explanatory error instead of a generic `cp` failure.
 
 ## [0.6.0] - 2026-04-18
 
 ### Added
 
-- `release.yml`: Sigstore (keyless OIDC) signing of `dist/index.js`. The signed artifact + `.sigstore` bundle are uploaded to the GitHub Release before npm publish. Satisfies Scorecard's `Signed-Releases` check (npm provenance alone is not enough — Scorecard inspects GitHub Release assets).
-- `release.yml`: split into two jobs (`build` read-only, `publish` write + release-only) for least-privilege token scopes.
+* `release.yml`: Sigstore (keyless OIDC) signing of `dist/index.js`. The signed artifact + `.sigstore` bundle are uploaded to the GitHub Release before npm publish. Satisfies Scorecard's `Signed-Releases` check (npm provenance alone is not enough — Scorecard inspects GitHub Release assets).
+
+* `release.yml`: split into two jobs (`build` read-only, `publish` write + release-only) for least-privilege token scopes.
 
 ### Removed
 
-- README: Snyk vulnerability badge. Snyk deprecated the `/test/github/{owner}/{repo}/badge.svg` endpoint (HTTP 410 Gone). The Snyk GitHub App still runs on every PR (visible as `security/snyk` status check), so the protection itself is unchanged — only the README badge had to go.
+* README: Snyk vulnerability badge. Snyk deprecated the `/test/github/{owner}/{repo}/badge.svg` endpoint (HTTP 410 Gone). The Snyk GitHub App still runs on every PR (visible as `security/snyk` status check), so the protection itself is unchanged — only the README badge had to go.
 
 ### Changed
-- `lineItemSchema.name` now enforces `.min(1).max(200)` at the Zod level. Mercury silently accepts longer names on `POST /ar/invoices` (create) but rejects them on the edit endpoint with `"Item name: Must be 200 characters or fewer"`, leaving the invoice in an unmodifiable state. The MCP now refuses upfront with a clean validation error.
-- `invoiceNumber` now enforces `.max(255)`. Mercury accepts up to ~280 characters and rejects 300+, so 255 is a safe ceiling that also matches typical varchar(255) database conventions.
+
+* `lineItemSchema.name` now enforces `.min(1).max(200)` at the Zod level. Mercury silently accepts longer names on `POST /ar/invoices` (create) but rejects them on the edit endpoint with `"Item name: Must be 200 characters or fewer"`, leaving the invoice in an unmodifiable state. The MCP now refuses upfront with a clean validation error.
+
+* `invoiceNumber` now enforces `.max(255)`. Mercury accepts up to ~280 characters and rejects 300+, so 255 is a safe ceiling that also matches typical varchar(255) database conventions.
 
 ### Tested but not enforced (no schema-level limit needed)
-- `payerMemo`, `internalNote`, `customer.name` all accept ≥5000 characters in production. No artificial limit added.
+
+* `payerMemo`, `internalNote`, `customer.name` all accept ≥5000 characters in production. No artificial limit added.
 
 ## [0.2.0] - 2026-04-17
 
 ### Added
-- **`mercury_create_internal_transfer`** — move money between two of your own Mercury accounts (e.g. Checking → Savings). `POST /transfer`, with auto-generated `idempotencyKey`.
-- **`mercury_update_recipient`** — fix a recipient's nickname / contact email / payment method without recreating it. `POST /recipient/{id}` (singular).
-- **`mercury_update_webhook`** — change a webhook's URL, status (active/paused) or event types. Useful to reactivate a webhook that was disabled after consecutive delivery failures. `POST /webhooks/{id}`.
-- `defineTool` and `textResult` helpers in `src/tools/_shared.ts` (eliminates the per-handler `JSON.stringify` boilerplate across all 34 tools).
-- `scripts/sync-version.mjs` — single-source the package version: `package.json` is authoritative, the script propagates it into `server.json` and `src/server.ts`. Wired to the `npm version` lifecycle hook.
+
+* **`mercury_create_internal_transfer`** — move money between two of your own Mercury accounts (e.g. Checking → Savings). `POST /transfer`, with auto-generated `idempotencyKey`.
+
+* **`mercury_update_recipient`** — fix a recipient's nickname / contact email / payment method without recreating it. `POST /recipient/{id}` (singular).
+
+* **`mercury_update_webhook`** — change a webhook's URL, status (active/paused) or event types. Useful to reactivate a webhook that was disabled after consecutive delivery failures. `POST /webhooks/{id}`.
+
+* `defineTool` and `textResult` helpers in `src/tools/_shared.ts` (eliminates the per-handler `JSON.stringify` boilerplate across all 34 tools).
+
+* `scripts/sync-version.mjs` — single-source the package version: `package.json` is authoritative, the script propagates it into `server.json` and `src/server.ts`. Wired to the `npm version` lifecycle hook.
 
 ### Changed
-- **Breaking** — `mercury_update_transaction` no longer takes `accountId`. Mercury's real endpoint is `PATCH /transaction/{id}` (no account in the path). Fields are now `note` (nullable) and `categoryId` (nullable); `externalMemo` was never accepted by the endpoint and has been removed.
-- **Breaking** — env var renamed: `MERCURY_MCP_RATE_LIMIT_disabled` → `MERCURY_MCP_RATE_LIMIT_DISABLE` (consistent uppercase).
-- **Breaking** — `lineItemSchema` now requires `name` (was `description`). Mercury rejects line items without `name`. `description` becomes an optional longer-form field.
-- `mercury_update_invoice` now uses the correct Mercury endpoint: `POST /ar/invoices/{id}` (not PATCH). The handler fetches the current invoice, merges the supplied changes, and submits the full payload that Mercury expects — callers can still pass only the fields they want to change.
-- Audit log: sensitive args (`accountNumber`, `routingNumber`, `apiKey`, `authorization`, `password`, `token`, `secret`, `ssn`) now redacted to `[REDACTED]`. Path must be absolute. File created with mode `0o600`. Write is now synchronous.
-- Dry-run `wouldCallWith` payload now also redacts sensitive fields.
-- `MercuryError.toString()` and `toJSON()` no longer include the raw response body (kept on the `body` property for callers who need it).
-- Tool registration goes through a `defineTool` helper that calls the SDK's non-deprecated `server.registerTool` (the previous monkey-patch on `server.tool` is gone).
-- `wrapToolHandler` now catches `MercuryError` and returns a clean `isError:true` response, with a hint for HTTP 403 on AR endpoints (Mercury Plus plan required).
-- All path-injected IDs (`accountId`, `transactionId`, `recipientId`, `webhookId`) now require `.uuid()` validation, and `MercuryClient.request` URL-encodes each path segment (defense-in-depth against prompt injection).
-- Sandbox auto-detection now uses a strict prefix match (`apiKey.startsWith("secret-token:mercury_sandbox_")`) instead of a substring check.
-- `fetch` requests now have a 30s `AbortSignal.timeout` so a hung Mercury endpoint cannot block the MCP indefinitely.
+
+* **Breaking** — `mercury_update_transaction` no longer takes `accountId`. Mercury's real endpoint is `PATCH /transaction/{id}` (no account in the path). Fields are now `note` (nullable) and `categoryId` (nullable); `externalMemo` was never accepted by the endpoint and has been removed.
+
+* **Breaking** — env var renamed: `MERCURY_MCP_RATE_LIMIT_disabled` → `MERCURY_MCP_RATE_LIMIT_DISABLE` (consistent uppercase).
+
+* **Breaking** — `lineItemSchema` now requires `name` (was `description`). Mercury rejects line items without `name`. `description` becomes an optional longer-form field.
+
+* `mercury_update_invoice` now uses the correct Mercury endpoint: `POST /ar/invoices/{id}` (not PATCH). The handler fetches the current invoice, merges the supplied changes, and submits the full payload that Mercury expects — callers can still pass only the fields they want to change.
+
+* Audit log: sensitive args (`accountNumber`, `routingNumber`, `apiKey`, `authorization`, `password`, `token`, `secret`, `ssn`) now redacted to `[REDACTED]`. Path must be absolute. File created with mode `0o600`. Write is now synchronous.
+
+* Dry-run `wouldCallWith` payload now also redacts sensitive fields.
+
+* `MercuryError.toString()` and `toJSON()` no longer include the raw response body (kept on the `body` property for callers who need it).
+
+* Tool registration goes through a `defineTool` helper that calls the SDK's non-deprecated `server.registerTool` (the previous monkey-patch on `server.tool` is gone).
+
+* `wrapToolHandler` now catches `MercuryError` and returns a clean `isError:true` response, with a hint for HTTP 403 on AR endpoints (Mercury Plus plan required).
+
+* All path-injected IDs (`accountId`, `transactionId`, `recipientId`, `webhookId`) now require `.uuid()` validation, and `MercuryClient.request` URL-encodes each path segment (defense-in-depth against prompt injection).
+
+* Sandbox auto-detection now uses a strict prefix match (`apiKey.startsWith("secret-token:mercury_sandbox_")`) instead of a substring check.
+
+* `fetch` requests now have a 30s `AbortSignal.timeout` so a hung Mercury endpoint cannot block the MCP indefinitely.
 
 ### Removed
-- **`mercury_send_invoice`** — Mercury does NOT expose `POST /ar/invoices/{id}/send` (404 confirmed in production). Email delivery is only triggered by `sendEmailOption: "SendNow"` at invoice creation time. Documented in `mercury_create_invoice`.
-- Internal references to non-existent Mercury tools (COA Templates ×3, Journal Entries ×3) cleaned from `TOOL_CATEGORIES` and `DEFAULT_LIMITS_PER_DAY`.
-- Unused `MercuryClient.put()` helper.
+
+* **`mercury_send_invoice`** — Mercury does NOT expose `POST /ar/invoices/{id}/send` (404 confirmed in production). Email delivery is only triggered by `sendEmailOption: "SendNow"` at invoice creation time. Documented in `mercury_create_invoice`.
+
+* Internal references to non-existent Mercury tools (COA Templates ×3, Journal Entries ×3) cleaned from `TOOL_CATEGORIES` and `DEFAULT_LIMITS_PER_DAY`.
+
+* Unused `MercuryClient.put()` helper.
 
 ### Fixed
-- Node 18 compatibility: `randomUUID` imported from `node:crypto` (the global `crypto.randomUUID()` requires Node 19+).
+
+* Node 18 compatibility: `randomUUID` imported from `node:crypto` (the global `crypto.randomUUID()` requires Node 19+).
 
 ### Security
-- All GitHub Actions in `.github/workflows/` are now pinned by full commit SHA (was tag-based, vulnerable to tag rewriting). `release.yml` is the highest-risk workflow — it carries `NPM_TOKEN`.
-- Sourcemaps are emitted only when `NODE_ENV !== "production"`. The published npm tarball no longer ships `dist/index.js.map` (which would otherwise expose the full TypeScript source). `prepublishOnly` sets `NODE_ENV=production`.
+
+* All GitHub Actions in `.github/workflows/` are now pinned by full commit SHA (was tag-based, vulnerable to tag rewriting). `release.yml` is the highest-risk workflow — it carries `NPM_TOKEN`.
+
+* Sourcemaps are emitted only when `NODE_ENV !== "production"`. The published npm tarball no longer ships `dist/index.js.map` (which would otherwise expose the full TypeScript source). `prepublishOnly` sets `NODE_ENV=production`.
 
 ## [0.1.0] - 2026-04-17
 
 ### Added
-- Initial project structure (TypeScript + tsup + jest)
-- Mercury API client wrapper (fetch-based, Bearer auth)
-- **32 tools** across the Mercury API surface:
-  - Banking accounts (2): `list_accounts`, `get_account`
-  - Cards (1): `list_cards`
-  - Categories (1): `list_categories`
-  - Organization (1): `get_organization`
-  - Banking transactions (5): `list_transactions`, `get_transaction`, `update_transaction`, `send_money`, `request_send_money`
-  - Recipients (2): `list_recipients`, `add_recipient`
-  - Statements (1): `list_statements`
-  - Treasury (3): `get_treasury`, `list_treasury_transactions`, `list_treasury_statements`
-  - Invoicing AR (7): `list_invoices`, `get_invoice`, `create_invoice`, `update_invoice`, `send_invoice`, `cancel_invoice`, `list_invoice_attachments`
-  - Customers AR (5): `list_customers`, `get_customer`, `create_customer`, `update_customer`, `delete_customer`
-  - Webhooks (4): `list_webhooks`, `get_webhook`, `create_webhook`, `delete_webhook`
-- Auto-detection of sandbox tokens (`mercury_sandbox_*` → api-sandbox URL)
-- Middleware: per-category rate limiting (sliding window), dry-run mode, opt-in audit log
-- CI matrix on Node 18/20/22 with Codecov upload
-- OpenSSF Scorecard, CodeQL, Dependabot, Secret scanning
-- SECURITY.md, issue/PR templates, CODEOWNERS
-- npm publish workflow with provenance attestation
-- Smithery + Official MCP Registry manifests
-- Examples and publishing checklist
+
+* Initial project structure (TypeScript + tsup + jest)
+
+* Mercury API client wrapper (fetch-based, Bearer auth)
+
+* **32 tools** across the Mercury API surface:
+  * Banking accounts (2): `list_accounts`, `get_account`
+  * Cards (1): `list_cards`
+  * Categories (1): `list_categories`
+  * Organization (1): `get_organization`
+  * Banking transactions (5): `list_transactions`, `get_transaction`, `update_transaction`, `send_money`, `request_send_money`
+  * Recipients (2): `list_recipients`, `add_recipient`
+  * Statements (1): `list_statements`
+  * Treasury (3): `get_treasury`, `list_treasury_transactions`, `list_treasury_statements`
+  * Invoicing AR (7): `list_invoices`, `get_invoice`, `create_invoice`, `update_invoice`, `send_invoice`, `cancel_invoice`, `list_invoice_attachments`
+  * Customers AR (5): `list_customers`, `get_customer`, `create_customer`, `update_customer`, `delete_customer`
+  * Webhooks (4): `list_webhooks`, `get_webhook`, `create_webhook`, `delete_webhook`
+
+* Auto-detection of sandbox tokens (`mercury_sandbox_*` → api-sandbox URL)
+
+* Middleware: per-category rate limiting (sliding window), dry-run mode, opt-in audit log
+
+* CI matrix on Node 18/20/22 with Codecov upload
+
+* OpenSSF Scorecard, CodeQL, Dependabot, Secret scanning
+
+* SECURITY.md, issue/PR templates, CODEOWNERS
+
+* npm publish workflow with provenance attestation
+
+* Smithery + Official MCP Registry manifests
+
+* Examples and publishing checklist
 
 [Unreleased]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.14.0...HEAD
 [0.14.0]: https://github.com/klodr/mercury-invoicing-mcp/compare/v0.13.0...v0.14.0
