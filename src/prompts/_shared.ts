@@ -31,5 +31,5 @@
 const NACHA_ALLOWLIST = /[^A-Za-z0-9 ()!#$%&'*+\-./:;=?@[\]^_{|}]/g;
 
 export function promptSafe(value: string): string {
-  return value.replace(NACHA_ALLOWLIST, "").trim();
+  return value.replaceAll(NACHA_ALLOWLIST, "").trim();
 }

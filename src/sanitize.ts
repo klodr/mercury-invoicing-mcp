@@ -52,7 +52,7 @@ const CONTROL_AND_INVISIBLE =
 /* eslint-enable no-control-regex */
 
 export function stripControl(text: string): string {
-  return text.replace(CONTROL_AND_INVISIBLE, "");
+  return text.replaceAll(CONTROL_AND_INVISIBLE, "");
 }
 
 /**
@@ -107,7 +107,11 @@ const FENCE_CLOSE = "\n</untrusted-tool-output>";
 const CLOSE_TAG_RE = /<\/untrusted-tool-output>/gi;
 
 export function fence(text: string): string {
-  return FENCE_OPEN + text.replace(CLOSE_TAG_RE, "\\u003c/untrusted-tool-output>") + FENCE_CLOSE;
+  return (
+    FENCE_OPEN +
+    text.replaceAll(CLOSE_TAG_RE, String.raw`\u003c/untrusted-tool-output>`) +
+    FENCE_CLOSE
+  );
 }
 
 export function sanitizeForLlm(text: string): string {
