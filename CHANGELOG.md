@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.1...v0.17.2) (2026-05-18)
+
+
+### Changed
+
+* bump reusable SHAs to current klodr/.github main (orphan fix) ([#191](https://github.com/klodr/mercury-invoicing-mcp/issues/191)) ([ae471fc](https://github.com/klodr/mercury-invoicing-mcp/commit/ae471fca26a6fa2b806030b1f5bb736cb7e56d8f))
+* **ci:** reduce release-please trigger to 1 workflow_run ([#189](https://github.com/klodr/mercury-invoicing-mcp/issues/189)) ([1a49c2a](https://github.com/klodr/mercury-invoicing-mcp/commit/1a49c2ad5fac44800eef9ba6fc3b8321b6c8fe9d))
+* **deps:** relock to pull qs 6.15.2 fix for CVE-2026-8723 ([#190](https://github.com/klodr/mercury-invoicing-mcp/issues/190)) ([1154ba4](https://github.com/klodr/mercury-invoicing-mcp/commit/1154ba47009c1671a472230db5154169ffa3b928))
+
 ## [0.17.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.0...v0.17.1) (2026-05-13)
 
 ### Changed
