@@ -210,7 +210,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_create_invoice`, `mercury_update_invoice`
 - `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
-- `mercury_get_invoice_pdf` — resolves the direct-download URL of the invoice's Mercury-generated PDF (the file the pay page's "Download Invoice" button serves). Distinct from `mercury_list_invoice_attachments`, which only lists manually-uploaded files.
+- `mercury_get_invoice_pdf` — returns the download URL of the invoice's PDF via Mercury's documented [`getinvoicepdf`](https://docs.mercury.com/reference/getinvoicepdf) endpoint (`{baseUrl}/ar/invoices/{id}/pdf`, authenticated, sandbox/proxy-safe). Distinct from `mercury_list_invoice_attachments`, which only lists manually-uploaded files.
 
 ### 👤 Customers (AR) — also requires Mercury Plus
 
