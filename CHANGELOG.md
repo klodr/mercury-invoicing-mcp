@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.2...v0.17.3) (2026-07-04)
+
+
+### Changed
+
+* bump actions/checkout from 4.2.2 to 6.0.2 ([#195](https://github.com/klodr/mercury-invoicing-mcp/issues/195)) ([98cb1c9](https://github.com/klodr/mercury-invoicing-mcp/commit/98cb1c9f8de7edf6d2c47bdcbf79f4ae9c267fa5))
+* bump actions/create-github-app-token from 3.1.1 to 3.2.0 ([#194](https://github.com/klodr/mercury-invoicing-mcp/issues/194)) ([655ae9e](https://github.com/klodr/mercury-invoicing-mcp/commit/655ae9eb5db05fd299242c704ddfa4ec5a67fe3c))
+* bump github/codeql-action from 4.35.4 to 4.35.5 ([#196](https://github.com/klodr/mercury-invoicing-mcp/issues/196)) ([1f731f8](https://github.com/klodr/mercury-invoicing-mcp/commit/1f731f88f69a3f3365a995438ec4c44c2e098293))
+* **ci,deps:** codecov-action v7 pin + clear OSV vulnerabilities ([#216](https://github.com/klodr/mercury-invoicing-mcp/issues/216)) ([059ee73](https://github.com/klodr/mercury-invoicing-mcp/commit/059ee73793066bc522c2138593ec6163a3a06930))
+* **leak-detect:** bump reusable to skip bot-authored PRs ([#197](https://github.com/klodr/mercury-invoicing-mcp/issues/197)) ([a832271](https://github.com/klodr/mercury-invoicing-mcp/commit/a8322718a874b5878d317fd634cef7cd20fd01bc))
+* **leak-detect:** bump to inline-JWT reusable + drop client-id ([#193](https://github.com/klodr/mercury-invoicing-mcp/issues/193)) ([f0b4e7d](https://github.com/klodr/mercury-invoicing-mcp/commit/f0b4e7d08f3df8821fac47ff4a54ab97a1808eeb))
+
 ## [0.17.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.1...v0.17.2) (2026-05-18)
 
 
