@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.3...v0.17.4) (2026-07-04)
+
+
+### Changed
+
+* bump docker/build-push-action from 7.1.0 to 7.3.0 ([#200](https://github.com/klodr/mercury-invoicing-mcp/issues/200)) ([444c771](https://github.com/klodr/mercury-invoicing-mcp/commit/444c7716d3c401e98bc80d31415270560dea4d78))
+
 ## [0.17.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.2...v0.17.3) (2026-07-04)
 
 
