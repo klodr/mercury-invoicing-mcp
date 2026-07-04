@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 36 tools", async () => {
+  it("tools/list returns all 37 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(36);
+    expect(res.tools.length).toBe(37);
   });
 
   // --- Banking accounts ---
@@ -379,6 +379,66 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
     });
     expect(calls[0].url).toContain("/attachments");
+  });
+
+  it("mercury_get_invoice_pdf → GET /ar/invoices/{id} then returns the public PDF URL from the slug", async () => {
+    global.fetch = (async (input: URL | string, init?: RequestInit) => {
+      calls.push({
+        url: input.toString(),
+        method: init?.method ?? "GET",
+        body: init?.body as string | undefined,
+        headers: (init?.headers as Record<string, string>) ?? {},
+      });
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () =>
+          JSON.stringify({
+            id: "00000000-0000-4000-8000-000000000001",
+            invoiceNumber: "INV-53",
+            status: "Paid",
+            slug: "629q2wpb7dstgtmz",
+          }),
+      };
+    }) as unknown as typeof fetch;
+
+    const res = await client.callTool({
+      name: "mercury_get_invoice_pdf",
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
+    });
+
+    // The MCP only calls the authenticated Mercury API — it never fetches
+    // the public pay-page host itself.
+    expect(calls).toHaveLength(1);
+    expect(calls[0].method).toBe("GET");
+    expect(calls[0].url).toContain("/ar/invoices/00000000-0000-4000-8000-000000000001");
+    expect(calls[0].url).toContain("api.mercury.com");
+
+    const sc = res.structuredContent as Record<string, unknown>;
+    expect(sc.slug).toBe("629q2wpb7dstgtmz");
+    expect(sc.downloadUrl).toBe(
+      "https://backend.mercury.com/ar-invoice/629q2wpb7dstgtmz/pdf?disposition=attachment",
+    );
+    expect(sc.viewUrl).toBe(
+      "https://backend.mercury.com/ar-invoice/629q2wpb7dstgtmz/pdf?disposition=inline",
+    );
+  });
+
+  it("mercury_get_invoice_pdf → draft invoice with no slug returns isError", async () => {
+    global.fetch = (async () => ({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: async () =>
+        JSON.stringify({ id: "00000000-0000-4000-8000-000000000001", status: "Draft" }),
+    })) as unknown as typeof fetch;
+
+    const res = await client.callTool({
+      name: "mercury_get_invoice_pdf",
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
+    });
+    expect(res.isError).toBe(true);
   });
 
   // --- Customers ---

@@ -180,14 +180,14 @@ describe("validateBaseUrl (direct)", () => {
 });
 
 describe("createServer", () => {
-  it("creates a server that lists 36 tools", async () => {
+  it("creates a server that lists 37 tools", async () => {
     const server = createServer({ apiKey: "test-key", log: () => {} });
     const [serverTransport, clientTransport] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "t", version: "0.0.0" });
     await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
 
     const tools = await client.listTools();
-    expect(tools.tools.length).toBe(36);
+    expect(tools.tools.length).toBe(37);
 
     await client.close();
   });

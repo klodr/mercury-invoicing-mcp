@@ -240,4 +240,60 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     { title: "List Invoice Attachments", readOnlyHint: true, openWorldHint: true },
   );
+
+  defineTool(
+    server,
+    "mercury_get_invoice_pdf",
+    [
+      "Resolve the direct-download URL of an invoice's Mercury-generated PDF document.",
+      "",
+      'USE WHEN: you need the actual invoice PDF — to archive it, or to attach it to an email / bank KYB / compliance reply. Mercury generates this PDF for every *issued* invoice. `mercury_list_invoice_attachments` does NOT return it (that lists only files a human manually uploaded, empty on a normal invoice). This tool fetches the invoice, reads its `slug`, and returns the canonical Mercury-hosted PDF URL — the exact file the hosted pay page\'s "Download Invoice" button serves. The URL is public (no bearer token required) and stable; fetch it directly to get the bytes.',
+      "",
+      "DO NOT USE: on a draft invoice that was never issued (no `slug` / no hosted pay page → returns an `isError` payload). For statement PDFs use `mercury_list_statements`; for manually-uploaded attachments use `mercury_list_invoice_attachments`.",
+      "",
+      "NOTE ON EGRESS: this tool only *computes* the public URL from the slug returned by the authenticated `GET /ar/invoices/{id}` call — the MCP itself never contacts the pay-page host, so the bearer token still only ever leaves to `api.mercury.com`.",
+      "",
+      "RETURNS: `{ invoiceId, invoiceNumber, status, slug, downloadUrl, viewUrl }` — `downloadUrl` forces a file download (`?disposition=attachment`); `viewUrl` renders inline in a browser (`?disposition=inline`).",
+    ].join("\n"),
+    {
+      invoiceId: z.uuid().describe("The invoice ID (UUID)"),
+    },
+    async ({ invoiceId }) => {
+      const invoice = await client.get<Record<string, unknown>>(`/ar/invoices/${invoiceId}`);
+      const slug = typeof invoice.slug === "string" ? invoice.slug : undefined;
+      if (!slug) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  error: "no_pdf_available",
+                  message:
+                    "This invoice has no `slug` / hosted pay page, so Mercury has not generated a downloadable PDF for it (typically a draft that was never issued). Issue or send the invoice first.",
+                  invoiceId,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
+      // The pay-page PDF host serves the generated document without auth.
+      // encodeURIComponent guards against a slug that (defensively) contains
+      // a URL-significant character, though Mercury slugs are alphanumeric.
+      const base = `https://backend.mercury.com/ar-invoice/${encodeURIComponent(slug)}/pdf`;
+      return textResult({
+        invoiceId,
+        invoiceNumber: invoice.invoiceNumber,
+        status: invoice.status,
+        slug,
+        downloadUrl: `${base}?disposition=attachment`,
+        viewUrl: `${base}?disposition=inline`,
+      });
+    },
+    { title: "Get Invoice PDF", readOnlyHint: true, openWorldHint: true },
+  );
 }
