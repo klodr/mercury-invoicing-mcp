@@ -53,7 +53,7 @@
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#CHANGELOG.md\" \"#node_modules\" \"#coverage\" \"#dist\""
   },
   "engines": {
-    "node": ">=22.22.2"
+    "node": ">=22.23.1"
   },
   "packageManager": "npm@10.9.7",
   "dependencies": {
