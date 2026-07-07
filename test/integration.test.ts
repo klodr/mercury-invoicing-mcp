@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 36 tools", async () => {
+  it("tools/list returns all 37 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(36);
+    expect(res.tools.length).toBe(37);
   });
 
   // --- Banking accounts ---
@@ -379,6 +379,78 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
     });
     expect(calls[0].url).toContain("/attachments");
+  });
+
+  it("mercury_get_invoice_pdf → returns the documented /ar/invoices/{id}/pdf URL on the client base host", async () => {
+    global.fetch = (async (input: URL | string, init?: RequestInit) => {
+      calls.push({
+        url: input.toString(),
+        method: init?.method ?? "GET",
+        body: init?.body as string | undefined,
+        headers: (init?.headers as Record<string, string>) ?? {},
+      });
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () =>
+          JSON.stringify({
+            id: "00000000-0000-4000-8000-000000000001",
+            invoiceNumber: "INV-53",
+            status: "Paid",
+            slug: "629q2wpb7dstgtmz",
+          }),
+      };
+    }) as unknown as typeof fetch;
+
+    const res = await client.callTool({
+      name: "mercury_get_invoice_pdf",
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
+    });
+
+    // Only the authenticated metadata GET is made; the URL is computed, not fetched.
+    expect(calls).toHaveLength(1);
+    expect(calls[0].method).toBe("GET");
+    expect(calls[0].url).toContain("/ar/invoices/00000000-0000-4000-8000-000000000001");
+
+    const sc = res.structuredContent as Record<string, unknown>;
+    expect(sc.slug).toBe("629q2wpb7dstgtmz");
+    // Documented endpoint on the configured base host — not the undocumented
+    // backend.mercury.com pay-page host.
+    expect(sc.downloadUrl).toBe(
+      "https://api.mercury.com/api/v1/ar/invoices/00000000-0000-4000-8000-000000000001/pdf",
+    );
+    expect(sc.downloadUrl).not.toContain("backend.mercury.com");
+  });
+
+  it("mercury_get_invoice_pdf → downloadUrl follows the sandbox base URL (no hard-coded host)", async () => {
+    // A sandbox token routes the client at api-sandbox.mercury.com; the PDF
+    // URL must inherit that host rather than a hard-coded production one.
+    const sandboxServer = createServer({
+      apiKey: "secret-token:mercury_sandbox_abcdef",
+      log: () => {},
+    });
+    const [st, ct] = InMemoryTransport.createLinkedPair();
+    const sandboxClient = new Client({ name: "sandbox", version: "0.0.0" });
+    await Promise.all([sandboxServer.connect(st), sandboxClient.connect(ct)]);
+
+    global.fetch = (async () => ({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: async () =>
+        JSON.stringify({ id: "00000000-0000-4000-8000-000000000001", slug: "s", status: "Paid" }),
+    })) as unknown as typeof fetch;
+
+    const res = await sandboxClient.callTool({
+      name: "mercury_get_invoice_pdf",
+      arguments: { invoiceId: "00000000-0000-4000-8000-000000000001" },
+    });
+    const sc = res.structuredContent as Record<string, unknown>;
+    expect(sc.downloadUrl).toBe(
+      "https://api-sandbox.mercury.com/api/v1/ar/invoices/00000000-0000-4000-8000-000000000001/pdf",
+    );
+    await sandboxClient.close();
   });
 
   // --- Customers ---
