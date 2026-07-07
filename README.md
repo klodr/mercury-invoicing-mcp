@@ -38,7 +38,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | Stable token (no frequent re-auth, IP-allowlistable) | ❌ | ✅ | ✅ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
 | Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Maintenance LTS (`>=22.23.1`) |
-| Total tools exposed | ~10 | ~11 | **34** |
+| Total tools exposed | ~10 | ~11 | **37** |
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
 
@@ -167,7 +167,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## 🛠️ Tools (36 total)
+## 🛠️ Tools (37 total)
 
 ### 🏦 Banking — Accounts
 
@@ -210,6 +210,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_create_invoice`, `mercury_update_invoice`
 - `mercury_cancel_invoice`
 - `mercury_list_invoice_attachments`
+- `mercury_get_invoice_pdf` — returns the download URL of the invoice's PDF via Mercury's documented [`getinvoicepdf`](https://docs.mercury.com/reference/getinvoicepdf) endpoint (`{baseUrl}/ar/invoices/{id}/pdf`, authenticated, sandbox/proxy-safe). Distinct from `mercury_list_invoice_attachments`, which only lists manually-uploaded files.
 
 ### 👤 Customers (AR) — also requires Mercury Plus
 
@@ -221,9 +222,10 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 - `mercury_list_webhooks`, `mercury_get_webhook`
 - `mercury_create_webhook`, `mercury_update_webhook`, `mercury_delete_webhook`
 
-> **Endpoints not yet wrapped** — Mercury exposes ~23 additional endpoints
+> **Endpoints not yet wrapped** — Mercury exposes ~22 additional endpoints
 > that this MCP does not yet cover. They will land in upcoming releases.
-> Tracked: PDF download (`getinvoicepdf`, `getstatementpdf`), attachments
+> Tracked: statement PDF download (`getstatementpdf` — the invoice PDF is
+> already covered by `mercury_get_invoice_pdf`), attachments
 > (`uploadtransactionattachment`, `uploadrecipientattachment`,
 > `getattachment`, `listrecipientsattachments`), webhook signature
 > verification (`verifywebhook`), webhook events (`getevent`, `getevents`),
@@ -238,13 +240,12 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 >
 > There is **no `send_invoice` endpoint** anywhere (API or dashboard).
 > An invoice email is only sent when the invoice is created with
-> `sendEmailOption: "SendNow"`. To send a copy later, download the
-> invoice PDF (Mercury UI button "Download PDF", or the
-> `getinvoicepdf` endpoint — not yet wrapped, see "Endpoints not yet
-> wrapped" above) and email it manually.
+> `sendEmailOption: "SendNow"`. To send a copy later, get the invoice
+> PDF URL via `mercury_get_invoice_pdf`, download it, and email it
+> manually.
 >
 > Tools available depend on your Mercury API token scope. The server
-> registers all 34 tools but Mercury will reject unauthorized operations
+> registers all 37 tools but Mercury will reject unauthorized operations
 > at the API level.
 
 ## 🗺️ Roadmap
