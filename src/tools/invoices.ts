@@ -240,4 +240,43 @@ export function registerInvoiceTools(server: McpServer, client: MercuryClient): 
     },
     { title: "List Invoice Attachments", readOnlyHint: true, openWorldHint: true },
   );
+
+  defineTool(
+    server,
+    "mercury_get_invoice_pdf",
+    [
+      "Resolve the download URL of an invoice's PDF via Mercury's documented `getinvoicepdf` endpoint.",
+      "",
+      "USE WHEN: you need the actual invoice PDF — to archive it, or to attach it to an email / bank KYB / compliance reply. `mercury_list_invoice_attachments` does NOT return it (that lists only files a human manually uploaded, empty on a normal invoice). This tool fetches the invoice (for its number / status / slug) and returns `downloadUrl` = `{baseUrl}/ar/invoices/{id}/pdf`, the documented endpoint (https://docs.mercury.com/reference/getinvoicepdf) that returns the PDF with `Content-Disposition: attachment`.",
+      "",
+      "AUTH: `downloadUrl` is an **authenticated** Mercury API URL — fetch it with the same `Authorization: Bearer <token>` and `Accept: application/pdf` as every other call (it is NOT a public pre-signed link). Because it is derived from the client's configured base URL, it stays correct under the sandbox / proxy host, not just production.",
+      "",
+      "DO NOT USE: for statement PDFs (use `mercury_list_statements`); for manually-uploaded attachments (use `mercury_list_invoice_attachments`). A draft invoice that was never issued may return `404` when the URL is fetched.",
+      "",
+      "RETURNS: `{ invoiceId, invoiceNumber, status, slug, downloadUrl }`.",
+    ].join("\n"),
+    {
+      invoiceId: z.uuid().describe("The invoice ID (UUID)"),
+    },
+    async ({ invoiceId }) => {
+      // Fetch for metadata (number / status / slug) and to surface a clean
+      // 404 if the invoice does not exist.
+      const invoice = await client.get<Record<string, unknown>>(`/ar/invoices/${invoiceId}`);
+      // Documented endpoint: GET {baseUrl}/ar/invoices/{id}/pdf (Accept:
+      // application/pdf), per the official mercury-go SDK. Deriving the URL
+      // from `client.baseUrl` keeps the sandbox / proxy host correct instead
+      // of hard-coding a production host, and uses the authenticated API path
+      // rather than the undocumented pay-page backend. encodeURIComponent is
+      // defensive — invoiceId is already schema-validated as a UUID.
+      const downloadUrl = `${client.baseUrl}/ar/invoices/${encodeURIComponent(invoiceId)}/pdf`;
+      return textResult({
+        invoiceId,
+        invoiceNumber: invoice.invoiceNumber,
+        status: invoice.status,
+        slug: invoice.slug,
+        downloadUrl,
+      });
+    },
+    { title: "Get Invoice PDF", readOnlyHint: true, openWorldHint: true },
+  );
 }

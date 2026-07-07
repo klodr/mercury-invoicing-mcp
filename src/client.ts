@@ -62,7 +62,14 @@ export class MercuryError extends Error {
 
 export class MercuryClient {
   private apiKey: string;
-  private baseUrl: string;
+  /**
+   * The resolved Mercury API base URL (e.g. `https://api.mercury.com/api/v1`,
+   * or the sandbox / proxy host when configured). Exposed read-only so tools
+   * can derive documented sub-resource URLs (e.g. the `getinvoicepdf`
+   * endpoint) from the *same* base the client authenticates against, rather
+   * than hard-coding a host.
+   */
+  readonly baseUrl: string;
 
   constructor(opts: MercuryClientOptions) {
     this.apiKey = opts.apiKey;

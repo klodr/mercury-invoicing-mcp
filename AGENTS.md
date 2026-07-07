@@ -3,7 +3,7 @@
 This repository is **mercury-invoicing-mcp** — a Model Context Protocol
 server that wraps the [Mercury Banking](https://mercury.com/) HTTP API,
 including full **Invoicing API** support (the first MCP to expose
-Mercury's accounts-receivable endpoints). 36 tools across accounts,
+Mercury's accounts-receivable endpoints). 37 tools across accounts,
 cards, categories, credit, customers, invoices, organization,
 recipients, statements, transactions, treasury, webhooks.
 
@@ -194,7 +194,7 @@ defineTool(
 
 Tool descriptions follow a **structured pattern** (USE WHEN, DO NOT
 USE, RETURNS) so LLMs route correctly. Match the existing tools when
-adding new ones — that pattern is what keeps the 36-tool surface
+adding new ones — that pattern is what keeps the 37-tool surface
 discoverable.
 
 ## Security guards encoded in the code
