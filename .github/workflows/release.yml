@@ -6,7 +6,7 @@ name: Release & npm publish
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 # Default workflow permissions: read-only. The publish job below escalates
@@ -45,19 +45,22 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # upload signed artifacts to the GitHub Release
-      id-token: write       # npm provenance + Sigstore keyless signing
-      attestations: write   # actions/attest-build-provenance writes to the attestation API
+      contents: write # upload signed artifacts to the GitHub Release
+      id-token: write # npm provenance + Sigstore keyless signing
+      attestations: write # actions/attest-build-provenance writes to the attestation API
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: "22"
-          cache: "npm"
-          registry-url: "https://registry.npmjs.org"
+          # Node 24 ships npm >= 11.5.1, which supports OIDC trusted
+          # publishing out of the box. No npm cache and no registry-url:
+          # setup-node's registry-url writes an npm auth line that (with
+          # no token) forces the classic-auth path instead of the OIDC
+          # exchange.
+          node-version: "24"
 
       - name: Install dependencies
         run: npm ci
@@ -245,5 +248,3 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --access public --provenance --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
