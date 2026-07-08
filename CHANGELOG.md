@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.4...v0.18.0) (2026-07-07)
+
+
+### Added
+
+* **invoices:** add mercury_get_invoice_pdf tool ([#215](https://github.com/klodr/mercury-invoicing-mcp/issues/215)) ([0e7097d](https://github.com/klodr/mercury-invoicing-mcp/commit/0e7097d0617e4e82287bb9097799664df7cc262d))
+
+
+### Changed
+
+* bump docker/setup-buildx-action from 4.0.0 to 4.2.0 ([#199](https://github.com/klodr/mercury-invoicing-mcp/issues/199)) ([92ecfd0](https://github.com/klodr/mercury-invoicing-mcp/commit/92ecfd0595f7ca1b62e5f6748d03442308faedf8))
+* bump gitleaks/gitleaks-action from 2.3.9 to 3.0.0 ([#204](https://github.com/klodr/mercury-invoicing-mcp/issues/204)) ([acd9a86](https://github.com/klodr/mercury-invoicing-mcp/commit/acd9a86920d86ad20d3329c942a8aaedb388f151))
+* bump pinned Node 22.x to 22.23.1 ([#222](https://github.com/klodr/mercury-invoicing-mcp/issues/222)) ([9dea94f](https://github.com/klodr/mercury-invoicing-mcp/commit/9dea94fa9d8c3faa27f437725b580823e9fbca01))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 12 updates ([#221](https://github.com/klodr/mercury-invoicing-mcp/issues/221)) ([c23c35c](https://github.com/klodr/mercury-invoicing-mcp/commit/c23c35ce208ab0863f37df4f1fbb01e4789fed25))
+
 ## [0.17.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.3...v0.17.4) (2026-07-04)
 
 
