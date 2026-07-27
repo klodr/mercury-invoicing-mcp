@@ -44,7 +44,7 @@ weaknesses have been countered.
    ships malicious code. Mitigations: Socket Security PR alerts,
    Dependabot, CodeQL, Snyk, OpenSSF Scorecard.
 4. **Compromised CI workflow** — an attacker pushes a workflow change
-   that exfiltrates `NPM_TOKEN`. Mitigations: every action pinned by
+   that abuses the publish job's OIDC identity (no long-lived npm token exists to exfiltrate). Mitigations: every action pinned by
    full commit SHA, build/publish jobs split with least-privilege
    tokens, branch protection requires PR + review + CodeQL on workflows
    themselves (`actions` language scanned by CodeQL Advanced).
@@ -95,7 +95,7 @@ boundary.
 
 | Principle | Implementation |
 |---|---|
-| **Least privilege** | `release.yml` is split into a read-only `build` job and a `publish` job that holds `NPM_TOKEN` and runs only on tag pushes. CodeQL job's permissions limited to `security-events: write`, `contents: read`. Default workflow permissions: `contents: read`. |
+| **Least privilege** | `release.yml` is split into a read-only `build` job and a `publish` job that mints short-lived npm credentials via OIDC trusted publishing and runs only on tag pushes. CodeQL job's permissions limited to `security-events: write`, `contents: read`. Default workflow permissions: `contents: read`. |
 | **Defense in depth** | Zod schema validation **and** UUID format check **and** URL-encoding per segment for path-injected IDs. Sigstore signature **and** SLSA attestation **and** npm provenance for releases. |
 | **Fail closed** | 30 s fetch timeout. Missing `MERCURY_API_KEY` → exit at startup. Invalid rate-limit env value → log + fall back to default (no silent disable). |
 | **Minimise attack surface** | No sourcemaps in published tarball (`prepublishOnly` sets `NODE_ENV=production`). Only `dist/`, `README.md`, `LICENSE` in the npm files allowlist. No HTTP transport (stdio only); no listening sockets. |
