@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.0...v0.18.1) (2026-07-27)
+
+
+### Changed
+
+* **release:** npm OIDC trusted publishing on Node 24 ([#228](https://github.com/klodr/mercury-invoicing-mcp/issues/228)) ([9dc31dd](https://github.com/klodr/mercury-invoicing-mcp/commit/9dc31dd8bdd649b91bf9b171d6515ca636babcba))
+
 ## [0.18.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.17.4...v0.18.0) (2026-07-07)
 
 
