@@ -25,7 +25,7 @@ maintainer commits to, and limits that callers must account for.
   npm publishes carry [provenance](https://docs.npmjs.com/generating-provenance-statements).
   All GitHub Actions in `.github/workflows/` are pinned by full commit SHA.
 - **Least-privilege CI**: the release workflow is split into a read-only build
-  job and a release-only publish job that holds `NPM_TOKEN`.
+  job and a release-only publish job that mints short-lived npm credentials via OIDC trusted publishing (no long-lived npm token exists).
 - **Defense against runaway agents**: rate-limiting middleware caps write
   operations per bucket (e.g. `payments`, `customers_write`, `invoices_write`)
   with a **dual-window policy**: each call must satisfy both a daily (24h)

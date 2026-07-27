@@ -4,17 +4,17 @@
 
 ### One-time setup (manual)
 
+Publishing uses **npm OIDC trusted publishing** — no token, no secret.
+
 1. Create an [npmjs.com](https://www.npmjs.com/) account if you don't have one.
-2. Go to [https://www.npmjs.com/settings/your-username/tokens](https://www.npmjs.com/settings/your-username/tokens) → **Generate New Token** → **Granular Access Token**:
-   - Token name: `mercury-invoicing-mcp publish`
-   - Expiration: 1 year (or Custom)
-   - Permissions: **Read and write**
-   - Packages: `mercury-invoicing-mcp` (after first publish, before that select "Allow this token to publish new packages on npm")
-3. Copy the token (starts with `npm_`).
-4. Add it to the repo as a GitHub secret:
-   - Go to https://github.com/klodr/mercury-invoicing-mcp/settings/secrets/actions/new
-   - Name: `NPM_TOKEN`
-   - Secret: paste the token
+2. On the package page → **Settings** → **Trusted Publisher** → GitHub Actions:
+   - Organization or user: `klodr`
+   - Repository: `mercury-invoicing-mcp`
+   - Workflow filename: `release.yml`
+   - Environment: leave empty; Allowed actions: **Publish**
+3. That's it: `release.yml` mints short-lived credentials from the
+   workflow's OIDC identity at publish time (npm >= 11.5.1, bundled
+   with Node 24 in the publish job).
 
 ### First publish (manual, locally)
 

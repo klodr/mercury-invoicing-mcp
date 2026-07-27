@@ -16,7 +16,7 @@ interruption (≤1 week) if I become unavailable.
 - **Build & release pipeline** is fully automated in
   [`.github/workflows/release.yml`](../.github/workflows/release.yml) and
   documented in [`CHANGELOG.md`](../CHANGELOG.md). A fork can reproduce
-  releases by configuring `NPM_TOKEN` and pushing a tag.
+  releases by registering their fork as an npm trusted publisher (repo + `release.yml`) and pushing a tag.
 - **No proprietary infrastructure**: no private dashboards, no
   unmanageable accounts. All third-party integrations (CodeQL, Scorecard,
   CodeRabbit, Socket Security, Codecov, Snyk, Dependabot) are free and
@@ -30,7 +30,7 @@ If the maintainer is confirmed unable to continue, anyone can:
 2. Continue issue triage, PR review, and merges in the fork.
 3. Publish releases under their own npm scope (e.g.
    `@yourname/mercury-invoicing-mcp`) following the documented release
-   flow — this typically takes minutes once `NPM_TOKEN` is set.
+   flow — this typically takes minutes once the trusted publisher is registered on npmjs.com.
 4. Update downstream MCP client configs to point at the fork's package.
 
 ### Takeover checklist for the first release
