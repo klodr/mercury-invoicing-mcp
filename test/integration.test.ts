@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 37 tools", async () => {
+  it("tools/list returns all 38 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(37);
+    expect(res.tools.length).toBe(38);
   });
 
   // --- Banking accounts ---
@@ -139,6 +139,19 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_transaction → GET single tx", async () => {
     await client.callTool({
       name: "mercury_get_transaction",
+      arguments: {
+        accountId: "11111111-1111-4111-8111-111111111111",
+        transactionId: "22222222-2222-4222-8222-222222222222",
+      },
+    });
+    expect(calls[0].url).toContain(
+      "/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222",
+    );
+  });
+
+  it("mercury_get_transaction_attachment → GET single tx", async () => {
+    await client.callTool({
+      name: "mercury_get_transaction_attachment",
       arguments: {
         accountId: "11111111-1111-4111-8111-111111111111",
         transactionId: "22222222-2222-4222-8222-222222222222",

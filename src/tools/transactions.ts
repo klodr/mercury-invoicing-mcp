@@ -3,6 +3,7 @@ import { defineTool, textResult } from "./_shared.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
+import { compactTransactionList, extractAttachments, stripAttachmentUrls } from "../project.js";
 
 export function registerTransactionTools(server: McpServer, client: MercuryClient): void {
   defineTool(
@@ -15,7 +16,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "DO NOT USE: for IO Credit transactions (use `mercury_list_credit_transactions`, which targets the IO Credit account surface). For Treasury, use `mercury_list_treasury_transactions`.",
       "",
-      "RETURNS: `{ transactions: [{ id, amount, status, postedAt, counterpartyName, ... }] }`.",
+      'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, amount, status, kind, postedAt, counterpartyName, categoryName, hasAttachment, ... }] }`. `hasAttachment` is always present, true or false — it answers "which transactions are still missing a receipt". Receipt **URLs are never returned here** (a pre-signed S3 URL is ~2.4 kB and is a 12-hour bearer credential); get one deliberately via `mercury_get_transaction_attachment`. Pass `detail: "full"` for every Mercury field.',
     ].join("\n"),
     {
       accountId: z.uuid().describe("The Mercury account ID"),
@@ -34,10 +35,16 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       start: z.iso.date().optional().describe("Filter posted on/after this date (YYYY-MM-DD)"),
       end: z.iso.date().optional().describe("Filter posted on/before this date (YYYY-MM-DD)"),
       search: z.string().optional().describe("Search query (counterparty name, memo, etc.)"),
+      detail: z
+        .enum(["compact", "full"])
+        .optional()
+        .describe(
+          'Payload shape. "compact" (default) projects to identifying fields and reports receipts as a boolean. "full" returns every Mercury field — attachment URLs are stripped in both modes.',
+        ),
     },
-    async ({ accountId, ...query }) => {
+    async ({ accountId, detail, ...query }) => {
       const data = await client.get(`/account/${accountId}/transactions`, query);
-      return textResult(data);
+      return textResult(compactTransactionList(data, detail ?? "compact"));
     },
     { title: "List Transactions", readOnlyHint: true, openWorldHint: true },
   );
@@ -52,7 +59,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "DO NOT USE: to enumerate transactions (use `mercury_list_transactions`). For IO Credit transactions, use `mercury_list_credit_transactions` and filter by id client-side.",
       "",
-      "RETURNS: `{ id, amount, status, postedAt, counterpartyName, memo, ... }`.",
+      "RETURNS: `{ id, amount, status, postedAt, counterpartyName, memo, attachments: [{ fileName, attachmentType }], ... }` — every Mercury field, **except that attachment URLs are stripped**. Use `mercury_get_transaction_attachment` to obtain a download URL.",
     ].join("\n"),
     {
       accountId: z.uuid().describe("The Mercury account ID"),
@@ -60,9 +67,38 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     },
     async ({ accountId, transactionId }) => {
       const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
-      return textResult(data);
+      return textResult(stripAttachmentUrls(data));
     },
     { title: "Get Transaction", readOnlyHint: true, openWorldHint: true },
+  );
+
+  defineTool(
+    server,
+    "mercury_get_transaction_attachment",
+    [
+      "Obtain the pre-signed download URL(s) for a transaction's receipts / attachments.",
+      "",
+      "USE WHEN: you actually intend to download a receipt — filing a supplier invoice, attaching a justification to a bookkeeping entry. Locate candidates first with `mercury_list_transactions` (`hasAttachment: true`), then call this for the one you want.",
+      "",
+      "DO NOT USE: to check *whether* a receipt exists — `mercury_list_transactions` already reports `hasAttachment` without minting a credential. Do not call it across a whole statement to pre-fetch URLs: they expire in ~12 hours and every one you mint is a live bearer token sitting in transcripts and logs.",
+      "",
+      "SIDE EFFECTS: none on Mercury (read-only). But the returned URL **grants unauthenticated access to the document for ~12 hours** to anyone who holds it — treat the response as a secret and do not echo it further than needed.",
+      "",
+      "RETURNS: `{ transactionId, attachmentCount, attachments: [{ fileName, attachmentType, url }] }`.",
+    ].join("\n"),
+    {
+      accountId: z.uuid().describe("The Mercury account ID"),
+      transactionId: z.uuid().describe("The transaction ID"),
+      fileName: z
+        .string()
+        .optional()
+        .describe("Return only the attachment with this exact file name. Omit to return all."),
+    },
+    async ({ accountId, transactionId, fileName }) => {
+      const data = await client.get(`/account/${accountId}/transaction/${transactionId}`);
+      return textResult(extractAttachments(data, fileName));
+    },
+    { title: "Get Transaction Attachment", readOnlyHint: true, openWorldHint: true },
   );
 
   defineTool(
