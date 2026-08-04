@@ -35,6 +35,8 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       "",
       "DO NOT USE: for deposit-account transactions (use `mercury_list_transactions`). For IO Credit transactions, use `mercury_list_credit_transactions`.",
       "",
+      '⚠️ **Omitting `start` does NOT mean "all history".** Mercury silently returns only a recent window with nothing in the response to say it truncated. Pass `start` when auditing a period, and page with `offset` until a call returns fewer than `limit` rows.',
+      "",
       'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, amount, kind, postedAt, counterpartyName, categoryName, hasAttachment, ... }] }`. Pass `detail: "full"` for every Mercury field; attachment URLs are stripped in both modes.',
     ].join("\n"),
     {

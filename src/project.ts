@@ -39,10 +39,13 @@ const KEPT_FIELDS = [
   "status",
   "kind",
   "postedAt",
-  // `createdAt` is dropped: it tracks `postedAt` within seconds on all
-  // but pending transactions, and a second ISO timestamp costs ~30
-  // bytes per row for no reconciliation value. `counterpartyId` stays —
-  // it is the join key onto an accounting system's partner records.
+  // `createdAt` is not listed here: on settled transactions it tracks
+  // `postedAt` within seconds, so a second ISO timestamp costs ~30 bytes
+  // per row for no reconciliation value. It is restored below when
+  // `postedAt` is absent — pending card authorisations have not posted
+  // yet, and `createdAt` is then their only timestamp.
+  // `counterpartyId` stays: it is the join key onto an accounting
+  // system's partner records.
   "counterpartyId",
   "counterpartyName",
   "bankDescription",
@@ -80,6 +83,14 @@ export function compactTransaction(tx: unknown): unknown {
     if (tx[field] !== undefined && tx[field] !== null) {
       out[field] = tx[field];
     }
+  }
+
+  // A pending card authorisation has not posted, so `postedAt` is
+  // absent and `createdAt` is the only date it carries. Dropping both
+  // would leave the row undatable — and `status: "pending"` is a
+  // supported filter, so these rows are asked for on purpose.
+  if (out["postedAt"] === undefined && tx["createdAt"] !== undefined && tx["createdAt"] !== null) {
+    out["createdAt"] = tx["createdAt"];
   }
 
   const category = tx["categoryData"];

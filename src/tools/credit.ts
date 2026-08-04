@@ -53,6 +53,8 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       "",
       'DO NOT USE: for deposit-account transactions (use `mercury_list_transactions`). For posted transactions only, filter by `status: "sent"`.',
       "",
+      '⚠️ **Omitting `start` does NOT mean "all history".** Mercury silently returns only a recent window — roughly the last statement period — with nothing in the response to say it truncated. Observed on a real IO Credit account: 68 transactions without `start`, 532 for the same card with `start` set. **Always pass `start` when auditing a period**, and page with `offset` until a call returns fewer than `limit` rows.',
+      "",
       'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, amount, status, kind, postedAt, counterpartyName, categoryName, hasAttachment, ... }] }`. `pending` items are card authorisations that may still be reversed. `hasAttachment` is always present, true or false — it answers "which card charges are still missing a receipt". Receipt **URLs are never returned here**; get one deliberately via `mercury_get_transaction_attachment`. Pass `detail: "full"` for every Mercury field.',
     ].join("\n"),
     {

@@ -72,6 +72,16 @@ describe("compactTransaction", () => {
     expect(out).not.toHaveProperty("externalMemo");
   });
 
+  it("keeps createdAt when the transaction has not posted", () => {
+    // A pending card authorisation carries no `postedAt`; dropping
+    // `createdAt` too would leave the row undatable, and `pending` is a
+    // supported filter on mercury_list_credit_transactions.
+    const { postedAt: _postedAt, ...pending } = RAW;
+    const out = compactTransaction({ ...pending, status: "pending" }) as Record<string, unknown>;
+    expect(out).not.toHaveProperty("postedAt");
+    expect(out["createdAt"]).toBe(RAW.createdAt);
+  });
+
   it("flattens categoryData to categoryName", () => {
     const out = compactTransaction(RAW) as Record<string, unknown>;
     expect(out["categoryName"]).toBe("Legal & Professional Services");

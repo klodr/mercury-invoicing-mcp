@@ -14,6 +14,8 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "USE WHEN: auditing deposit-account activity, reconciling a statement, or building a per-account ledger view. Filters server-side: `status`, `start`, `end`, `search`, `limit`, `offset`.",
       "",
+      '⚠️ **Omitting `start` does NOT mean "all history".** Mercury silently returns only a recent window — roughly the last month — with nothing in the response to say it truncated. Observed on a real account: 60 transactions without `start`, 391 for the same account with `start` set. **Always pass `start` when auditing a period**, and page with `offset` until a call returns fewer than `limit` rows.',
+      "",
       "DO NOT USE: for IO Credit transactions (use `mercury_list_credit_transactions`, which targets the IO Credit account surface). For Treasury, use `mercury_list_treasury_transactions`.",
       "",
       'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, amount, status, kind, postedAt, counterpartyName, categoryName, hasAttachment, ... }] }`. `hasAttachment` is always present, true or false — it answers "which transactions are still missing a receipt". Receipt **URLs are never returned here** (a pre-signed S3 URL is ~2.4 kB and is a 12-hour bearer credential); get one deliberately via `mercury_get_transaction_attachment`. Pass `detail: "full"` for every Mercury field.',
