@@ -192,7 +192,8 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 Transaction lists return a **compact projection** by default: identifying
 fields plus `hasAttachment`, so you can spot which transactions still lack
 a receipt. Measured on a real account, this cuts the payload to ~20% of
-Mercury's raw response. Pass `detail: "full"` for every field.
+Mercury's raw response. Pass `detail: "full"` for every field except the
+attachment URLs, which no mode returns.
 
 Receipt URLs are **never** included in a transaction payload, in either
 mode. Mercury's are pre-signed S3 links — ~2.4 kB each, and a bearer

@@ -97,9 +97,9 @@ If a tool returns `403`, the user's token lacks the corresponding scope
 default: the fields needed to identify a transaction, plus the boolean
 `hasAttachment`. That boolean is always present, so a list can be
 filtered for the transactions still missing a receipt. Pass
-`detail: "full"` for every field Mercury returns — worth it only when the
-extra fields are genuinely needed in bulk, since a 500-row list grows
-roughly fivefold.
+`detail: "full"` for every non-attachment-URL field Mercury returns —
+worth it only when the extra fields are genuinely needed in bulk, since a
+500-row list grows roughly fivefold.
 
 Attachment URLs are absent from transaction payloads in **both** modes,
 and from `mercury_get_transaction` too. Retrieve one deliberately with
