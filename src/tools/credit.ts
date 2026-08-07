@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
+import { compactTransactionList } from "../project.js";
 
 /**
  * Mercury IO Credit Card facility.
@@ -52,7 +53,9 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       "",
       'DO NOT USE: for deposit-account transactions (use `mercury_list_transactions`). For posted transactions only, filter by `status: "sent"`.',
       "",
-      "RETURNS: `{ transactions: [{ id, amount, status, postedAt, counterpartyName, ... }] }`. `pending` items are card authorisations that may still be reversed.",
+      '⚠️ **Omitting `start` does NOT mean "all history".** Mercury silently returns only a recent window — roughly the last statement period — with nothing in the response to say it truncated. Observed on a real IO Credit account: 68 transactions without `start`, 532 for the same card with `start` set. **Always pass `start` when auditing a period**, and page with `offset` until a call returns fewer than `limit` rows.',
+      "",
+      'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, amount, status, kind, postedAt, counterpartyName, categoryName, hasAttachment, ... }] }`. `pending` items are card authorisations that may still be reversed. `hasAttachment` is always present, true or false — it answers "which card charges are still missing a receipt". Receipt **URLs are never returned here**; get one deliberately via `mercury_get_transaction_attachment`. Pass `detail: "full"` for every Mercury field.',
     ].join("\n"),
     {
       accountId: z
@@ -73,10 +76,16 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       start: z.iso.date().optional().describe("Filter posted on/after this date (YYYY-MM-DD)"),
       end: z.iso.date().optional().describe("Filter posted on/before this date (YYYY-MM-DD)"),
       search: z.string().optional().describe("Search query (counterparty name, memo, etc.)"),
+      detail: z
+        .enum(["compact", "full"])
+        .optional()
+        .describe(
+          'Payload shape. "compact" (default) projects to identifying fields and reports receipts as a boolean. "full" returns every Mercury field — attachment URLs are stripped in both modes.',
+        ),
     },
-    async ({ accountId, ...query }) => {
+    async ({ accountId, detail, ...query }) => {
       const data = await client.get(`/account/${accountId}/transactions`, query);
-      return textResult(data);
+      return textResult(compactTransactionList(data, detail ?? "compact"));
     },
     { title: "List Credit Transactions", readOnlyHint: true, openWorldHint: true },
   );
