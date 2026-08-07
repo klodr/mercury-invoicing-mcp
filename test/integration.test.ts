@@ -273,6 +273,24 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].url).toContain("/treasury/55555555-5555-4555-8555-555555555555/transactions");
   });
 
+  it("mercury_list_treasury_transactions pages with cursor, not offset", async () => {
+    await client.callTool({
+      name: "mercury_list_treasury_transactions",
+      arguments: {
+        accountId: "55555555-5555-4555-8555-555555555555",
+        cursor: 100,
+        limit: 100,
+        order: "asc",
+      },
+    });
+    const url = new URL(calls[0].url);
+    expect(url.searchParams.get("cursor")).toBe("100");
+    expect(url.searchParams.get("order")).toBe("asc");
+    expect(url.searchParams.get("limit")).toBe("100");
+    // Mercury's Treasury endpoint takes limit / order / cursor only.
+    expect(url.searchParams.has("offset")).toBe(false);
+  });
+
   it("mercury_list_treasury_statements → GET /treasury/{id}/statements", async () => {
     await client.callTool({
       name: "mercury_list_treasury_statements",
