@@ -52,7 +52,7 @@ jobs:
     if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: PR Agent — DeepSeek R1 (reasoner)
-        uses: qodo-ai/pr-agent@d82f7d3e696cd00822694aaa3096265d3889f3f1 # v0.34
+        uses: qodo-ai/pr-agent@570f67ed5fc8db5be74c18df070bc20079b64b0d # v0.41.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # deepseek-reasoner = R1, explicit chain-of-thought. Slower and
@@ -84,7 +84,7 @@ jobs:
     if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: PR Agent — Gemini 3.1 Pro Preview (thinking)
-        uses: qodo-ai/pr-agent@d82f7d3e696cd00822694aaa3096265d3889f3f1 # v0.34
+        uses: qodo-ai/pr-agent@570f67ed5fc8db5be74c18df070bc20079b64b0d # v0.41.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONFIG__MODEL: gemini/gemini-3.1-pro-preview
