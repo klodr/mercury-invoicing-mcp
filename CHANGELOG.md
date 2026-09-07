@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.1...v0.18.2) (2026-09-07)
+
+
+### Fixed
+
+* **deps:** bump transitive deps flagged by OSV-Scanner ([#250](https://github.com/klodr/mercury-invoicing-mcp/issues/250)) ([ee826e8](https://github.com/klodr/mercury-invoicing-mcp/commit/ee826e845667298dad081f41967629263c2d3a54))
+
+
+### Changed
+
+* bump github/codeql-action/analyze from 4.36.3 to 4.37.3 ([#235](https://github.com/klodr/mercury-invoicing-mcp/issues/235)) ([98df4e9](https://github.com/klodr/mercury-invoicing-mcp/commit/98df4e9b7104d887a26b966bc5a519b6d1790787))
+
 ## [0.18.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.0...v0.18.1) (2026-07-27)
 
 
