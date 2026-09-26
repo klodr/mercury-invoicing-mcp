@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 37 tools", async () => {
+  it("tools/list returns all 38 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(37);
+    expect(res.tools.length).toBe(38);
   });
 
   // --- Banking accounts ---
@@ -139,6 +139,19 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
   it("mercury_get_transaction → GET single tx", async () => {
     await client.callTool({
       name: "mercury_get_transaction",
+      arguments: {
+        accountId: "11111111-1111-4111-8111-111111111111",
+        transactionId: "22222222-2222-4222-8222-222222222222",
+      },
+    });
+    expect(calls[0].url).toContain(
+      "/account/11111111-1111-4111-8111-111111111111/transaction/22222222-2222-4222-8222-222222222222",
+    );
+  });
+
+  it("mercury_get_transaction_attachment → GET single tx", async () => {
+    await client.callTool({
+      name: "mercury_get_transaction_attachment",
       arguments: {
         accountId: "11111111-1111-4111-8111-111111111111",
         transactionId: "22222222-2222-4222-8222-222222222222",
@@ -258,6 +271,24 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
       arguments: { accountId: "55555555-5555-4555-8555-555555555555" },
     });
     expect(calls[0].url).toContain("/treasury/55555555-5555-4555-8555-555555555555/transactions");
+  });
+
+  it("mercury_list_treasury_transactions pages with cursor, not offset", async () => {
+    await client.callTool({
+      name: "mercury_list_treasury_transactions",
+      arguments: {
+        accountId: "55555555-5555-4555-8555-555555555555",
+        cursor: 100,
+        limit: 100,
+        order: "asc",
+      },
+    });
+    const url = new URL(calls[0].url);
+    expect(url.searchParams.get("cursor")).toBe("100");
+    expect(url.searchParams.get("order")).toBe("asc");
+    expect(url.searchParams.get("limit")).toBe("100");
+    // Mercury's Treasury endpoint takes limit / order / cursor only.
+    expect(url.searchParams.has("offset")).toBe(false);
   });
 
   it("mercury_list_treasury_statements → GET /treasury/{id}/statements", async () => {

@@ -38,7 +38,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | Stable token (no frequent re-auth, IP-allowlistable) | ❌ | ✅ | ✅ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
 | Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Maintenance LTS (`>=22.23.1`) |
-| Total tools exposed | ~10 | ~11 | **37** |
+| Total tools exposed | ~10 | ~11 | **38** |
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
 
@@ -167,7 +167,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## 🛠️ Tools (37 total)
+## 🛠️ Tools (38 total)
 
 ### 🏦 Banking — Accounts
 
@@ -184,9 +184,23 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 ### 💸 Banking — Transactions
 
 - `mercury_list_transactions`, `mercury_get_transaction`
+- `mercury_get_transaction_attachment` — the only tool that returns a receipt's download URL
 - `mercury_update_transaction` (note, category)
 - `mercury_send_money`, `mercury_request_send_money`
 - `mercury_create_internal_transfer` (between your own Mercury accounts)
+
+Transaction lists return a **compact projection** by default: identifying
+fields plus `hasAttachment`, so you can spot which transactions still lack
+a receipt. Measured on a real account, this cuts the payload to ~20% of
+Mercury's raw response. Pass `detail: "full"` for every field except the
+attachment URLs, which no mode returns.
+
+Receipt URLs are **never** included in a transaction payload, in either
+mode. Mercury's are pre-signed S3 links — ~2.4 kB each, and a bearer
+credential granting unauthenticated access to the document for ~12 hours.
+Returning one on every read would both dominate the payload and scatter
+short-lived credentials through logs and model context. Ask for one
+deliberately, per transaction, via `mercury_get_transaction_attachment`.
 
 ### 👥 Banking — Recipients
 
@@ -245,7 +259,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 > manually.
 >
 > Tools available depend on your Mercury API token scope. The server
-> registers all 37 tools but Mercury will reject unauthorized operations
+> registers all 38 tools but Mercury will reject unauthorized operations
 > at the API level.
 
 ## 🗺️ Roadmap
