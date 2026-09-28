@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.2...v0.18.3) (2026-09-28)
+
+
+### Changed
+
+* auto-approve dependabot minor and patch updates ([#266](https://github.com/klodr/mercury-invoicing-mcp/issues/266)) ([b69b3f5](https://github.com/klodr/mercury-invoicing-mcp/commit/b69b3f5475af2b3ed06bdddf56507315c79e7556))
+* bump the github-actions group across 1 directory with 12 updates ([#268](https://github.com/klodr/mercury-invoicing-mcp/issues/268)) ([4776d72](https://github.com/klodr/mercury-invoicing-mcp/commit/4776d72a098e54758fffee964a286a8a94729ce6))
+
 ## [0.18.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.1...v0.18.2) (2026-09-26)
 
 
