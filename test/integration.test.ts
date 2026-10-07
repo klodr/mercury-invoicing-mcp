@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 37 tools", async () => {
+  it("tools/list returns all 38 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(37);
+    expect(res.tools.length).toBe(38);
   });
 
   // --- Banking accounts ---
@@ -117,6 +117,20 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     // singular route is what routes IO Credit transactions.
     expect(calls[0].url).toContain("/account/22222222-2222-4222-8222-222222222222/transactions");
     expect(calls[0].url).toContain("status=pending");
+  });
+
+  it("mercury_list_credit_statements → GET /api/v2/account/{id}/statements", async () => {
+    await client.callTool({
+      name: "mercury_list_credit_statements",
+      arguments: { accountId: "22222222-2222-4222-8222-222222222222" },
+    });
+    expect(calls[0].method).toBe("GET");
+    // The v1 statements path answers 404 for credit accounts: the tool must
+    // hit the v2 base, never `/api/v1/account/{id}/statements`.
+    expect(calls[0].url).toContain(
+      "/api/v2/account/22222222-2222-4222-8222-222222222222/statements",
+    );
+    expect(calls[0].url).not.toContain("/api/v1/");
   });
 
   it("mercury_get_organization → GET /organization", async () => {

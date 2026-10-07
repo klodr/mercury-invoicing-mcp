@@ -12,9 +12,9 @@ export function registerStatementTools(server: McpServer, client: MercuryClient)
       "",
       "USE WHEN: fetching the URL of a past statement (e.g. for accounting export, audit, or sharing with a CPA). The PDF URL is short-lived — re-fetch it shortly before download.",
       "",
-      "DO NOT USE: for IO Credit account statements (Mercury exposes them only via the dashboard, not the API). For Treasury statements use `mercury_list_treasury_statements`.",
+      "DO NOT USE: for IO Credit card statements (use `mercury_list_credit_statements`, which calls the v2 endpoint — this v1 path answers 404 for credit accounts). For Treasury statements use `mercury_list_treasury_statements`.",
       "",
-      "RETURNS: `{ statements: [{ id, periodStart, periodEnd, downloadUrl, ... }] }`.",
+      "RETURNS: `{ page, statements: [{ id, startDate, endDate, endingBalance, downloadUrl, accountNumber, routingNumber, transactions, ... }] }`.",
     ].join("\n"),
     {
       accountId: z.uuid().describe("The Mercury account ID"),
