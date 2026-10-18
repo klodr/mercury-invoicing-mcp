@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.3...v0.18.4) (2026-10-18)
+
+
+### Fixed
+
+* **credit:** list credit account statements via the v2 endpoint ([#277](https://github.com/klodr/mercury-invoicing-mcp/issues/277)) ([e3a7355](https://github.com/klodr/mercury-invoicing-mcp/commit/e3a73552018bbf8bc5f0e5dd2b3b69e33f4c5761))
+
+
+### Changed
+
+* bump the github-actions group across 1 directory with 7 updates ([#285](https://github.com/klodr/mercury-invoicing-mcp/issues/285)) ([c8d71b9](https://github.com/klodr/mercury-invoicing-mcp/commit/c8d71b90b2f81e630956fd799acdd99666a3180b))
+
 ## [0.18.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.2...v0.18.3) (2026-10-18)
 
 
