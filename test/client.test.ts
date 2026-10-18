@@ -37,6 +37,46 @@ describe("MercuryClient", () => {
     expect(result.accounts[0].id).toBe("acc_1");
   });
 
+  it("GET with apiVersion v2 targets the v2 base", async () => {
+    let capturedUrl: string | undefined;
+    global.fetch = (async (url: URL | string) => {
+      capturedUrl = url.toString();
+      return { ok: true, status: 200, statusText: "OK", text: async () => "{}" };
+    }) as unknown as typeof fetch;
+
+    const client = new MercuryClient({ apiKey: "key" });
+    await client.get("/account/abc/statements", undefined, { apiVersion: "v2" });
+    expect(capturedUrl).toBe("https://api.mercury.com/api/v2/account/abc/statements");
+
+    await client.get("/account/abc/statements");
+    expect(capturedUrl).toBe("https://api.mercury.com/api/v1/account/abc/statements");
+  });
+
+  it("derives the v2 base from a sandbox base", async () => {
+    let capturedUrl: string | undefined;
+    global.fetch = (async (url: URL | string) => {
+      capturedUrl = url.toString();
+      return { ok: true, status: 200, statusText: "OK", text: async () => "{}" };
+    }) as unknown as typeof fetch;
+
+    const client = new MercuryClient({
+      apiKey: "key",
+      baseUrl: "https://api-sandbox.mercury.com/api/v1/",
+    });
+    await client.get("/credit", undefined, { apiVersion: "v2" });
+    expect(capturedUrl).toBe("https://api-sandbox.mercury.com/api/v2/credit");
+  });
+
+  it("refuses to guess a v2 URL from a base without /api/v1", async () => {
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const client = new MercuryClient({ apiKey: "key", baseUrl: "https://custom.example.com/v1" });
+    await expect(
+      client.get("/account/abc/statements", undefined, { apiVersion: "v2" }),
+    ).rejects.toBeInstanceOf(MercuryError);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("GET request appends query params", async () => {
     let capturedUrl: string | undefined;
     global.fetch = (async (url: URL | string) => {

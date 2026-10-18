@@ -79,7 +79,11 @@ export class MercuryClient {
   async request<T = unknown>(
     method: "GET" | "POST" | "PATCH" | "DELETE",
     path: string,
-    init: { body?: unknown; query?: Record<string, string | number | undefined> } = {},
+    init: {
+      body?: unknown;
+      query?: Record<string, string | number | undefined>;
+      apiVersion?: "v2";
+    } = {},
   ): Promise<T> {
     // Encode each path segment so user-supplied IDs cannot smuggle additional
     // path components or query strings into the Mercury URL (defense-in-depth
@@ -89,7 +93,8 @@ export class MercuryClient {
       .split("/")
       .map((seg, index) => (index === 0 || seg.length === 0 ? seg : encodeURIComponent(seg)))
       .join("/");
-    const url = new URL(this.baseUrl + encodedPath);
+    const base = init.apiVersion === "v2" ? this.v2BaseUrl() : this.baseUrl;
+    const url = new URL(base + encodedPath);
     if (init.query) {
       for (const [k, v] of Object.entries(init.query)) {
         if (v !== undefined) url.searchParams.set(k, String(v));
@@ -155,8 +160,28 @@ export class MercuryClient {
   }
 
   // Convenience helpers
-  get<T = unknown>(path: string, query?: Record<string, string | number | undefined>) {
-    return this.request<T>("GET", path, { query });
+  get<T = unknown>(
+    path: string,
+    query?: Record<string, string | number | undefined>,
+    opts: { apiVersion?: "v2" } = {},
+  ) {
+    return this.request<T>("GET", path, { query, apiVersion: opts.apiVersion });
+  }
+
+  /**
+   * Base URL of Mercury's v2 API, derived from the configured v1 base so a
+   * sandbox or proxy host is honoured. Only a base ending in `/api/v1` maps
+   * cleanly; anything else fails closed instead of guessing a path.
+   */
+  private v2BaseUrl(): string {
+    const base = this.baseUrl.replace(/\/+$/, "");
+    if (!base.endsWith("/api/v1")) {
+      throw new MercuryError(
+        `Cannot derive the Mercury v2 API URL from base ${base}: expected it to end with /api/v1.`,
+        0,
+      );
+    }
+    return base.slice(0, -"/api/v1".length) + "/api/v2";
   }
   post<T = unknown>(path: string, body?: unknown) {
     return this.request<T>("POST", path, { body });

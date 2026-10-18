@@ -58,7 +58,7 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       "",
       "USE WHEN: fetching the URL of a past Treasury statement for tax/audit export. PDF URL is short-lived — fetch it shortly before download.",
       "",
-      "DO NOT USE: for deposit-account statements (use `mercury_list_statements`). IO Credit statements are not exposed via the API.",
+      "DO NOT USE: for deposit-account statements (use `mercury_list_statements`). For IO Credit card statements use `mercury_list_credit_statements`.",
       "",
       "RETURNS: `{ statements: [{ id, periodStart, periodEnd, downloadUrl, ... }] }`.",
     ].join("\n"),

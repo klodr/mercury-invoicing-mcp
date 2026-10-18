@@ -38,7 +38,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | Stable token (no frequent re-auth, IP-allowlistable) | ❌ | ✅ | ✅ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
 | Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Maintenance LTS (`>=22.23.1`) |
-| Total tools exposed | ~10 | ~11 | **37** |
+| Total tools exposed | ~10 | ~11 | **38** |
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
 
@@ -167,7 +167,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## 🛠️ Tools (37 total)
+## 🛠️ Tools (38 total)
 
 ### 🏦 Banking — Accounts
 
@@ -180,6 +180,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 - `mercury_list_credit_accounts` — wraps `GET /credit`, documented under [Credit › List all credit accounts](https://docs.mercury.com/reference/credit) in the Mercury API reference. Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
 - `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, the path used for IO Credit transactions including pending card authorisations. Note: distinct from the plural `/accounts/{id}/transactions` used for deposit accounts.
+- `mercury_list_credit_statements` — wraps `GET /api/v2/account/{id}/statements`. IO Credit statements are served by the **v2** endpoint only: the v1 statements path answers 404 for credit accounts.
 
 ### 💸 Banking — Transactions
 
@@ -245,7 +246,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 > manually.
 >
 > Tools available depend on your Mercury API token scope. The server
-> registers all 37 tools but Mercury will reject unauthorized operations
+> registers all 38 tools but Mercury will reject unauthorized operations
 > at the API level.
 
 ## 🗺️ Roadmap
