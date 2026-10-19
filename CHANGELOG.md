@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.20.0...v0.20.1) (2026-10-19)
+
+
+### Changed
+
+* bump actions/create-github-app-token from 3.2.0 to 3.3.0 in the github-actions group across 1 directory ([#290](https://github.com/klodr/mercury-invoicing-mcp/issues/290)) ([d6f8212](https://github.com/klodr/mercury-invoicing-mcp/commit/d6f8212793791e4b7545d6630666ce36bbd7b622))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 2 updates ([#292](https://github.com/klodr/mercury-invoicing-mcp/issues/292)) ([7de4b85](https://github.com/klodr/mercury-invoicing-mcp/commit/7de4b858a5be8457df9beb4eaa9fcf1b688ec820))
+* **deps:** bump zod from 4.6.5 to 4.6.6 in the production-dependencies group across 1 directory ([#289](https://github.com/klodr/mercury-invoicing-mcp/issues/289)) ([2596bee](https://github.com/klodr/mercury-invoicing-mcp/commit/2596beec8ffa1be0dea734e5c6d0bdc918db8871))
+
 ## [0.20.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.19.0...v0.20.0) (2026-10-19)
 
 
