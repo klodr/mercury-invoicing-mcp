@@ -180,6 +180,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 - `mercury_list_credit_accounts` — wraps `GET /credit`, documented under [Credit › List all credit accounts](https://docs.mercury.com/reference/credit) in the Mercury API reference. Returns IO Credit card accounts, which `mercury_list_accounts` filters out server-side.
 - `mercury_list_credit_transactions` — wraps `GET /account/{id}/transactions` **(SINGULAR path)**, the path used for IO Credit transactions including pending card authorisations. Note: distinct from the plural `/accounts/{id}/transactions` used for deposit accounts.
+- `mercury_list_credit_statements` — wraps `GET /api/v2/account/{id}/statements`. IO Credit statements are served by the **v2** endpoint only: the v1 statements path answers 404 for credit accounts.
 
 ### 💸 Banking — Transactions
 

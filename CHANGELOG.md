@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.4](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.3...v0.18.4) (2026-10-18)
+
+
+### Fixed
+
+* **credit:** list credit account statements via the v2 endpoint ([#277](https://github.com/klodr/mercury-invoicing-mcp/issues/277)) ([e3a7355](https://github.com/klodr/mercury-invoicing-mcp/commit/e3a73552018bbf8bc5f0e5dd2b3b69e33f4c5761))
+
+
+### Changed
+
+* bump the github-actions group across 1 directory with 7 updates ([#285](https://github.com/klodr/mercury-invoicing-mcp/issues/285)) ([c8d71b9](https://github.com/klodr/mercury-invoicing-mcp/commit/c8d71b90b2f81e630956fd799acdd99666a3180b))
+
+## [0.18.3](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.2...v0.18.3) (2026-10-18)
+
+
+### Fixed
+
+* **deps:** clear every OSV finding blocking the required scan ([#282](https://github.com/klodr/mercury-invoicing-mcp/issues/282)) ([6b68864](https://github.com/klodr/mercury-invoicing-mcp/commit/6b68864894778bf390e3e6b44734596871786d74))
+
+
+### Changed
+
+* auto-approve dependabot minor and patch updates ([#266](https://github.com/klodr/mercury-invoicing-mcp/issues/266)) ([b69b3f5](https://github.com/klodr/mercury-invoicing-mcp/commit/b69b3f5475af2b3ed06bdddf56507315c79e7556))
+* bump the github-actions group across 1 directory with 12 updates ([#268](https://github.com/klodr/mercury-invoicing-mcp/issues/268)) ([4776d72](https://github.com/klodr/mercury-invoicing-mcp/commit/4776d72a098e54758fffee964a286a8a94729ce6))
+* **deps-dev:** bump vitest and @vitest/coverage-v8 to 5.0.3 together ([#284](https://github.com/klodr/mercury-invoicing-mcp/issues/284)) ([436958f](https://github.com/klodr/mercury-invoicing-mcp/commit/436958f60991f6dac61be82055d6231c3a6fc92c))
+
+## [0.18.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.1...v0.18.2) (2026-09-26)
+
+
+### Fixed
+
+* **deps:** bump transitive deps flagged by OSV-Scanner ([#250](https://github.com/klodr/mercury-invoicing-mcp/issues/250)) ([ee826e8](https://github.com/klodr/mercury-invoicing-mcp/commit/ee826e845667298dad081f41967629263c2d3a54))
+* **deps:** débloquer OSV-Scanner en dépinnant les overrides vulnérables ([#261](https://github.com/klodr/mercury-invoicing-mcp/issues/261)) ([495db5b](https://github.com/klodr/mercury-invoicing-mcp/commit/495db5bdcd8aa0cf17dc5f1356fd3db9ee0c5d2d))
+
+
+### Changed
+
+* bump github/codeql-action/analyze from 4.36.3 to 4.37.3 ([#235](https://github.com/klodr/mercury-invoicing-mcp/issues/235)) ([98df4e9](https://github.com/klodr/mercury-invoicing-mcp/commit/98df4e9b7104d887a26b966bc5a519b6d1790787))
+
 ## [0.18.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.0...v0.18.1) (2026-07-27)
 
 

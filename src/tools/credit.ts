@@ -8,7 +8,7 @@ import { compactTransactionList } from "../project.js";
  * Mercury IO Credit Card facility.
  *
  * The IO Credit account is first-class in the Mercury Dashboard and
- * exposed via two routes:
+ * exposed via three routes:
  *
  *   - `GET /credit` — listed under "Credit › List all credit accounts"
  *     in the Mercury API reference (https://docs.mercury.com/reference/credit).
@@ -17,8 +17,13 @@ import { compactTransactionList } from "../project.js";
  *   - `GET /account/{id}/transactions` — SINGULAR-`account` path. Same
  *     path Mercury exposes for deposit-account transactions, which the
  *     `mercury_list_transactions` helper also calls. Same response shape.
+ *   - `GET /api/v2/account/{id}/statements` — monthly statements. The v1
+ *     statements path answers 404 for credit accounts ("Cannot fetch
+ *     statement information for credit accounts with the v1 API endpoint.
+ *     Please use the v2 account statement endpoint."), checked against the
+ *     live API on 2026-10-07.
  *
- * Both helpers are read-only. See docs/ROADMAP.md → "Mercury IO Credit
+ * All three helpers are read-only. See docs/ROADMAP.md → "Mercury IO Credit
  * account exposure" for the tracking context.
  */
 
@@ -88,5 +93,30 @@ export function registerCreditTools(server: McpServer, client: MercuryClient): v
       return textResult(compactTransactionList(data, detail ?? "compact"));
     },
     { title: "List Credit Transactions", readOnlyHint: true, openWorldHint: true },
+  );
+  defineTool(
+    server,
+    "mercury_list_credit_statements",
+    [
+      "List monthly statements for a Mercury IO Credit card account. Each statement has a downloadable PDF URL.",
+      "",
+      "USE WHEN: fetching IO Credit card statements for accounting, audit, or a CPA. Wraps `GET /api/v2/account/{id}/statements` — the v1 statements path answers 404 for credit accounts and points to this v2 endpoint. Per the Mercury changelog, statements generated after 2026-06-15 report charges as positive (amount owed) and payments as negative, with autopay as a separate line.",
+      "",
+      "DO NOT USE: for deposit-account statements (use `mercury_list_statements`) or Treasury statements (use `mercury_list_treasury_statements`). The PDF URL is short-lived — re-fetch it shortly before download.",
+      "",
+      "RETURNS: `{ statements: [{ id, startDate, endDate, endingBalance, downloadUrl, details, transactions, ... }] }`.",
+    ].join("\n"),
+    {
+      accountId: z
+        .uuid()
+        .describe("The Mercury IO Credit account ID (from mercury_list_credit_accounts)"),
+    },
+    async ({ accountId }) => {
+      const data = await client.get(`/account/${accountId}/statements`, undefined, {
+        apiVersion: "v2",
+      });
+      return textResult(data);
+    },
+    { title: "List Credit Statements", readOnlyHint: true, openWorldHint: true },
   );
 }
