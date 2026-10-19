@@ -90,6 +90,21 @@ Safe smoke tests:
 If a tool returns `403`, the user's token lacks the corresponding scope
 (not a missing tool).
 
+## Transaction result shape
+
+`mercury_list_transactions`, `mercury_list_credit_transactions` and
+`mercury_list_treasury_transactions` return a **compact projection** by
+default: the fields needed to identify a transaction, plus the boolean
+`hasAttachment`. That boolean is always present, so a list can be
+filtered for the transactions still missing a receipt. Pass
+`detail: "full"` for every non-attachment-URL field Mercury returns —
+worth it only when the extra fields are genuinely needed in bulk, since a
+500-row list grows roughly fivefold.
+
+Attachment URLs are absent from transaction payloads in **both** modes,
+and from `mercury_get_transaction` too. Retrieve one deliberately with
+`mercury_get_transaction_attachment` — see the caution below.
+
 ## Things the assistant should NOT do
 
 - Never call `mercury_send_money` without explicit human confirmation in
@@ -105,6 +120,14 @@ If a tool returns `403`, the user's token lacks the corresponding scope
   production flows.
 - Never paste the `MERCURY_API_KEY` back into the chat (it ends up in
   conversation transcripts).
+- Never call `mercury_get_transaction_attachment` in bulk to "collect"
+  receipt URLs. Each returned URL is a bearer credential granting
+  unauthenticated access to the document for ~12 hours, and it lands in
+  the transcript. To find out *whether* a receipt exists, read
+  `hasAttachment` on `mercury_list_transactions` — that costs nothing.
+  Fetch a URL only for the document you are about to download.
+- Do not echo a returned attachment URL back to the user or into a file;
+  download the document and reference that instead.
 - Never write the API key into a project-level config that may be
   committed to git — prefer the user's home-level MCP config or a real
   secrets manager.
