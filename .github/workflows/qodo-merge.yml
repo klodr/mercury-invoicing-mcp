@@ -27,6 +27,11 @@ name: Qodo Merge (dual reviewer)
 on:
   pull_request:
     types: [opened, reopened, ready_for_review, synchronize]
+    # pr-agent filters package-lock.json out of the diff, so a PR that
+    # touches nothing else leaves it an empty diff, which 0.47.0 turns
+    # into a failed check ("Empty diff for PR"). Skip those PRs outright.
+    paths-ignore:
+      - package-lock.json
 
 permissions:
   contents: read
@@ -46,10 +51,11 @@ jobs:
     # a couple of minutes; anything beyond that is a hung connection
     # burning runner time.
     timeout-minutes: 15
-    # Skip drafts (noisy while drafting) and fork PRs (repository secrets
-    # are not exposed to fork PRs — the job would run and fail on empty
-    # DEEPSEEK_API_KEY, creating a red check for no reason).
-    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
+    # Skip drafts (noisy while drafting), fork PRs and Dependabot runs:
+    # neither forks nor Dependabot-triggered workflows receive repository
+    # Actions secrets, so the job would run on an empty DEEPSEEK_API_KEY
+    # and fail ("Authentication Fails"), creating a red check for no reason.
+    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
     steps:
       - name: PR Agent — DeepSeek R1 (reasoner)
         # Image pinned by digest. The qodo-ai/pr-agent action only pins its
@@ -88,7 +94,7 @@ jobs:
     name: Qodo review (Gemini 3.1 Pro)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' }}
     steps:
       - name: PR Agent — Gemini 3.1 Pro Preview (thinking)
         # Same image digest as the DeepSeek job above (0.47.0-github_action).
