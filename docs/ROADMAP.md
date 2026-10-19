@@ -12,6 +12,11 @@ Loose planning horizon of ~12 months. The MCP follows Mercury's own API surface 
 - **Invoice automatic reminders flag** — `mercury_create_invoice` and `mercury_update_invoice` do not expose the per-invoice "Send automatic reminders" toggle that the Mercury Dashboard offers; `GET /invoice/{id}` does not return the field either. Open question with Mercury: whether the API exposes a per-invoice flag (likely `sendAutomaticReminders: boolean`) or whether automatic reminders remain a workspace-level setting only configurable via the Dashboard UI. Once clarified, either plumb the flag through create + update schemas and surface it on get, or document explicitly that this is Dashboard-only.
 - **MCP `outputSchema` per tool** — `defineTool()` currently only forwards `inputSchema` to `server.registerTool()`. The MCP spec (2025-06-18+) supports an optional `outputSchema` so clients can validate `structuredContent` and the LLM gets typed return shapes. We already emit `structuredContent` from every handler — only the schema declaration is missing. Scope: extend `defineTool()` with an optional `outputSchema?: ZodRawShape`, then write a Zod schema for each of the ~39 tools. Lets us drop the textual `RETURNS:` block from tool descriptions and rely on a machine-readable contract instead.
 
+## Runtime support
+
+- ✅ **Node.js ≥ 24.18.1, tested on Node 24 and 26** (v0.20.0, 2026-10-19) — the floor the official MCP reference servers declare; Node 22 is no longer supported.
+- **Next floor: Node 26** once Node 24 reaches end of life (2028-04-30), or earlier if a dependency requires it.
+
 ## Tracking Mercury's API
 
 - **New endpoints as Mercury ships them** — if Mercury widens the public API (statement PDF download, send-money approvals, user/credit endpoints, Raise SAFE, OAuth flow — see the [`Endpoints not yet wrapped`](../README.md#tools-39-total) section of the README for the full list), wrap them on a demand-driven basis.
