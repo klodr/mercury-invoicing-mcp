@@ -14,7 +14,7 @@ Publishing uses **npm OIDC trusted publishing** — no token, no secret.
    - Environment: leave empty; Allowed actions: **Publish**
 3. That's it: `release.yml` mints short-lived credentials from the
    workflow's OIDC identity at publish time (npm >= 11.5.1, bundled
-   with Node 24 in the publish job).
+   with Node 26 in the publish job).
 
 ### First publish (manual, locally)
 

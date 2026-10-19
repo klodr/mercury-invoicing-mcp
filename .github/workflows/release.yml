@@ -24,10 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Node 22
+      - name: Setup Node 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "22"
+          node-version: "26"
           cache: "npm"
 
       - name: Install dependencies
@@ -56,16 +56,16 @@ jobs:
           # release steps use the GH_TOKEN env instead.
           persist-credentials: false
 
-      - name: Setup Node 24
+      - name: Setup Node 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          # Node 24 ships npm >= 11.5.1, which supports OIDC trusted
+          # Node 26 ships npm 11.x (>= 11.5.1), which supports OIDC trusted
           # publishing out of the box. No npm cache and no registry-url:
           # setup-node's registry-url writes an npm auth line that (with
           # no token) forces the classic-auth path instead of the OIDC
           # exchange. package-manager-cache pins that choice once the
           # action reaches v7 (auto-cache by default).
-          node-version: "24"
+          node-version: "26"
           package-manager-cache: false
 
       - name: Install dependencies
