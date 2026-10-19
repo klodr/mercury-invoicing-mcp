@@ -59,9 +59,9 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     global.fetch = ORIGINAL_FETCH;
   });
 
-  it("tools/list returns all 38 tools", async () => {
+  it("tools/list returns all 39 tools", async () => {
     const res = await client.listTools();
-    expect(res.tools.length).toBe(38);
+    expect(res.tools.length).toBe(39);
   });
 
   // --- Banking accounts ---
@@ -219,6 +219,31 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(calls[0].url).not.toContain("/account/");
   });
 
+  it("mercury_update_transaction strips attachment URLs from the PATCH response", async () => {
+    setupFetchSpy({
+      ok: true,
+      status: 200,
+      body: {
+        id: "22222222-2222-4222-8222-222222222222",
+        note: "test",
+        attachments: [
+          {
+            fileName: "receipt.pdf",
+            attachmentType: "receipt",
+            url: "https://s3.example.invalid/r?X-Amz-Signature=deadbeef",
+          },
+        ],
+      },
+    });
+    const res = await client.callTool({
+      name: "mercury_update_transaction",
+      arguments: { transactionId: "22222222-2222-4222-8222-222222222222", note: "test" },
+    });
+    const text = (res.content as { text: string }[])[0].text;
+    expect(text).not.toContain("X-Amz-Signature");
+    expect(text).toContain("receipt.pdf");
+  });
+
   it("mercury_create_internal_transfer → POST /transfer with idempotency key", async () => {
     await client.callTool({
       name: "mercury_create_internal_transfer",
@@ -303,6 +328,48 @@ describe("Integration: every tool calls Mercury with the right endpoint", () => 
     expect(url.searchParams.get("limit")).toBe("100");
     // Mercury's Treasury endpoint takes limit / order / cursor only.
     expect(url.searchParams.has("offset")).toBe(false);
+  });
+
+  it("mercury_list_treasury_transactions keeps Treasury fields and the cursor in compact mode", async () => {
+    setupFetchSpy({
+      ok: true,
+      status: 200,
+      body: {
+        cursor: 7,
+        transactions: [
+          {
+            id: "7d0c5f2e-1b8a-4f0e-9c3d-2a6b8e4f1c00",
+            type: "couponPosted",
+            accountId: "55555555-5555-4555-8555-555555555555",
+            description: "Coupon",
+            amount: 12.34,
+            balance: 1012.34,
+            canonicalDay: "2026-09-30",
+            security: "UST 0.0 10/26",
+            additionalDetails: null,
+            details: null,
+          },
+        ],
+      },
+    });
+    const res = await client.callTool({
+      name: "mercury_list_treasury_transactions",
+      arguments: { accountId: "55555555-5555-4555-8555-555555555555" },
+    });
+    const out = JSON.parse((res.content as { text: string }[])[0].text) as {
+      cursor: number;
+      transactions: Record<string, unknown>[];
+    };
+    expect(out.cursor).toBe(7);
+    expect(out.transactions[0]).toEqual({
+      id: "7d0c5f2e-1b8a-4f0e-9c3d-2a6b8e4f1c00",
+      type: "couponPosted",
+      description: "Coupon",
+      amount: 12.34,
+      balance: 1012.34,
+      canonicalDay: "2026-09-30",
+      security: "UST 0.0 10/26",
+    });
   });
 
   it("mercury_list_treasury_statements → GET /treasury/{id}/statements", async () => {

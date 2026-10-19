@@ -38,7 +38,7 @@ A Model Context Protocol (MCP) server giving AI assistants (Claude, Cursor, Cont
 | Stable token (no frequent re-auth, IP-allowlistable) | ❌ | ✅ | ✅ |
 | Open source (MIT) | ❌ | ✅ | ✅ |
 | Node.js floor | N/A (hosted) | ❌ from Node 14 EOL (2023) | ✅ Maintenance LTS (`>=22.23.1`) |
-| Total tools exposed | ~10 | ~11 | **38** |
+| Total tools exposed | ~10 | ~11 | **39** |
 
 For pure read-only consultation, prefer the [official Mercury MCP](https://docs.mercury.com/docs/what-is-mercury-mcp). Use this one when you need to **automate invoicing, write to Mercury, or expose Mercury to LLM agents safely**.
 
@@ -167,7 +167,7 @@ Restart the gateway (`docker restart openclaw-openclaw-gateway-1` or your equiva
 
 > **Tip**: For agents exposed to untrusted channels (WhatsApp, Telegram, Slack, incoming email…), grant the token only the scopes the channel actually needs. Outbound payments still require explicit human approval in the Mercury app — but minimising scopes avoids noise (spurious pending requests) and reduces what an attacker could exfiltrate via reads. See [Right-sizing the token](#right-sizing-the-token) for recipe per use case.
 
-## 🛠️ Tools (38 total)
+## 🛠️ Tools (39 total)
 
 ### 🏦 Banking — Accounts
 
@@ -260,7 +260,7 @@ deliberately, per transaction, via `mercury_get_transaction_attachment`.
 > manually.
 >
 > Tools available depend on your Mercury API token scope. The server
-> registers all 38 tools but Mercury will reject unauthorized operations
+> registers all 39 tools but Mercury will reject unauthorized operations
 > at the API level.
 
 ## 🗺️ Roadmap

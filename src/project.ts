@@ -105,28 +105,67 @@ export function compactTransaction(tx: unknown): unknown {
 }
 
 /**
- * Strip pre-signed URLs from a transaction's `attachments`, keeping the
- * file name and type so a caller still knows what is on file.
+ * Strip pre-signed URLs from every `attachments` array in a payload,
+ * keeping the file name and type so a caller still knows what is on
+ * file.
  *
- * Applied even in `detail: "full"` mode and on single-transaction
- * reads: "full" means every *field* Mercury returns, not a licence to
- * leak a bearer credential. `mercury_get_transaction_attachment` is the
- * one place a URL is handed out.
+ * Applied even in `detail: "full"` mode, on single-transaction reads
+ * and on update responses: "full" means every *field* Mercury returns,
+ * not a licence to leak a bearer credential.
+ * `mercury_get_transaction_attachment` is the one place a URL is handed
+ * out.
+ *
+ * The walk is recursive: a transaction can embed other transactions
+ * (`relatedTransactions`), and their attachments carry URLs too. The
+ * input is returned by reference when nothing had to be removed, and
+ * rebuilt with `Object.fromEntries` otherwise, so a `__proto__` key
+ * from the JSON stays a plain own property.
  */
-export function stripAttachmentUrls(tx: unknown): unknown {
-  if (!isRecord(tx)) return tx;
+export function stripAttachmentUrls(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    const out: unknown[] = [];
+    let changed = false;
+    for (const item of value) {
+      const stripped = stripAttachmentUrls(item);
+      changed ||= stripped !== item;
+      out.push(stripped);
+    }
+    return changed ? out : value;
+  }
+  if (!isRecord(value)) return value;
 
-  const attachments = tx["attachments"];
-  if (!Array.isArray(attachments) || attachments.length === 0) return tx;
+  const entries: [string, unknown][] = [];
+  let changed = false;
+  for (const [key, item] of Object.entries(value)) {
+    const stripped =
+      key === "attachments" && Array.isArray(item)
+        ? stripUrlsFromAttachments(item)
+        : stripAttachmentUrls(item);
+    changed ||= stripped !== item;
+    entries.push([key, stripped]);
+  }
+  return changed ? Object.fromEntries(entries) : value;
+}
 
-  return {
-    ...tx,
-    attachments: attachments.map((a) => {
-      if (!isRecord(a)) return a;
-      const { url: _url, ...rest } = a;
-      return rest;
-    }),
-  };
+function stripUrlsFromAttachments(attachments: unknown[]): unknown[] {
+  const out: unknown[] = [];
+  let changed = false;
+  for (const attachment of attachments) {
+    if (!isRecord(attachment)) {
+      out.push(attachment);
+      continue;
+    }
+    const inner = stripAttachmentUrls(attachment) as Record<string, unknown>;
+    if (Object.hasOwn(inner, "url")) {
+      const { url: _url, ...rest } = inner;
+      out.push(rest);
+      changed = true;
+    } else {
+      changed ||= inner !== attachment;
+      out.push(inner);
+    }
+  }
+  return changed ? out : attachments;
 }
 
 /**
@@ -140,6 +179,17 @@ export function stripAttachmentUrls(tx: unknown): unknown {
  * credential-bearing response as small as the job requires.
  */
 export function extractAttachments(data: unknown, fileName?: string): unknown {
+  // A Mercury error envelope is passed through as is: reporting it as
+  // "0 attachments" would make a failed fetch indistinguishable from a
+  // transaction that has no receipt.
+  if (
+    isRecord(data) &&
+    !Array.isArray(data["attachments"]) &&
+    (data["errors"] !== undefined || data["error"] !== undefined)
+  ) {
+    return data;
+  }
+
   const attachments =
     isRecord(data) && Array.isArray(data["attachments"]) ? data["attachments"] : [];
 
@@ -156,18 +206,70 @@ export function extractAttachments(data: unknown, fileName?: string): unknown {
 }
 
 /**
+ * Fields kept in compact mode for a Treasury transaction. Treasury rows
+ * have their own shape (Mercury `TreasuryTxn`): no `postedAt`, no
+ * counterparty, no `attachments` — the date is `canonicalDay` and the
+ * row carries a running `balance`. Projecting them with the deposit
+ * fields above would leave little more than `id` and `amount`.
+ * `accountId` is dropped: the caller passed it.
+ */
+const TREASURY_KEPT_FIELDS = [
+  "id",
+  "type",
+  "description",
+  "amount",
+  "balance",
+  "canonicalDay",
+  "security",
+  "additionalDetails",
+] as const;
+
+/**
+ * Project one Treasury transaction to its compact shape: the fields
+ * above when set, plus the non-null entries of `details` (sweep
+ * direction, trade action, counterparty ids), which identify what a
+ * sweep or a trade was.
+ */
+export function compactTreasuryTransaction(tx: unknown): unknown {
+  if (!isRecord(tx)) return tx;
+
+  const out: Record<string, unknown> = {};
+  for (const field of TREASURY_KEPT_FIELDS) {
+    if (tx[field] !== undefined && tx[field] !== null) {
+      out[field] = tx[field];
+    }
+  }
+
+  const details = tx["details"];
+  if (isRecord(details)) {
+    const set = Object.entries(details).filter(([, v]) => v !== undefined && v !== null);
+    if (set.length > 0) out["details"] = Object.fromEntries(set);
+  }
+
+  return out;
+}
+
+/**
  * Project a transaction list response.
+ *
+ * `compact` is the per-row projection used in compact mode: the deposit
+ * / card shape by default, `compactTreasuryTransaction` for Treasury.
  *
  * Returns the payload untouched when the response does not carry a
  * `transactions` array — Mercury error envelopes and future response
- * shapes must survive unmangled rather than be silently emptied.
+ * shapes must survive unmangled rather than be silently emptied. Every
+ * other top-level key (Treasury's `cursor`, for instance) is kept.
  */
-export function compactTransactionList(data: unknown, detail: Detail): unknown {
+export function compactTransactionList(
+  data: unknown,
+  detail: Detail,
+  compact: (tx: unknown) => unknown = compactTransaction,
+): unknown {
   if (!isRecord(data)) return data;
 
   const transactions = data["transactions"];
   if (!Array.isArray(transactions)) return data;
 
-  const project = detail === "full" ? stripAttachmentUrls : compactTransaction;
+  const project = detail === "full" ? stripAttachmentUrls : compact;
   return { ...data, transactions: transactions.map((tx) => project(tx)) };
 }

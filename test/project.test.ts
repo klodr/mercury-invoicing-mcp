@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   compactTransaction,
   compactTransactionList,
+  compactTreasuryTransaction,
   extractAttachments,
   stripAttachmentUrls,
 } from "../src/project.js";
@@ -131,6 +132,96 @@ describe("stripAttachmentUrls", () => {
     expect(stripAttachmentUrls(bare)).toBe(bare);
     expect(stripAttachmentUrls(null)).toBeNull();
   });
+
+  it("strips URLs from nested transactions too", () => {
+    const outer = { ...RAW, attachments: [], relatedTransactions: [RAW] };
+    const out = stripAttachmentUrls(outer) as { relatedTransactions: Record<string, unknown>[] };
+    expect(JSON.stringify(out)).not.toContain("X-Amz-Signature");
+    expect(out.relatedTransactions[0]["attachments"]).toEqual([
+      { fileName: "FI53381960578.pdf", attachmentType: "receipt" },
+    ]);
+  });
+
+  it("keeps the nested input by reference when nothing nested carries a URL", () => {
+    const nested = {
+      id: "x",
+      attachments: [],
+      relatedTransactions: [{ id: "y", attachments: [] }],
+    };
+    expect(stripAttachmentUrls(nested)).toBe(nested);
+  });
+
+  it("leaves non-object entries and URL-less attachments as they are", () => {
+    const mixed = {
+      attachments: [
+        "legacy-entry",
+        { fileName: "no-url.pdf" },
+        { fileName: "a.pdf", url: "https://s3.example.invalid/a" },
+      ],
+    };
+    expect(stripAttachmentUrls(mixed)).toEqual({
+      attachments: ["legacy-entry", { fileName: "no-url.pdf" }, { fileName: "a.pdf" }],
+    });
+    const urlLess = { attachments: [{ fileName: "no-url.pdf" }] };
+    expect(stripAttachmentUrls(urlLess)).toBe(urlLess);
+  });
+
+  it("treats a __proto__ key from the JSON as plain data", () => {
+    const parsed = JSON.parse(
+      '{"__proto__":{"polluted":true},"attachments":[{"fileName":"a.pdf","url":"https://s3.example.invalid/a"}]}',
+    ) as unknown;
+    const out = stripAttachmentUrls(parsed) as Record<string, unknown>;
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype);
+    expect(Object.hasOwn(out, "__proto__")).toBe(true);
+    expect(({} as Record<string, unknown>)["polluted"]).toBeUndefined();
+    expect(JSON.stringify(out)).not.toContain("s3.example.invalid");
+  });
+});
+
+/** Shape follows Mercury's documented `TreasuryTxn` (no postedAt, no attachments). */
+const TREASURY_RAW = {
+  id: "7d0c5f2e-1b8a-4f0e-9c3d-2a6b8e4f1c00",
+  type: "sweepToTreasury",
+  accountId: "55555555-5555-4555-8555-555555555555",
+  description: "Sweep from Checking",
+  amount: 2500,
+  balance: 18250.42,
+  canonicalDay: "2026-09-30",
+  additionalDetails: null,
+  security: null,
+  details: { sweepDirection: "toTreasury", tradeAction: null, feeDescription: null },
+};
+
+describe("compactTreasuryTransaction", () => {
+  it("keeps the fields that identify, date and reconcile a Treasury row", () => {
+    expect(compactTreasuryTransaction(TREASURY_RAW)).toEqual({
+      id: TREASURY_RAW.id,
+      type: "sweepToTreasury",
+      description: "Sweep from Checking",
+      amount: 2500,
+      balance: 18250.42,
+      canonicalDay: "2026-09-30",
+      details: { sweepDirection: "toTreasury" },
+    });
+  });
+
+  it("drops details entirely when every entry is null", () => {
+    const out = compactTreasuryTransaction({ ...TREASURY_RAW, details: { tradeAction: null } });
+    expect(out).not.toHaveProperty("details");
+    expect(compactTreasuryTransaction("x")).toBe("x");
+  });
+
+  it("is used through compactTransactionList and keeps the top-level cursor", () => {
+    const out = compactTransactionList(
+      { transactions: [TREASURY_RAW], cursor: 42 },
+      "compact",
+      compactTreasuryTransaction,
+    ) as { cursor: number; transactions: Record<string, unknown>[] };
+    expect(out.cursor).toBe(42);
+    expect(out.transactions[0]["canonicalDay"]).toBe("2026-09-30");
+    expect(out.transactions[0]).not.toHaveProperty("hasAttachment");
+    expect(out.transactions[0]).not.toHaveProperty("accountId");
+  });
 });
 
 describe("compactTransactionList", () => {
@@ -192,5 +283,10 @@ describe("extractAttachments", () => {
     expect(out.attachmentCount).toBe(0);
     expect(out.attachments).toEqual([]);
     expect((extractAttachments(null) as { transactionId: unknown }).transactionId).toBeNull();
+  });
+
+  it("passes a Mercury error envelope through instead of reporting no attachments", () => {
+    const err = { errors: { message: "not found" } };
+    expect(extractAttachments(err)).toBe(err);
   });
 });

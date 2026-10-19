@@ -154,7 +154,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
       "",
       "SIDE EFFECTS: overwrites the note / category on Mercury's side. Persistent. Audit log on Mercury records the change. No effect on the booked transaction itself or on the counterparty.",
       "",
-      "RETURNS: `{ id, note, categoryId, ... }` — the updated transaction.",
+      "RETURNS: `{ id, note, categoryId, ... }` — the updated transaction, with attachment URLs stripped (use `mercury_get_transaction_attachment` for a download URL).",
     ].join("\n"),
     {
       transactionId: z.uuid().describe("The transaction ID"),
@@ -173,7 +173,7 @@ export function registerTransactionTools(server: McpServer, client: MercuryClien
     },
     async ({ transactionId, ...body }) => {
       const data = await client.patch(`/transaction/${transactionId}`, body);
-      return textResult(data);
+      return textResult(stripAttachmentUrls(data));
     },
     { title: "Update Transaction", destructiveHint: false, openWorldHint: true },
   );
