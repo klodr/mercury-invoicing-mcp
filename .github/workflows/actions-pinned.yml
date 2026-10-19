@@ -22,6 +22,34 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Require digest-pinned docker:// actions
+        # pinact only checks `uses:` values of the form `owner/repo@ref` and
+        # skips the rest, so `docker://image:tag` would pass unnoticed (and
+        # Dependabot does not update docker:// references). Every docker://
+        # action must carry a full sha256 digest. yq (preinstalled on
+        # ubuntu-latest) reads every `uses` value, whatever the YAML form.
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          bad=""
+          for f in .github/workflows/*.yml .github/workflows/*.yaml .github/actions/**/action.yml .github/actions/**/action.yaml; do
+            while IFS= read -r value; do
+              case "$value" in
+                docker://*)
+                  if ! printf '%s\n' "$value" | grep -qE '^docker://[^[:space:]@]+@sha256:[0-9a-f]{64}$'; then
+                    bad+="${f}: ${value}"$'\n'
+                  fi
+                  ;;
+              esac
+            done < <(yq -r '.. | select(tag == "!!map") | select(has("uses")) | .uses' "$f")
+          done
+          if [ -n "$bad" ]; then
+            echo "::error::docker:// action not pinned by a full sha256 digest:"
+            printf '%s' "$bad"
+            exit 1
+          fi
+          echo "every docker:// action is pinned by digest"
+
       - uses: suzuki-shunsuke/pinact-action@896d595f299e71d65b9d28349d6956abe144390a # v3.0.0
         with:
           # `version` was removed in pinact-action v2: the pinact binary

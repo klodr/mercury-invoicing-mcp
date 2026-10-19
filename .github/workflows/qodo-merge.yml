@@ -52,7 +52,14 @@ jobs:
     if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: PR Agent — DeepSeek R1 (reasoner)
-        uses: qodo-ai/pr-agent@d82f7d3e696cd00822694aaa3096265d3889f3f1 # v0.34
+        # Image pinned by digest. The qodo-ai/pr-agent action only pins its
+        # wrapper, which runs the rolling pragent/pr-agent:github_action tag,
+        # so the code receiving GITHUB_TOKEN and the provider key could change
+        # under a fixed action SHA. This digest is pragent/pr-agent:0.47.0-github_action
+        # (upstream SECURITY.md, "Enhanced Security with Docker Digest").
+        # Dependabot does not update docker:// references: refresh by hand with
+        #   docker buildx imagetools inspect pragent/pr-agent:<version>-github_action --format '{{.Manifest.Digest}}'
+        uses: docker://pragent/pr-agent@sha256:31b9aac6ab067bada9a0c1b001d30ebc500ea4487e00a93c18c59b9ef5fa66db # 0.47.0-github_action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # deepseek-reasoner = R1, explicit chain-of-thought. Slower and
@@ -84,7 +91,8 @@ jobs:
     if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: PR Agent — Gemini 3.1 Pro Preview (thinking)
-        uses: qodo-ai/pr-agent@d82f7d3e696cd00822694aaa3096265d3889f3f1 # v0.34
+        # Same image digest as the DeepSeek job above (0.47.0-github_action).
+        uses: docker://pragent/pr-agent@sha256:31b9aac6ab067bada9a0c1b001d30ebc500ea4487e00a93c18c59b9ef5fa66db # 0.47.0-github_action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONFIG__MODEL: gemini/gemini-3.1-pro-preview
