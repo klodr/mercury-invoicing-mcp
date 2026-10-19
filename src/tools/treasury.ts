@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { defineTool, textResult } from "./_shared.js";
 import { z } from "zod";
 import { MercuryClient } from "../client.js";
+import { compactTransactionList, compactTreasuryTransaction } from "../project.js";
 
 export function registerTreasuryTools(server: McpServer, client: MercuryClient): void {
   defineTool(
@@ -34,18 +35,43 @@ export function registerTreasuryTools(server: McpServer, client: MercuryClient):
       "",
       "DO NOT USE: for deposit-account transactions (use `mercury_list_transactions`). For IO Credit transactions, use `mercury_list_credit_transactions`.",
       "",
-      "RETURNS: `{ transactions: [{ id, amount, kind, postedAt, ... }] }`.",
+      "⚠️ **This endpoint has no date filter.** Unlike `mercury_list_transactions`, Treasury accepts only `limit`, `order` and `cursor` — there is no `start`/`end`. To audit a period, page through the transactions and filter on `canonicalDay` (the Treasury row date, `YYYY-MM-DD`) yourself.",
+      "",
+      "⚠️ **Pagination is cursor-based, not offset-based.** Pass the top-level `cursor` of the response as the `cursor` of the next call, and stop when it is `null` or absent — a short page is not the end signal. Passing an `offset` does nothing — Mercury ignores it and you silently re-read page 1.",
+      "",
+      'RETURNS (default `detail: "compact"`): `{ transactions: [{ id, type, description, amount, balance, canonicalDay, security, details, ... }], cursor }` — null fields omitted. Pass `detail: "full"` for every Mercury field (`accountId`, null fields).',
     ].join("\n"),
     {
       accountId: z.uuid().describe("Treasury account ID"),
-      limit: z.number().int().min(1).max(500).optional(),
-      offset: z.number().int().min(0).optional(),
-      start: z.iso.date().optional().describe("Filter after this date (YYYY-MM-DD)"),
-      end: z.iso.date().optional().describe("Filter before this date (YYYY-MM-DD)"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(1000)
+        .optional()
+        .describe("Max rows to return (default 100)"),
+      cursor: z
+        .number()
+        .int()
+        .min(0)
+        .optional()
+        .describe("Pagination cursor: the top-level `cursor` of the previous response"),
+      order: z
+        .enum(["asc", "desc"])
+        .optional()
+        .describe('Sort order on the transaction date. Defaults to "desc".'),
+      detail: z
+        .enum(["compact", "full"])
+        .optional()
+        .describe(
+          'Payload shape. "compact" (default) keeps the Treasury fields that identify, date and reconcile a row; "full" returns every Mercury field.',
+        ),
     },
-    async ({ accountId, ...query }) => {
+    async ({ accountId, detail, ...query }) => {
       const data = await client.get(`/treasury/${accountId}/transactions`, query);
-      return textResult(data);
+      return textResult(
+        compactTransactionList(data, detail ?? "compact", compactTreasuryTransaction),
+      );
     },
     { title: "List Treasury Transactions", readOnlyHint: true, openWorldHint: true },
   );

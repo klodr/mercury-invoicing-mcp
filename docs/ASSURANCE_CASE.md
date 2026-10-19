@@ -25,6 +25,11 @@ weaknesses have been countered.
 - The user's `MERCURY_API_KEY` (most sensitive)
 - Money in the user's Mercury account (irreversible if exfiltrated)
 - Customer/recipient data (PII)
+- **Pre-signed attachment URLs** — Mercury returns receipts as S3 links
+  carrying an AWS signature and security token. Each is a *bearer
+  credential*: it grants unauthenticated read of the document to whoever
+  holds it, for ~12 hours. Receipts routinely contain invoices, supplier
+  identities, and amounts.
 - Audit log integrity (used for after-the-fact security review)
 - Build/release pipeline integrity (compromise = downstream user harm)
 
@@ -62,6 +67,22 @@ weaknesses have been countered.
 7. **Hung Mercury endpoint** — DoS-by-stall: the MCP awaits forever
    and blocks the calling agent. Mitigation: `AbortSignal.timeout(30_000)`
    on every fetch.
+8. **Bearer-URL sprawl** — Mercury embeds a pre-signed S3 URL in every
+   transaction that carries a receipt. Returned verbatim, a single
+   `mercury_list_transactions` call mints hundreds of live, 12-hour,
+   unauthenticated document-read credentials and scatters them across
+   model context, chat transcripts, and audit logs — each one usable by
+   anyone who later reads any of those. Mitigation:
+   [`src/project.ts`](../src/project.ts) strips `attachments[].url` from
+   **every** transaction payload, in compact *and* full mode and on
+   single-transaction reads; list results report only the boolean
+   `hasAttachment`. The sole release path is
+   `mercury_get_transaction_attachment`, which returns one transaction's
+   URLs on an explicit call, so minting a credential is a deliberate act
+   rather than a side effect of listing. Its tool description states the
+   credential lifetime so a calling model can reason about it. Covered by
+   [`test/project.test.ts`](../test/project.test.ts), which asserts no
+   signature material survives either projection mode.
 
 ## 2. Trust boundaries
 

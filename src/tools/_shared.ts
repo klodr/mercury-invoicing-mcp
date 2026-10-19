@@ -19,8 +19,13 @@ export function textResult(data: unknown): ToolResult {
   // Calling sanitizeJsonForLlm(data) + sanitizeJsonValues(data)
   // separately would run the walker twice on the same input.
   const sanitized = sanitizeJsonValues(data);
+  // Serialised without indentation on purpose. This surface is read by
+  // a model, not a human, and pretty-printing a 500-item transaction
+  // list spends ~21% of the payload on whitespace that carries no
+  // information. Measured on a real Mercury account: 27.8 kB indented
+  // vs 22.0 kB flat for the same 61 transactions.
   return {
-    content: [{ type: "text", text: JSON.stringify(sanitized, null, 2) }],
+    content: [{ type: "text", text: JSON.stringify(sanitized) }],
     structuredContent: (sanitized ?? {}) as Record<string, unknown>,
   };
 }
