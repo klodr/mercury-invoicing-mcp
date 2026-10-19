@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.19.0...v0.20.0) (2026-10-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* Node 22 is no longer supported; Node >= 24.18.1 is required.
+
+### Added
+
+* require node 24.18.1 and test on node 24 and 26 ([#291](https://github.com/klodr/mercury-invoicing-mcp/issues/291)) ([a0fc506](https://github.com/klodr/mercury-invoicing-mcp/commit/a0fc50650f88c9f596fd6215b5a616570189bf58))
+
+
+### Changed
+
+* run pr-agent 0.47.0 with its image pinned by digest ([#287](https://github.com/klodr/mercury-invoicing-mcp/issues/287)) ([d945836](https://github.com/klodr/mercury-invoicing-mcp/commit/d945836944fdbb5f0b6ef8fdf108c58f554e49ae))
+
 ## [0.19.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.18.4...v0.19.0) (2026-10-19)
 
 
