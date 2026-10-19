@@ -26,22 +26,23 @@ jobs:
         # pinact only checks `uses:` values of the form `owner/repo@ref` and
         # skips the rest, so `docker://image:tag` would pass unnoticed (and
         # Dependabot does not update docker:// references). Every docker://
-        # action must carry a full sha256 digest; the check reads the `uses:`
-        # value itself (comment and quotes stripped), not the whole line.
+        # action must carry a full sha256 digest. yq (preinstalled on
+        # ubuntu-latest) reads every `uses` value, whatever the YAML form.
         run: |
           set -euo pipefail
+          shopt -s nullglob globstar
           bad=""
-          while IFS= read -r hit; do
-            loc=$(printf '%s' "$hit" | cut -d: -f1-2)
-            text=$(printf '%s' "$hit" | cut -d: -f3-)
-            value=$(printf '%s\n' "$text" | sed -E \
-              -e 's/^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*//' \
-              -e 's/[[:space:]]+#.*$//' \
-              -e 's/^["'"'"']//' -e 's/["'"'"']$//')
-            if ! printf '%s\n' "$value" | grep -qE '^docker://[^[:space:]@"'"'"']+@sha256:[0-9a-f]{64}$'; then
-              bad+="${loc}: ${value}"$'\n'
-            fi
-          done < <(grep -rnE '^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*["'"'"']?docker://' .github/workflows .github/actions 2>/dev/null || true)
+          for f in .github/workflows/*.yml .github/workflows/*.yaml .github/actions/**/action.yml .github/actions/**/action.yaml; do
+            while IFS= read -r value; do
+              case "$value" in
+                docker://*)
+                  if ! printf '%s\n' "$value" | grep -qE '^docker://[^[:space:]@]+@sha256:[0-9a-f]{64}$'; then
+                    bad+="${f}: ${value}"$'\n'
+                  fi
+                  ;;
+              esac
+            done < <(yq -r '.. | select(tag == "!!map") | select(has("uses")) | .uses' "$f")
+          done
           if [ -n "$bad" ]; then
             echo "::error::docker:// action not pinned by a full sha256 digest:"
             printf '%s' "$bad"
