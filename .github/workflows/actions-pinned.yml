@@ -26,14 +26,25 @@ jobs:
         # pinact only checks `uses:` values of the form `owner/repo@ref` and
         # skips the rest, so `docker://image:tag` would pass unnoticed (and
         # Dependabot does not update docker:// references). Every docker://
-        # action must carry a full sha256 digest.
+        # action must carry a full sha256 digest; the check reads the `uses:`
+        # value itself (comment and quotes stripped), not the whole line.
         run: |
           set -euo pipefail
-          bad=$(grep -rnE '^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*["'"'"']?docker://' .github/workflows .github/actions 2>/dev/null \
-            | grep -vE 'docker://[^[:space:]@"'"'"']+@sha256:[0-9a-f]{64}' || true)
+          bad=""
+          while IFS= read -r hit; do
+            loc=$(printf '%s' "$hit" | cut -d: -f1-2)
+            text=$(printf '%s' "$hit" | cut -d: -f3-)
+            value=$(printf '%s\n' "$text" | sed -E \
+              -e 's/^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*//' \
+              -e 's/[[:space:]]+#.*$//' \
+              -e 's/^["'"'"']//' -e 's/["'"'"']$//')
+            if ! printf '%s\n' "$value" | grep -qE '^docker://[^[:space:]@"'"'"']+@sha256:[0-9a-f]{64}$'; then
+              bad+="${loc}: ${value}"$'\n'
+            fi
+          done < <(grep -rnE '^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*["'"'"']?docker://' .github/workflows .github/actions 2>/dev/null || true)
           if [ -n "$bad" ]; then
             echo "::error::docker:// action not pinned by a full sha256 digest:"
-            echo "$bad"
+            printf '%s' "$bad"
             exit 1
           fi
           echo "every docker:// action is pinned by digest"
