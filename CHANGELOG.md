@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.2](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.20.1...v0.20.2) (2026-10-20)
+
+
+### Changed
+
+* **qodo:** skip dependabot and lockfile-only pull requests ([#296](https://github.com/klodr/mercury-invoicing-mcp/issues/296)) ([fcba16c](https://github.com/klodr/mercury-invoicing-mcp/commit/fcba16c85152d73257f29ffd95f1fc43bcfeef03))
+
+
+### Documentation
+
+* state the reference servers' node 24 floor accurately ([#297](https://github.com/klodr/mercury-invoicing-mcp/issues/297)) ([b92c1ce](https://github.com/klodr/mercury-invoicing-mcp/commit/b92c1ce7e108218a927f49f31ae0f54518fc4970))
+
 ## [0.20.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.20.0...v0.20.1) (2026-10-19)
 
 
