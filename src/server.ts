@@ -3,6 +3,7 @@ import ipaddr from "ipaddr.js";
 import { MercuryClient } from "./client.js";
 import { registerAllTools } from "./tools/index.js";
 import { registerAllPrompts } from "./prompts/index.js";
+import { describeTrustedCidrs } from "./safe-url.js";
 
 // Bumped by release-please via the `x-release-please-version`
 // annotation on the line below; the manual `npm version` path is
@@ -179,6 +180,9 @@ export function createServer(opts: ServerOptions): McpServer {
     });
 
   const baseUrl = resolveBaseUrl(opts.apiKey, opts.baseUrl);
+  // Fail at startup, not at the first request, on a bad MCP_TRUSTED_CIDRS.
+  const trusted = describeTrustedCidrs(process.env.MCP_TRUSTED_CIDRS);
+  if (trusted) log(`MCP_TRUSTED_CIDRS: the SSRF guard also accepts ${trusted}`);
   if (baseUrl === SANDBOX_BASE_URL && !opts.baseUrl) {
     log("Detected sandbox token → using https://api-sandbox.mercury.com/api/v1");
   }

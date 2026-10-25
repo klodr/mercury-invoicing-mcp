@@ -109,6 +109,16 @@ To override the base URL explicitly (e.g. for a self-hosted proxy):
 MERCURY_API_BASE_URL=https://your-proxy.example.com/api/v1
 ```
 
+### 🛡️ Behind a local proxy that answers DNS itself
+
+Some proxies answer DNS with their own addresses (Surge in enhanced mode hands out `198.18.0.0/15`), and the SSRF guard refuses them, as it does any address that is not public. If you trust that proxy, list its range:
+
+```bash
+MCP_TRUSTED_CIDRS=198.18.0.0/15
+```
+
+Comma-separated IPs or CIDR ranges; prefer a single IP whenever the proxy allows it. Refused at startup: a malformed entry, more than 131,072 addresses in all (one range: IPv4 `/15` at most, IPv6 `/111`), and anything that touches loopback, link-local, `0.0.0.0/8` or an IPv6 range carrying an IPv4 (an IPv4-mapped address such as `::ffff:10.47.83.1` counts as its IPv4). Addresses in these ranges are no longer checked by the guard: the trust moves to the proxy. Unset: no exception.
+
 ### 🤖 Claude Desktop / Claude Code
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (or `~/.claude.json` for Claude Code):

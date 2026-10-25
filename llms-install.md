@@ -70,6 +70,11 @@ client that can launch a stdio child process can use this server.
 4. (Optional) Override the API base URL via `MERCURY_API_BASE_URL` for a
    self-hosted proxy.
 
+   Only when the user runs a local proxy that answers DNS with its own
+   addresses (Surge in enhanced mode: `198.18.0.0/15`) and confirms they
+   trust it, set `MCP_TRUSTED_CIDRS` to that range, never wider; prefer a
+   single IP. Addresses in it are no longer checked by the SSRF guard.
+
 5. Restart (or reconnect) the MCP client so the new server is picked up.
 
 ## Verifying
