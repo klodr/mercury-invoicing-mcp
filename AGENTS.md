@@ -207,6 +207,12 @@ What follows is the minimum an editor must know to avoid regressing it:
   `send_money`. Do not add silent write paths.
 - **SSRF guard**: `safe-url.ts` rejects non-Mercury hosts. Bearer
   token + invoice payloads only ever leave to `api.mercury.com`.
+  `MCP_TRUSTED_CIDRS` does not change that: it only lets the address
+  check accept non-public addresses inside its ranges (a local proxy's
+  fake IPs), and the Mercury hostname allowlist still applies. It is
+  bounded by `parseTrustedCidrs` (cap on all entries together,
+  forbidden ranges, strict IPv4) and validated in `createServer`; never
+  widen those bounds without a test.
 - **Audit-log redaction**: `sanitize.ts` keeps an explicit allowlist
   of fields in clear, blocks credential fields, elides everything
   else with `[ELIDED:NNN]`. Adding a new tool that takes free-form

@@ -142,7 +142,7 @@ Mapped to [CWE](https://cwe.mitre.org/) and [OWASP Top 10](https://owasp.org/Top
 | **CWE-426** Untrusted search path | Countered | No `$PATH` manipulation; `npm bin` only |
 | **CWE-502** Deserialisation of untrusted data | Limited | Only `JSON.parse` on Mercury responses + tool arguments (validated by Zod) |
 | **CWE-732** Incorrect permission assignment | Countered | Audit log opened with mode `0o600` |
-| **CWE-918** SSRF | N/A | Base URL is fixed (Mercury or sandbox); no user-controlled URL field |
+| **CWE-918** SSRF | Countered | Base URL is fixed (Mercury or sandbox), checked against a host allowlist at boot, no user-controlled URL field; `assertSafeUrl` re-resolves the host before every fetch and refuses any non-public address. Only exception: the operator's `MCP_TRUSTED_CIDRS` (unset by default; at most 131,072 addresses in all; never loopback, link-local, `0.0.0.0/8` or an IPv6 range carrying an IPv4, an IPv4-mapped address counting as its IPv4; announced at startup by count only), for a local proxy that answers DNS itself: the trust moves to that proxy |
 | **CWE-1357** Reliance on insufficiently trustworthy component | Countered | All GitHub Actions pinned by full commit SHA; Dependabot + Socket monitor for compromised deps |
 
 Outstanding weaknesses are listed transparently in
