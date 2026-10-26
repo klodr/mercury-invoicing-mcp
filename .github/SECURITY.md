@@ -9,6 +9,15 @@ maintainer commits to, and limits that callers must account for.
 
 - **Authenticated transport**: every Mercury API call goes over HTTPS with the
   user-supplied bearer token. No fallback to HTTP, no token in URL parameters.
+- **SSRF guard before every request**: `assertSafeUrl` re-resolves the API
+  host before each fetch and refuses any address that is not public
+  (loopback, RFC 1918, link-local, CGNAT, IPv6 ULA, …), which closes
+  redirect-into-private-host paths and mitigates DNS rebinding (a short
+  window remains between this lookup and the connection). Its only exception
+  is `MCP_TRUSTED_CIDRS` (unset by default), for a local proxy that answers
+  DNS with its own addresses: validated at startup, at most 131,072
+  addresses in all, never loopback, link-local, `0.0.0.0/8` or an IPv6 range
+  carrying an IPv4. The Mercury host allowlist still applies.
 - **Input validation**: all tool inputs are validated by Zod schemas before
   reaching `MercuryClient`. Path-injected IDs require `.uuid()` and are
   URL-encoded per segment (defense in depth against prompt injection).
@@ -79,6 +88,11 @@ maintainer commits to, and limits that callers must account for.
 - **Compromise of the host environment**: if your shell, terminal, or MCP
   client is compromised, your `MERCURY_API_KEY` can be stolen by the attacker.
   This MCP cannot detect or prevent that.
+- **A proxy you chose to trust**: with `MCP_TRUSTED_CIDRS` set, an address
+  inside those ranges is no longer checked by the SSRF guard; whatever
+  answers there (the local proxy) decides where the request, the bearer
+  token and every payload actually go. Keep the variable to the proxy's own
+  range, ideally a single IP, and leave it unset otherwise.
 - **Malicious LLM prompts (prompt injection)**: an LLM that exposes write
   tools to untrusted content can be tricked into calling those tools with
   attacker-chosen arguments. Mitigations: scope your Mercury token tightly,
