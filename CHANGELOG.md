@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.1](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.21.0...v0.21.1) (2026-11-16)
+
+
+### Changed
+
+* bump the github-actions group across 1 directory with 5 updates ([#316](https://github.com/klodr/mercury-invoicing-mcp/issues/316)) ([46bae21](https://github.com/klodr/mercury-invoicing-mcp/commit/46bae2170825681120fbfa8676d66cfd3a368e14))
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 7 updates ([#311](https://github.com/klodr/mercury-invoicing-mcp/issues/311)) ([659ea6e](https://github.com/klodr/mercury-invoicing-mcp/commit/659ea6ea50df3aa7e5a7a99c64263bd66cc93ad1))
+* **deps-dev:** bump tsup from 8.5.1 to 9.0.0 ([#308](https://github.com/klodr/mercury-invoicing-mcp/issues/308)) ([fabc506](https://github.com/klodr/mercury-invoicing-mcp/commit/fabc50639ca9fae4cc08aafa13e13c5c0c1f9e72))
+* **deps:** bump the production-dependencies group across 1 directory with 2 updates ([#310](https://github.com/klodr/mercury-invoicing-mcp/issues/310)) ([1b2d58c](https://github.com/klodr/mercury-invoicing-mcp/commit/1b2d58ce07dc3adf6dfec4bc979df1c0f9fcedd9))
+* **deps:** fix OSV advisories in overrides and lockfile ([#314](https://github.com/klodr/mercury-invoicing-mcp/issues/314)) ([01051f5](https://github.com/klodr/mercury-invoicing-mcp/commit/01051f50419200c630d33b8e4ac7ea010519c388))
+* **deps:** override re2js to ^2.8.7 ([#317](https://github.com/klodr/mercury-invoicing-mcp/issues/317)) ([9332ac1](https://github.com/klodr/mercury-invoicing-mcp/commit/9332ac183898444b09a00b2721a79b532197c849))
+
+
+### Documentation
+
+* **security:** document MCP_TRUSTED_CIDRS ([#305](https://github.com/klodr/mercury-invoicing-mcp/issues/305)) ([be2548f](https://github.com/klodr/mercury-invoicing-mcp/commit/be2548f30815fbbe3b395de3a6985b9378eca6ed))
+
 ## [0.21.0](https://github.com/klodr/mercury-invoicing-mcp/compare/v0.20.3...v0.21.0) (2026-10-26)
 
 
